@@ -277,6 +277,7 @@ class DeviceChatAPITester:
         print("🚀 Starting Device Chat Backend API Tests")
         print(f"Backend URL: {self.base_url}")
         print(f"Test User ID: {self.user_id}")
+        print(f"Test Device ID: {self.test_device_id}")
         print("=" * 60)
 
         # Test API connectivity
@@ -295,6 +296,10 @@ class DeviceChatAPITester:
         print("\n💬 Testing Chat Functionality...")
         self.test_send_chat_message()
         self.test_get_chat_history()
+        
+        # OpenAI integration test
+        print("\n🤖 Testing OpenAI Integration...")
+        self.test_openai_integration()
 
         # Notification tests
         print("\n🔔 Testing Notifications...")
@@ -304,6 +309,10 @@ class DeviceChatAPITester:
         # Wait a moment for notification to be processed
         time.sleep(1)
         self.test_mark_notification_read()
+
+        # WebSocket tests
+        print("\n🔌 Testing WebSocket Connectivity...")
+        self.test_websocket_connection()
 
         # Original status endpoints
         print("\n📊 Testing Status Endpoints...")
