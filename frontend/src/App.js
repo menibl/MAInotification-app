@@ -1020,6 +1020,19 @@ const App = () => {
     loadChatMessages(device.id);
   };
 
+  const handleNavigateToDeviceFromNotification = (device, notification) => {
+    setSelectedDevice(device);
+    setCurrentView('chat');
+    loadChatMessages(device.id);
+    
+    // Store the notification to be pre-selected in chat
+    // We'll use a timeout to ensure the chat interface has loaded first
+    setTimeout(() => {
+      // The ChatInterface component will need to handle this notification
+      // For now, we'll just navigate - we can enhance this later
+    }, 100);
+  };
+
   const handleSendMessage = async (deviceId, message, files = [], referencedMessages = [], mediaUrls = []) => {
     try {
       // Upload files first if any
