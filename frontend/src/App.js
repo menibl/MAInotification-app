@@ -164,15 +164,54 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
   const handleSend = async () => {
     const validMediaUrls = mediaUrls.filter(url => url.trim() !== '');
-    if ((inputMessage.trim() || selectedFiles.length > 0 || validMediaUrls.length > 0) && device) {
-      await onSendMessage(device.id, inputMessage.trim(), selectedFiles, referencedMessages, validMediaUrls);
+    
+    // Add notification media URLs to mediaUrls if any notifications are selected
+    const notificationMediaUrls = selectedNotifications
+      .filter(notif => notif.media_url)
+      .map(notif => notif.media_url);
+    
+    const allMediaUrls = [...validMediaUrls, ...notificationMediaUrls];
+    
+    if ((inputMessage.trim() || selectedFiles.length > 0 || allMediaUrls.length > 0 || selectedNotifications.length > 0) && device) {
+      // Build enhanced message including notification content
+      let enhancedMessage = inputMessage.trim();
+      
+      if (selectedNotifications.length > 0) {
+        const notificationContext = selectedNotifications.map(notif => 
+          `[Notification from ${new Date(notif.timestamp).toLocaleString()}]: ${notif.content}`
+        ).join('\n');
+        
+        enhancedMessage = enhancedMessage 
+          ? `${enhancedMessage}\n\nReferencing notifications:\n${notificationContext}`
+          : `Referencing notifications:\n${notificationContext}`;
+      }
+      
+      await onSendMessage(device.id, enhancedMessage, selectedFiles, referencedMessages, allMediaUrls);
       setInputMessage('');
       setSelectedFiles([]);
       setMediaUrls(['']);
       setShowMediaInput(false);
       setReferencedMessages([]);
+      setSelectedNotifications([]);
       setMultiSelectMode(false);
     }
+  };
+
+  const toggleNotificationSelection = (notification) => {
+    setSelectedNotifications(prev => {
+      const isAlreadySelected = prev.some(n => n.id === notification.id);
+      if (isAlreadySelected) {
+        return prev.filter(n => n.id !== notification.id);
+      } else {
+        return [...prev, notification];
+      }
+    });
+  };
+
+  const clearAllSelections = () => {
+    setReferencedMessages([]);
+    setSelectedNotifications([]);
+    setMultiSelectMode(false);
   };
 
   const handleKeyPress = (e) => {
