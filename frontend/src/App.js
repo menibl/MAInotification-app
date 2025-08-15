@@ -505,33 +505,65 @@ const App = () => {
 
   const loadInitialData = async () => {
     try {
+      console.log('Starting initial data load...');
       setLoading(true);
-      await Promise.all([
+      
+      // Add timeout to prevent infinite loading
+      const loadPromises = [
         loadDevices(),
         loadNotifications()
-      ]);
+      ];
+      
+      // Use Promise.allSettled to ensure we handle all outcomes
+      const results = await Promise.allSettled(loadPromises);
+      
+      // Log results for debugging
+      results.forEach((result, index) => {
+        const taskName = index === 0 ? 'loadDevices' : 'loadNotifications';
+        if (result.status === 'rejected') {
+          console.error(`${taskName} failed:`, result.reason);
+        } else {
+          console.log(`${taskName} completed successfully`);
+        }
+      });
+      
+      console.log('Initial data load completed');
     } catch (error) {
       console.error('Failed to load initial data:', error);
     } finally {
+      // Always set loading to false, regardless of API success/failure
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
 
   const loadDevices = async () => {
     try {
-      const response = await axios.get(`${API}/devices/${USER_ID}`);
+      console.log('Loading devices...');
+      const response = await axios.get(`${API}/devices/${USER_ID}`, { 
+        timeout: 10000 // 10 second timeout
+      });
+      console.log('Devices loaded:', response.data.length, 'devices');
       setDevices(response.data);
     } catch (error) {
       console.error('Failed to load devices:', error);
+      // Set empty devices array on error to allow app to continue
+      setDevices([]);
     }
   };
 
   const loadNotifications = async () => {
     try {
-      const response = await axios.get(`${API}/notifications/${USER_ID}`);
+      console.log('Loading notifications...');
+      const response = await axios.get(`${API}/notifications/${USER_ID}`, { 
+        timeout: 10000 // 10 second timeout
+      });
+      console.log('Notifications loaded:', response.data.length, 'notifications');
       setNotifications(response.data);
     } catch (error) {
       console.error('Failed to load notifications:', error);
+      // Set empty notifications array on error to allow app to continue
+      setNotifications([]);
     }
   };
 
