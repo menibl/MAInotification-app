@@ -151,6 +151,8 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   const [referencedMessages, setReferencedMessages] = useState([]);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [currentRole, setCurrentRole] = useState('');
+  const [showRoleSettings, setShowRoleSettings] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
