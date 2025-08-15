@@ -1006,12 +1006,16 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         
         # Check media URLs for images
         if media_urls:
+            print(f"DEBUG: Checking media URLs for images: {media_urls}")
             for url in media_urls:
-                if is_image_content(url=url):
+                is_img = is_image_content(url=url)
+                print(f"DEBUG: URL {url} is image: {is_img}")
+                if is_img:
                     has_images = True
+                    print(f"DEBUG: Found image URL, setting has_images=True")
                     break
         
-        print(f"DEBUG: Has images detected: {has_images}")
+        print(f"DEBUG: Final has_images value: {has_images}")
         
         # Store user message
         user_chat_msg = ChatMessage(
