@@ -122,6 +122,82 @@ async def get_ai_chat_instance(device_type: str, session_id: str, has_images: bo
     
     return chat
 
+async def download_image_as_base64(url: str) -> Optional[str]:
+    """Download an image from URL and convert to base64"""
+    try:
+        response = requests.get(url, timeout=10, stream=True)
+        if response.status_code == 200:
+            # Get content type to determine format
+            content_type = response.headers.get('content-type', '').lower()
+            if not content_type.startswith('image/'):
+                return None
+            
+            # Read image data
+            image_data = BytesIO()
+            for chunk in response.iter_content(chunk_size=8192):
+                image_data.write(chunk)
+            
+            # Convert to base64
+            image_data.seek(0)
+            image_base64 = base64.b64encode(image_data.getvalue()).decode('utf-8')
+            return image_base64
+        return None
+    except Exception as e:
+        print(f"Failed to download image from {url}: {e}")
+        return None
+
+async def create_vision_message(message: str, file_contents_for_ai: List[Dict], media_urls: List[str]) -> tuple:
+    """Create a UserMessage with proper image attachments for vision models"""
+    
+    file_attachments = []
+    vision_text_parts = [message]
+    
+    # Process uploaded image files
+    for file_content in file_contents_for_ai:
+        if file_content['type'] == 'image' and 'file_url' in file_content:
+            # For uploaded image files, use file path
+            try:
+                # Convert the URL to local file path
+                file_id = file_content['file_url'].split('/')[-1]
+                file_record = await db.file_uploads.find_one({"id": file_id})
+                if file_record and Path(file_record["file_path"]).exists():
+                    file_attachment = FileContentWithMimeType(
+                        file_path=file_record["file_path"],
+                        mime_type=file_record["file_type"]
+                    )
+                    file_attachments.append(file_attachment)
+                    vision_text_parts.append(f"\n[Uploaded Image: {file_content['filename']}]")
+            except Exception as e:
+                print(f"Failed to process uploaded image {file_content['filename']}: {e}")
+                vision_text_parts.append(f"\n[Image Upload Error: Could not process {file_content['filename']}]")
+        else:
+            # For non-image files, add text description
+            vision_text_parts.append(f"\n{file_content['content']}")
+    
+    # Process image URLs
+    for url in media_urls:
+        if any(url.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']):
+            # Download and convert image to base64
+            image_base64 = await download_image_as_base64(url)
+            if image_base64:
+                try:
+                    from emergentintegrations.llm.chat import ImageContent
+                    image_content = ImageContent(image_base64=image_base64)
+                    file_attachments.append(image_content)
+                    vision_text_parts.append(f"\n[Image from URL: {url}]")
+                except Exception as e:
+                    print(f"Failed to create ImageContent for {url}: {e}")
+                    vision_text_parts.append(f"\n[Image URL Error: Could not process {url}]")
+            else:
+                vision_text_parts.append(f"\n[Image URL: {url} - Could not download for analysis]")
+        else:
+            vision_text_parts.append(f"\n[Media URL: {url}]")
+    
+    # Combine all text parts
+    enhanced_message = "\n".join(vision_text_parts)
+    
+    return enhanced_message, file_attachments
+
 async def store_chat_history(user_id: str, device_id: str, messages: List[Dict[str, Any]]):
     """Store or update chat history in MongoDB"""
     try:
