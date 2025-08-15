@@ -346,6 +346,55 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                   
                   <p className="text-sm">{item.message}</p>
                   
+                  {/* Media URLs display */}
+                  {item.media_urls && item.media_urls.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {item.media_urls.map((url, idx) => (
+                        <div key={idx} className="border rounded-lg overflow-hidden bg-black bg-opacity-5">
+                          {/\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i.test(url) ? (
+                            <div>
+                              <img 
+                                src={url} 
+                                alt="Shared image"
+                                className="w-full max-w-xs rounded"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'block';
+                                }}
+                              />
+                              <div className="hidden p-2 text-xs">
+                                🖼️ <a href={url} target="_blank" rel="noopener noreferrer" className="underline">View Image</a>
+                              </div>
+                            </div>
+                          ) : /\.(mp4|avi|mov|webm|mkv)(\?.*)?$/i.test(url) ? (
+                            <div>
+                              <video 
+                                controls 
+                                className="w-full max-w-xs rounded"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'block';
+                                }}
+                              >
+                                <source src={url} />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="hidden p-2 text-xs">
+                                🎥 <a href={url} target="_blank" rel="noopener noreferrer" className="underline">View Video</a>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-2 text-xs">
+                              🔗 <a href={url} target="_blank" rel="noopener noreferrer" className="underline">
+                                {url.length > 50 ? url.substring(0, 50) + '...' : url}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
                   {/* File attachments */}
                   {item.file_attachments && item.file_attachments.length > 0 && (
                     <div className="mt-2 space-y-1">
