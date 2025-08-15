@@ -1332,6 +1332,7 @@ const App = () => {
               notifications={notifications}
               devices={devices}
               onMarkRead={handleMarkNotificationRead}
+              onNavigateToDevice={handleNavigateToDeviceFromNotification}
             />
           </div>
         )}
