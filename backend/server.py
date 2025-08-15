@@ -971,7 +971,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         
         # Generate AI response with context
         try:
-            ai_chat = await get_ai_chat_instance(device_type, session_id)
+            ai_chat = await get_ai_chat_instance(device_type, session_id, has_images)
             
             # Build enhanced prompt with context
             enhanced_message = message
@@ -982,6 +982,9 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                     if ctx_msg.get('file_attachments'):
                         for attachment in ctx_msg['file_attachments']:
                             context_text += f"  📎 {attachment['filename']} ({attachment['file_type']})\n"
+                    if ctx_msg.get('media_urls'):
+                        for url in ctx_msg['media_urls']:
+                            context_text += f"  🔗 {url}\n"
                 enhanced_message = f"{context_text}\nCurrent message: {message}"
             
             # Include actual file contents for AI analysis
@@ -991,6 +994,8 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                     file_content_text += f"\n📎 **{file_content['filename']}** ({file_content['type']} file):\n"
                     if file_content['type'] == 'text':
                         file_content_text += f"```\n{file_content['content']}\n```\n"
+                    elif file_content['type'] == 'image' and has_images:
+                        file_content_text += f"{file_content['content']}\nImage URL: {file_content.get('file_url', 'N/A')}\n"
                     else:
                         file_content_text += f"{file_content['content']}\n"
                 enhanced_message = f"{enhanced_message}{file_content_text}"
@@ -1000,6 +1005,21 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 for attachment in file_attachments:
                     file_list += f"📎 {attachment['filename']} ({attachment['file_type']}, {attachment['file_size']} bytes)\n"
                 enhanced_message = f"{enhanced_message}{file_list}"
+            
+            # Include media URLs
+            if media_urls:
+                media_content = "\n\nMedia URLs shared:\n"
+                for url in media_urls:
+                    if is_image_content(url=url):
+                        media_content += f"🖼️ Image: {url}\n"
+                    elif any(url.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mov', '.webm', '.mkv']):
+                        media_content += f"🎥 Video: {url}\n"
+                    else:
+                        media_content += f"🔗 Media: {url}\n"
+                enhanced_message = f"{enhanced_message}{media_content}"
+                
+                if has_images:
+                    enhanced_message += "\n[Note: When analyzing images from URLs, I can see and analyze the visual content directly.]\n"
             
             user_message = UserMessage(text=enhanced_message)
             ai_response = await ai_chat.send_message(user_message)
