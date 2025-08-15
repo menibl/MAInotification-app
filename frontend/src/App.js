@@ -23,8 +23,8 @@ const WS_URL = BACKEND_URL.replace('https://', 'wss://').replace('http://', 'ws:
 // Demo user ID - in real app this would come from authentication
 const USER_ID = 'demo-user-123';
 
-// VAPID public key for push notifications (should be set via environment variable)
-const VAPID_PUBLIC_KEY = process.env.REACT_APP_VAPID_PUBLIC_KEY || 'your-vapid-public-key-here';
+// VAPID public key for push notifications
+const VAPID_PUBLIC_KEY = process.env.REACT_APP_VAPID_PUBLIC_KEY || 'BA819SOie93Pet6HTr4Iycak8THUOzAag7rRqO3iKx1dXKfWuBMoj-cuQTr65zPe8VSaewTFxcTgQx3rZHvHdOI';
 
 // Utility function to convert VAPID key
 function urlBase64ToUint8Array(base64String) {
