@@ -239,6 +239,7 @@ class ChatMessageCreate(BaseModel):
     device_id: str
     message: str
     media_url: Optional[str] = None
+    media_urls: Optional[List[str]] = None  # Support multiple media URLs
     referenced_messages: Optional[List[str]] = None
     file_ids: Optional[List[str]] = None
     sender: str = "user"
