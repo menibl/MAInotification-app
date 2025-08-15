@@ -701,7 +701,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             />
             <button
               onClick={handleSend}
-              disabled={!inputMessage.trim() && selectedFiles.length === 0 && mediaUrls.filter(url => url.trim()).length === 0}
+              disabled={!inputMessage.trim() && selectedFiles.length === 0 && mediaUrls.filter(url => url.trim()).length === 0 && selectedNotifications.length === 0}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               <Send size={18} />
