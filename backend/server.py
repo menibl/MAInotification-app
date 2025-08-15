@@ -823,7 +823,7 @@ async def get_user_push_subscriptions(user_id: str):
 # Chat Endpoints
 @api_router.post("/chat/send")
 async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
-    """Send a chat message with optional file attachments and message references"""
+    """Send a chat message with optional file attachments, media URLs, and message references"""
     
     try:
         # Extract data from the model
@@ -832,6 +832,21 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         sender = message_data.sender
         referenced_messages = message_data.referenced_messages
         file_ids = message_data.file_ids
+        media_urls = message_data.media_urls or []
+        if message_data.media_url:  # Support single media_url for backward compatibility
+            media_urls.append(message_data.media_url)
+        
+        # Helper function to detect if URL/file is an image
+        def is_image_content(url: str = None, file_type: str = None, filename: str = None) -> bool:
+            if file_type and file_type.startswith('image/'):
+                return True
+            if url or filename:
+                content = url or filename
+                return any(content.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'])
+            return False
+        
+        # Detect if we have images (for vision model selection)
+        has_images = False
         # Process file attachments if provided
         file_attachments = []
         file_contents_for_ai = []
