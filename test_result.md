@@ -165,6 +165,9 @@ backend:
         - working: true
           agent: "main"
           comment: "Added /api/files/upload (100MB limit), /api/files/{file_id}, /api/files/user/{user_id}, enhanced /api/chat/send with file attachments and message references. AI context now includes referenced messages and file information. Successfully tested file upload and AI chat with attachments."
+        - working: true
+          agent: "testing"
+          comment: "✅ Comprehensive testing completed for enhanced file upload and chat features. File Upload APIs: Upload (text/image/large files up to 50MB), file serving, user file listing, file deletion - all working perfectly. Enhanced Chat API: Successfully tested chat with file attachments, message referencing, and combined file+reference context. AI responses include file information and referenced message context. File storage working correctly in /app/backend/uploads/{user_id}/ with unique filenames. Edge cases handled properly (missing user_id, non-existent files, graceful error handling). 23/25 total tests passed - only known issues are device ID conflict (expected) and WebSocket production routing issue."
 
   - task: "Device Management APIs - GET /api/devices/{user_id}"
     implemented: true
