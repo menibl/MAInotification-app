@@ -226,6 +226,8 @@ class ChatMessage(BaseModel):
     device_id: str
     message: str
     media_url: Optional[str] = None
+    file_attachments: Optional[List[Dict[str, str]]] = None  # List of file info: {filename, file_path, file_type, file_size}
+    referenced_messages: Optional[List[str]] = None  # List of message IDs being referenced/quoted
     sender: str  # 'user', 'device', or 'ai'
     ai_response: bool = False  # True if this is an AI-generated response
     timestamp: datetime = Field(default_factory=datetime.utcnow)
@@ -234,7 +236,20 @@ class ChatMessageCreate(BaseModel):
     device_id: str
     message: str
     media_url: Optional[str] = None
+    referenced_messages: Optional[List[str]] = None
     sender: str = "user"
+
+class FileUpload(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    filename: str
+    original_filename: str
+    file_path: str
+    file_type: str
+    file_size: int
+    user_id: str
+    device_id: Optional[str] = None
+    message_id: Optional[str] = None
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
 
 class AIPersonality(BaseModel):
     device_type: str
