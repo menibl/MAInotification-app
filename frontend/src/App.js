@@ -719,7 +719,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 };
 
 // Notifications Component
-const NotificationsList = ({ notifications, devices, onMarkRead }) => {
+const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDevice }) => {
   if (notifications.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">
@@ -735,6 +735,19 @@ const NotificationsList = ({ notifications, devices, onMarkRead }) => {
     return acc;
   }, {});
 
+  const handleNotificationClick = (notification) => {
+    // Mark as read if unread
+    if (!notification.read) {
+      onMarkRead(notification.id);
+    }
+    
+    // Navigate to device chat with this notification pre-selected
+    const device = deviceMap[notification.device_id];
+    if (device && onNavigateToDevice) {
+      onNavigateToDevice(device, notification);
+    }
+  };
+
   return (
     <div className="space-y-2 p-4">
       {notifications.map(notification => {
@@ -744,27 +757,34 @@ const NotificationsList = ({ notifications, devices, onMarkRead }) => {
         return (
           <div
             key={notification.id}
-            className={`p-4 rounded-lg border ${
-              notification.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'
+            className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+              notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
             }`}
-            onClick={() => !notification.read && onMarkRead(notification.id)}
+            onClick={() => handleNotificationClick(notification)}
           >
             <div className="flex items-start space-x-3">
               <div className={`w-2 h-2 rounded-full mt-2 ${
                 notification.read ? 'bg-gray-400' : 'bg-blue-500'
               }`}></div>
               <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
-                  <p className="text-sm font-medium text-gray-800">
-                    {deviceName}
-                  </p>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    device?.status === 'online' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {device?.type || 'device'}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <p className="text-sm font-medium text-gray-800">
+                      {deviceName}
+                    </p>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      device?.status === 'online' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {device?.type || 'device'}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                    <MessageCircle size={12} />
+                    <span>Go to chat</span>
+                    <ChevronLeft size={12} className="rotate-180" />
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   {notification.content}
