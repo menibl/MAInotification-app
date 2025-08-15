@@ -1028,6 +1028,124 @@ async def simulate_device_notification(
     
     return {"success": success, "message": "Notification sent" if success else "User not connected"}
 
+# File Upload Endpoints
+@api_router.post("/files/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    device_id: str = Form(None),
+    message_id: str = Form(None)
+):
+    """Upload a file and return file information"""
+    
+    # Check file size (100MB limit)
+    MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB in bytes
+    
+    # Read file content to check size
+    content = await file.read()
+    file_size = len(content)
+    
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail=f"File too large. Maximum size is 100MB, got {file_size / (1024*1024):.2f}MB")
+    
+    # Generate unique filename to avoid conflicts
+    file_extension = Path(file.filename).suffix
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    
+    # Create user-specific upload directory
+    user_upload_dir = UPLOADS_DIR / user_id
+    user_upload_dir.mkdir(exist_ok=True)
+    
+    file_path = user_upload_dir / unique_filename
+    
+    try:
+        # Save file
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+        
+        # Create file record
+        file_upload = FileUpload(
+            filename=unique_filename,
+            original_filename=file.filename,
+            file_path=str(file_path),
+            file_type=file.content_type or 'application/octet-stream',
+            file_size=file_size,
+            user_id=user_id,
+            device_id=device_id,
+            message_id=message_id
+        )
+        
+        # Store file info in database
+        await db.file_uploads.insert_one(file_upload.dict())
+        
+        return {
+            "success": True,
+            "file_id": file_upload.id,
+            "filename": unique_filename,
+            "original_filename": file.filename,
+            "file_type": file.content_type,
+            "file_size": file_size,
+            "url": f"/api/files/{file_upload.id}"
+        }
+        
+    except Exception as e:
+        # Clean up file if database operation fails
+        if file_path.exists():
+            file_path.unlink()
+        raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+
+@api_router.get("/files/{file_id}")
+async def get_file(file_id: str):
+    """Serve uploaded file"""
+    
+    # Find file record
+    file_record = await db.file_uploads.find_one({"id": file_id})
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    file_path = Path(file_record["file_path"])
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found on disk")
+    
+    return FileResponse(
+        path=file_path,
+        filename=file_record["original_filename"],
+        media_type=file_record["file_type"]
+    )
+
+@api_router.get("/files/user/{user_id}")
+async def get_user_files(user_id: str):
+    """Get all files uploaded by a user"""
+    
+    files = await db.file_uploads.find({"user_id": user_id}).to_list(1000)
+    return [{
+        "file_id": file_record["id"],
+        "filename": file_record["original_filename"],
+        "file_type": file_record["file_type"],
+        "file_size": file_record["file_size"],
+        "uploaded_at": file_record["uploaded_at"],
+        "url": f"/api/files/{file_record['id']}"
+    } for file_record in files]
+
+@api_router.delete("/files/{file_id}")
+async def delete_file(file_id: str):
+    """Delete an uploaded file"""
+    
+    # Find file record
+    file_record = await db.file_uploads.find_one({"id": file_id})
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Delete file from disk
+    file_path = Path(file_record["file_path"])
+    if file_path.exists():
+        file_path.unlink()
+    
+    # Delete from database
+    await db.file_uploads.delete_one({"id": file_id})
+    
+    return {"success": True, "message": "File deleted successfully"}
+
 # Original endpoints
 @api_router.get("/")
 async def root():
