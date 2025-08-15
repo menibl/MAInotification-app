@@ -285,16 +285,20 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={!isConnected}
           />
           <button
             onClick={handleSend}
-            disabled={!inputMessage.trim() || !isConnected}
+            disabled={!inputMessage.trim()}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             <Send size={18} />
           </button>
         </div>
+        {!isConnected && (
+          <div className="text-xs text-gray-500 mt-2 text-center">
+            💬 Chat via HTTP (WebSocket disconnected)
+          </div>
+        )}
       </div>
     </div>
   );
