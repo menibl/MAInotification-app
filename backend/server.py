@@ -181,7 +181,6 @@ async def create_vision_message(message: str, file_contents_for_ai: List[Dict], 
             image_base64 = await download_image_as_base64(url)
             if image_base64:
                 try:
-                    from emergentintegrations.llm.chat import ImageContent
                     image_content = ImageContent(image_base64=image_base64)
                     file_attachments.append(image_content)
                     vision_text_parts.append(f"\n[Image from URL: {url}]")
