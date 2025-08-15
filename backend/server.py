@@ -934,11 +934,22 @@ async def send_chat_message(
                             context_text += f"  📎 {attachment['filename']} ({attachment['file_type']})\n"
                 enhanced_message = f"{context_text}\nCurrent message: {message}"
             
-            if file_attachments:
-                file_list = "Attached files:\n"
+            # Include actual file contents for AI analysis
+            if file_contents_for_ai:
+                file_content_text = "\n\nAttached files with content:\n"
+                for file_content in file_contents_for_ai:
+                    file_content_text += f"\n📎 **{file_content['filename']}** ({file_content['type']} file):\n"
+                    if file_content['type'] == 'text':
+                        file_content_text += f"```\n{file_content['content']}\n```\n"
+                    else:
+                        file_content_text += f"{file_content['content']}\n"
+                enhanced_message = f"{enhanced_message}{file_content_text}"
+            elif file_attachments:
+                # Fallback to just metadata if content reading failed
+                file_list = "\n\nAttached files:\n"
                 for attachment in file_attachments:
                     file_list += f"📎 {attachment['filename']} ({attachment['file_type']}, {attachment['file_size']} bytes)\n"
-                enhanced_message = f"{enhanced_message}\n\n{file_list}"
+                enhanced_message = f"{enhanced_message}{file_list}"
             
             user_message = UserMessage(text=enhanced_message)
             ai_response = await ai_chat.send_message(user_message)
