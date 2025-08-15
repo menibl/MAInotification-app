@@ -16,7 +16,10 @@ import asyncio
 import aiofiles
 import shutil
 from pywebpush import webpush, WebPushException
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+import requests
+import base64
+from io import BytesIO
 
 
 ROOT_DIR = Path(__file__).parent
