@@ -73,13 +73,33 @@ class DeviceChatAPITester:
         return self.run_test("API Root", "GET", "", 200)
 
     def test_create_device(self):
-        """Test device creation"""
+        """Test device creation with specific device ID"""
+        # First try to create the specific device mentioned in review request
         device_data = {
+            "device_id": self.test_device_id,
+            "name": "camera202",
+            "type": "camera", 
+            "user_id": self.user_id,
+            "location": "Front Door",
+            "description": "Security camera for testing",
+            "status": "online"
+        }
+        
+        # Use the create-with-id endpoint
+        success, response = self.run_test("Create Specific Device (camera202)", "POST", 
+                                        f"devices/create-with-id?device_id={self.test_device_id}&name=camera202&type=camera&user_id={self.user_id}&location=Front Door&description=Security camera for testing", 
+                                        200)
+        if success:
+            self.created_devices.append(self.test_device_id)
+            return True, response
+        
+        # If that fails, try regular device creation
+        regular_device_data = {
             "name": "Test Security Camera",
             "type": "camera",
             "user_id": self.user_id
         }
-        success, response = self.run_test("Create Device", "POST", "devices", 200, device_data)
+        success, response = self.run_test("Create Regular Device", "POST", "devices", 200, regular_device_data)
         if success and 'id' in response:
             self.created_devices.append(response['id'])
             return True, response
