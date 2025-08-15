@@ -869,6 +869,10 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                     }
                     file_attachments.append(file_info)
                     
+                    # Check if this file is an image
+                    if is_image_content(file_type=file_record["file_type"], filename=file_record["original_filename"]):
+                        has_images = True
+                    
                     # Try to read file content for AI analysis
                     file_path = Path(file_record["file_path"])
                     print(f"DEBUG: File path: {file_path}, exists: {file_path.exists()}")
@@ -891,11 +895,12 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                                     })
                             elif file_record["file_type"].startswith("image/"):
                                 print(f"DEBUG: Processing image file: {file_record['original_filename']}")
-                                # For images, we can't send content to text-based AI, but provide description
+                                # For images with vision model, provide the file path/URL
                                 file_contents_for_ai.append({
                                     "filename": file_record["original_filename"],
                                     "type": "image",
-                                    "content": f"[IMAGE FILE: {file_record['original_filename']} - {file_record['file_type']} - {file_record['file_size']} bytes. Note: I cannot directly view images, but I can discuss them based on your description or filename.]"
+                                    "content": f"[IMAGE FILE: {file_record['original_filename']} uploaded by user]",
+                                    "file_url": f"{BACKEND_URL}/api/files/{file_record['id']}"
                                 })
                             else:
                                 print(f"DEBUG: Processing other file type: {file_record['original_filename']}")
@@ -917,6 +922,15 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                     print(f"DEBUG: File record not found for ID: {file_id}")
             
             print(f"DEBUG: Final file_contents_for_ai: {len(file_contents_for_ai)} items")
+        
+        # Check media URLs for images
+        if media_urls:
+            for url in media_urls:
+                if is_image_content(url=url):
+                    has_images = True
+                    break
+        
+        print(f"DEBUG: Has images detected: {has_images}")
         
         # Store user message
         user_chat_msg = ChatMessage(
