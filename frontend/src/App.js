@@ -145,7 +145,11 @@ const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
 // Chat Interface Component
 const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNotifications, onMarkNotificationRead }) => {
   const [inputMessage, setInputMessage] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [referencedMessages, setReferencedMessages] = useState([]);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -155,10 +159,13 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     scrollToBottom();
   }, [messages, deviceNotifications]);
 
-  const handleSend = () => {
-    if (inputMessage.trim() && device) {
-      onSendMessage(device.id, inputMessage.trim());
+  const handleSend = async () => {
+    if ((inputMessage.trim() || selectedFiles.length > 0) && device) {
+      await onSendMessage(device.id, inputMessage.trim(), selectedFiles, referencedMessages);
       setInputMessage('');
+      setSelectedFiles([]);
+      setReferencedMessages([]);
+      setMultiSelectMode(false);
     }
   };
 
@@ -167,6 +174,47 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(prev => [...prev, ...files]);
+    e.target.value = ''; // Reset input
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleMessageReference = (messageId) => {
+    if (multiSelectMode) {
+      setReferencedMessages(prev => 
+        prev.includes(messageId) 
+          ? prev.filter(id => id !== messageId)
+          : [...prev, messageId]
+      );
+    } else {
+      setReferencedMessages([messageId]);
+    }
+  };
+
+  const clearReferences = () => {
+    setReferencedMessages([]);
+    setMultiSelectMode(false);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('image/')) return <Image size={16} />;
+    if (file.type.startsWith('video/')) return <Video size={16} />;
+    return <File size={16} />;
   };
 
   if (!device) {
