@@ -329,6 +329,34 @@ class ChatMessageCreate(BaseModel):
     file_ids: Optional[List[str]] = None
     sender: str = "user"
 
+class ChatSettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    device_id: str
+    role_name: str = "AI Assistant"
+    system_message: str
+    instructions: Optional[str] = None
+    model: str = "gpt-5-nano"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ChatSettingsCreate(BaseModel):
+    role_name: str
+    system_message: str
+    instructions: Optional[str] = None
+    model: str = "gpt-5-nano"
+
+class ChatSettingsUpdate(BaseModel):
+    role_name: Optional[str] = None
+    system_message: Optional[str] = None
+    instructions: Optional[str] = None
+    model: Optional[str] = None
+
+class RoleChangeCommand(BaseModel):
+    user_id: str
+    device_id: str
+    message: str
+
 class FileUpload(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     filename: str
