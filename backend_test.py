@@ -269,6 +269,378 @@ class DeviceChatAPITester:
             
         return self.run_test("Mark Notification Read", "PUT", f"notifications/{notification_id}/read", 200)
 
+    def create_test_file(self, filename, content, size_mb=None):
+        """Create a temporary test file"""
+        temp_dir = tempfile.gettempdir()
+        file_path = os.path.join(temp_dir, filename)
+        
+        if size_mb:
+            # Create file of specific size
+            with open(file_path, 'wb') as f:
+                f.write(b'0' * (size_mb * 1024 * 1024))
+        else:
+            # Create file with specific content
+            with open(file_path, 'w') as f:
+                f.write(content)
+        
+        return file_path
+
+    def test_file_upload_small(self):
+        """Test uploading a small text file"""
+        # Create a small test file
+        test_content = "This is a test file for upload functionality.\nIt contains multiple lines.\nTesting file upload API."
+        file_path = self.create_test_file("test_document.txt", test_content)
+        
+        try:
+            url = f"{self.api_url}/files/upload"
+            
+            with open(file_path, 'rb') as f:
+                files = {'file': ('test_document.txt', f, 'text/plain')}
+                data = {
+                    'user_id': self.user_id,
+                    'device_id': self.test_device_id
+                }
+                
+                response = requests.post(url, files=files, data=data)
+                
+            success = response.status_code == 200
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('file_id'):
+                    self.uploaded_files.append(result['file_id'])
+                    self.log_test("Upload Small File", True, f"File ID: {result['file_id']}")
+                    return True, result
+                else:
+                    self.log_test("Upload Small File", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Upload Small File", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Upload Small File", False, f"Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temp file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_file_upload_image(self):
+        """Test uploading an image file"""
+        # Create a small fake image file (just binary data)
+        file_path = self.create_test_file("test_image.jpg", "")
+        
+        # Write some binary data to simulate an image
+        with open(file_path, 'wb') as f:
+            # Simple fake JPEG header + data
+            f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00')
+            f.write(b'0' * 1000)  # 1KB of fake image data
+        
+        try:
+            url = f"{self.api_url}/files/upload"
+            
+            with open(file_path, 'rb') as f:
+                files = {'file': ('test_image.jpg', f, 'image/jpeg')}
+                data = {
+                    'user_id': self.user_id,
+                    'device_id': self.test_device_id
+                }
+                
+                response = requests.post(url, files=files, data=data)
+                
+            success = response.status_code == 200
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('file_id'):
+                    self.uploaded_files.append(result['file_id'])
+                    self.log_test("Upload Image File", True, f"File ID: {result['file_id']}")
+                    return True, result
+                else:
+                    self.log_test("Upload Image File", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Upload Image File", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Upload Image File", False, f"Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temp file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_file_upload_large(self):
+        """Test uploading a large file (close to 100MB limit)"""
+        # Create a 50MB file to test large file handling
+        file_path = self.create_test_file("large_test_file.bin", "", size_mb=50)
+        
+        try:
+            url = f"{self.api_url}/files/upload"
+            
+            with open(file_path, 'rb') as f:
+                files = {'file': ('large_test_file.bin', f, 'application/octet-stream')}
+                data = {
+                    'user_id': self.user_id,
+                    'device_id': self.test_device_id
+                }
+                
+                # Set a longer timeout for large file upload
+                response = requests.post(url, files=files, data=data, timeout=120)
+                
+            success = response.status_code == 200
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('file_id'):
+                    self.uploaded_files.append(result['file_id'])
+                    self.log_test("Upload Large File (50MB)", True, f"File ID: {result['file_id']}")
+                    return True, result
+                else:
+                    self.log_test("Upload Large File (50MB)", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Upload Large File (50MB)", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Upload Large File (50MB)", False, f"Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temp file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_file_upload_oversized(self):
+        """Test uploading a file that exceeds 100MB limit"""
+        # Create a 101MB file to test size limit
+        file_path = self.create_test_file("oversized_file.bin", "", size_mb=101)
+        
+        try:
+            url = f"{self.api_url}/files/upload"
+            
+            with open(file_path, 'rb') as f:
+                files = {'file': ('oversized_file.bin', f, 'application/octet-stream')}
+                data = {
+                    'user_id': self.user_id,
+                    'device_id': self.test_device_id
+                }
+                
+                response = requests.post(url, files=files, data=data, timeout=120)
+                
+            # Should return 413 (Payload Too Large)
+            success = response.status_code == 413
+            if success:
+                self.log_test("Upload Oversized File (101MB)", True, "Correctly rejected oversized file")
+                return True, {}
+            else:
+                self.log_test("Upload Oversized File (101MB)", False, f"Expected 413, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Upload Oversized File (101MB)", False, f"Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temp file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_get_file(self):
+        """Test retrieving uploaded files"""
+        if not self.uploaded_files:
+            return self.log_test("Get File", False, "No uploaded files to retrieve")
+        
+        file_id = self.uploaded_files[0]
+        url = f"{self.api_url}/files/{file_id}"
+        
+        try:
+            response = requests.get(url)
+            success = response.status_code == 200
+            
+            if success:
+                # Check if we got file content
+                content_length = len(response.content)
+                self.log_test("Get File", True, f"Retrieved file with {content_length} bytes")
+                return True, response.content
+            else:
+                self.log_test("Get File", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Get File", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_get_user_files(self):
+        """Test getting all files for a user"""
+        url = f"{self.api_url}/files/user/{self.user_id}"
+        
+        try:
+            response = requests.get(url)
+            success = response.status_code == 200
+            
+            if success:
+                files = response.json()
+                file_count = len(files) if isinstance(files, list) else 0
+                self.log_test("Get User Files", True, f"Found {file_count} files for user")
+                return True, files
+            else:
+                self.log_test("Get User Files", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Get User Files", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_delete_file(self):
+        """Test deleting an uploaded file"""
+        if not self.uploaded_files:
+            return self.log_test("Delete File", False, "No uploaded files to delete")
+        
+        # Delete the last uploaded file
+        file_id = self.uploaded_files.pop()
+        url = f"{self.api_url}/files/{file_id}"
+        
+        try:
+            response = requests.delete(url)
+            success = response.status_code == 200
+            
+            if success:
+                self.log_test("Delete File", True, f"Deleted file {file_id}")
+                return True, response.json()
+            else:
+                self.log_test("Delete File", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Delete File", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_enhanced_chat_with_files(self):
+        """Test sending chat message with file attachments"""
+        if not self.uploaded_files:
+            return self.log_test("Enhanced Chat with Files", False, "No uploaded files available")
+        
+        if not self.created_devices:
+            return self.log_test("Enhanced Chat with Files", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/send"
+        params = {
+            'user_id': self.user_id,
+            'device_id': self.created_devices[0],
+            'message': 'I have attached some files for you to analyze. Can you tell me about them?',
+            'sender': 'user',
+            'file_ids': self.uploaded_files[:2]  # Attach first 2 files
+        }
+        
+        try:
+            response = requests.post(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('ai_response'):
+                    message_id = result.get('message_id')
+                    if message_id:
+                        self.chat_messages.append(message_id)
+                    ai_message = result['ai_response'].get('message', '')
+                    self.log_test("Enhanced Chat with Files", True, f"AI responded with {len(ai_message)} characters")
+                    return True, result
+                else:
+                    self.log_test("Enhanced Chat with Files", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Enhanced Chat with Files", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Enhanced Chat with Files", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_chat_with_message_references(self):
+        """Test sending chat message with referenced messages"""
+        if not self.chat_messages:
+            return self.log_test("Chat with Message References", False, "No previous messages to reference")
+        
+        if not self.created_devices:
+            return self.log_test("Chat with Message References", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/send"
+        params = {
+            'user_id': self.user_id,
+            'device_id': self.created_devices[0],
+            'message': 'Regarding your previous response, can you provide more details?',
+            'sender': 'user',
+            'referenced_messages': self.chat_messages[:2]  # Reference first 2 messages
+        }
+        
+        try:
+            response = requests.post(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('ai_response'):
+                    ai_message = result['ai_response'].get('message', '')
+                    self.log_test("Chat with Message References", True, f"AI responded with context, {len(ai_message)} characters")
+                    return True, result
+                else:
+                    self.log_test("Chat with Message References", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Chat with Message References", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Chat with Message References", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_chat_with_files_and_references(self):
+        """Test sending chat message with both file attachments and message references"""
+        if not self.uploaded_files or not self.chat_messages:
+            return self.log_test("Chat with Files and References", False, "Need both files and previous messages")
+        
+        if not self.created_devices:
+            return self.log_test("Chat with Files and References", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/send"
+        params = {
+            'user_id': self.user_id,
+            'device_id': self.created_devices[0],
+            'message': 'Based on our previous conversation and these new files, what insights can you provide?',
+            'sender': 'user',
+            'file_ids': self.uploaded_files[:1],  # Attach 1 file
+            'referenced_messages': self.chat_messages[:1]  # Reference 1 message
+        }
+        
+        try:
+            response = requests.post(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('ai_response'):
+                    ai_message = result['ai_response'].get('message', '')
+                    self.log_test("Chat with Files and References", True, f"AI responded with full context, {len(ai_message)} characters")
+                    return True, result
+                else:
+                    self.log_test("Chat with Files and References", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Chat with Files and References", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Chat with Files and References", False, f"Error: {str(e)}")
+            return False, {}
+
+    def cleanup_uploaded_files(self):
+        """Clean up any remaining uploaded files"""
+        for file_id in self.uploaded_files:
+            try:
+                url = f"{self.api_url}/files/{file_id}"
+                requests.delete(url)
+            except:
+                pass  # Ignore cleanup errors
+
     def test_status_endpoints(self):
         """Test original status endpoints"""
         # Test create status check
