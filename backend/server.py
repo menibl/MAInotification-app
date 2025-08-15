@@ -237,6 +237,7 @@ class ChatMessageCreate(BaseModel):
     message: str
     media_url: Optional[str] = None
     referenced_messages: Optional[List[str]] = None
+    file_ids: Optional[List[str]] = None
     sender: str = "user"
 
 class FileUpload(BaseModel):
