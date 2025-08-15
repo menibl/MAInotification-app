@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "User wants to add file upload functionality and message referencing/quoting to the chat system"
+user_problem_statement: "User wants to select notification messages (including body text and image URLs) and send them to chat for AI analysis"
 
 frontend:
   - task: "Fix app loading issue preventing chat text input"
