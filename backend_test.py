@@ -157,7 +157,97 @@ class DeviceChatAPITester:
         return self.run_test("Simulate Device Notification", "POST", "simulate/device-notification", 200, 
                            params=params)
 
-    def test_mark_notification_read(self):
+    def on_websocket_message(self, ws, message):
+        """Handle WebSocket messages"""
+        try:
+            data = json.loads(message)
+            self.websocket_messages.append(data)
+            print(f"📨 WebSocket received: {data.get('type', 'unknown')}")
+        except Exception as e:
+            print(f"❌ WebSocket message parse error: {e}")
+
+    def on_websocket_error(self, ws, error):
+        """Handle WebSocket errors"""
+        print(f"❌ WebSocket error: {error}")
+
+    def on_websocket_close(self, ws, close_status_code, close_msg):
+        """Handle WebSocket close"""
+        self.websocket_connected = False
+        print("🔌 WebSocket connection closed")
+
+    def on_websocket_open(self, ws):
+        """Handle WebSocket open"""
+        self.websocket_connected = True
+        print("🔌 WebSocket connection opened")
+
+    def test_websocket_connection(self):
+        """Test WebSocket connectivity"""
+        try:
+            # Convert https to wss for WebSocket
+            ws_url = self.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
+            ws_url = f"{ws_url}/ws/{self.user_id}"
+            
+            print(f"🔌 Testing WebSocket connection to: {ws_url}")
+            
+            # Create WebSocket connection
+            ws = websocket.WebSocketApp(ws_url,
+                                      on_open=self.on_websocket_open,
+                                      on_message=self.on_websocket_message,
+                                      on_error=self.on_websocket_error,
+                                      on_close=self.on_websocket_close)
+            
+            # Run WebSocket in a separate thread
+            wst = threading.Thread(target=ws.run_forever)
+            wst.daemon = True
+            wst.start()
+            
+            # Wait for connection
+            time.sleep(2)
+            
+            if self.websocket_connected:
+                # Test ping/pong
+                ws.send(json.dumps({"type": "ping"}))
+                time.sleep(1)
+                
+                # Test chat message if we have devices
+                if self.created_devices:
+                    chat_message = {
+                        "type": "chat",
+                        "device_id": self.created_devices[0],
+                        "message": "Hello from WebSocket test!"
+                    }
+                    ws.send(json.dumps(chat_message))
+                    time.sleep(3)  # Wait for AI response
+                
+                ws.close()
+                return self.log_test("WebSocket Connection", True, f"Connected and received {len(self.websocket_messages)} messages")
+            else:
+                return self.log_test("WebSocket Connection", False, "Failed to connect")
+                
+        except Exception as e:
+            return self.log_test("WebSocket Connection", False, f"Error: {str(e)}")
+
+    def test_openai_integration(self):
+        """Test OpenAI integration through chat"""
+        if not self.created_devices:
+            return self.log_test("OpenAI Integration", False, "No devices available")
+            
+        message_data = {
+            "device_id": self.created_devices[0],
+            "message": "What is your purpose as a security camera AI?",
+            "sender": "user"
+        }
+        
+        success, response = self.run_test("OpenAI Chat Integration", "POST", f"chat/send?user_id={self.user_id}", 200, message_data)
+        
+        if success and response.get('ai_response'):
+            ai_message = response['ai_response'].get('message', '')
+            if ai_message and len(ai_message) > 10:  # Basic check for meaningful response
+                return self.log_test("OpenAI Response Quality", True, f"AI responded with {len(ai_message)} characters")
+            else:
+                return self.log_test("OpenAI Response Quality", False, "AI response too short or empty")
+        
+        return success
         """Test marking notification as read"""
         # First get notifications to find one to mark as read
         success, notifications = self.run_test("Get Notifications for Read Test", "GET", f"notifications/{self.user_id}", 200)
