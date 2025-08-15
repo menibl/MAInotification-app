@@ -653,7 +653,7 @@ class DeviceChatAPITester:
         return success1 and success2
 
     def run_all_tests(self):
-        """Run all backend tests"""
+        """Run all backend tests including new file upload and enhanced chat features"""
         print("🚀 Starting Device Chat Backend API Tests")
         print(f"Backend URL: {self.base_url}")
         print(f"Test User ID: {self.user_id}")
@@ -672,10 +672,25 @@ class DeviceChatAPITester:
         self.test_get_user_devices()
         self.test_update_device_status()
 
-        # Chat functionality tests
-        print("\n💬 Testing Chat Functionality...")
+        # File Upload Tests (NEW)
+        print("\n📁 Testing File Upload APIs...")
+        self.test_file_upload_small()
+        self.test_file_upload_image()
+        self.test_file_upload_large()
+        self.test_file_upload_oversized()
+        self.test_get_file()
+        self.test_get_user_files()
+
+        # Basic chat functionality tests
+        print("\n💬 Testing Basic Chat Functionality...")
         self.test_send_chat_message()
         self.test_get_chat_history()
+        
+        # Enhanced Chat Tests (NEW)
+        print("\n🔗 Testing Enhanced Chat with Files and References...")
+        self.test_enhanced_chat_with_files()
+        self.test_chat_with_message_references()
+        self.test_chat_with_files_and_references()
         
         # OpenAI integration test
         print("\n🤖 Testing OpenAI Integration...")
@@ -690,6 +705,10 @@ class DeviceChatAPITester:
         time.sleep(1)
         self.test_mark_notification_read()
 
+        # File cleanup test
+        print("\n🗑️ Testing File Deletion...")
+        self.test_delete_file()
+
         # WebSocket tests
         print("\n🔌 Testing WebSocket Connectivity...")
         self.test_websocket_connection()
@@ -697,6 +716,10 @@ class DeviceChatAPITester:
         # Original status endpoints
         print("\n📊 Testing Status Endpoints...")
         self.test_status_endpoints()
+
+        # Cleanup remaining files
+        print("\n🧹 Cleaning up test files...")
+        self.cleanup_uploaded_files()
 
         # Print results
         print("\n" + "=" * 60)
