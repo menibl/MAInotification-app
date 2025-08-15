@@ -1066,6 +1066,13 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         
         print(f"DEBUG: Final has_images value: {has_images}")
         
+        # Check for role/instruction change commands before processing
+        role_change_result = await parse_role_change_command(RoleChangeCommand(
+            user_id=user_id,
+            device_id=device_id,
+            message=message
+        ))
+        
         # Store user message
         user_chat_msg = ChatMessage(
             user_id=user_id,
@@ -1077,6 +1084,30 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
             referenced_messages=referenced_messages
         )
         await db.chat_messages.insert_one(user_chat_msg.dict())
+        
+        # If role change was detected, return confirmation and skip AI processing
+        if role_change_result["success"] and role_change_result["settings_updated"]:
+            confirmation_msg = ChatMessage(
+                user_id=user_id,
+                device_id=device_id,
+                message=role_change_result["confirmation_message"],
+                sender="ai",
+                ai_response=True
+            )
+            await db.chat_messages.insert_one(confirmation_msg.dict())
+            
+            return {
+                "success": True,
+                "message_id": user_chat_msg.id,
+                "role_changed": True,
+                "ai_response": {
+                    "message": role_change_result["confirmation_message"],
+                    "message_id": confirmation_msg.id,
+                    "detected": role_change_result["detected"],
+                    "new_role": role_change_result.get("new_role"),
+                    "new_instructions": role_change_result.get("new_instructions")
+                }
+            }
         
         # Get device info for AI personality
         device = await db.devices.find_one({"id": device_id})
