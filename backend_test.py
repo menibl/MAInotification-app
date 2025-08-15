@@ -8,6 +8,8 @@ import sys
 import json
 from datetime import datetime
 import time
+import websocket
+import threading
 
 class DeviceChatAPITester:
     def __init__(self, base_url="https://devicepush.preview.emergentagent.com"):
