@@ -1136,7 +1136,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         
         # Generate AI response with context
         try:
-            ai_chat = await get_ai_chat_instance(device_type, session_id, has_images)
+            ai_chat = await get_ai_chat_instance(device_type, session_id, has_images, user_id, device_id)
             
             # Build enhanced prompt with context
             enhanced_message = message
