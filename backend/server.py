@@ -816,36 +816,95 @@ async def get_user_push_subscriptions(user_id: str):
 
 # Chat Endpoints
 @api_router.post("/chat/send")
-async def send_chat_message(user_id: str, message: ChatMessageCreate):
+async def send_chat_message(
+    user_id: str,
+    message: str,
+    device_id: str,
+    sender: str = "user",
+    referenced_messages: Optional[List[str]] = None,
+    file_ids: Optional[List[str]] = None
+):
+    """Send a chat message with optional file attachments and message references"""
+    
     try:
+        # Process file attachments if provided
+        file_attachments = []
+        if file_ids:
+            for file_id in file_ids:
+                file_record = await db.file_uploads.find_one({"id": file_id})
+                if file_record:
+                    file_attachments.append({
+                        "file_id": file_record["id"],
+                        "filename": file_record["original_filename"],
+                        "file_type": file_record["file_type"],
+                        "file_size": file_record["file_size"],
+                        "url": f"/api/files/{file_record['id']}"
+                    })
+        
         # Store user message
         user_chat_msg = ChatMessage(
             user_id=user_id,
-            **message.dict()
+            device_id=device_id,
+            message=message,
+            sender=sender,
+            file_attachments=file_attachments if file_attachments else None,
+            referenced_messages=referenced_messages
         )
         await db.chat_messages.insert_one(user_chat_msg.dict())
         
         # Get device info for AI personality
-        device = await db.devices.find_one({"id": message.device_id})
+        device = await db.devices.find_one({"id": device_id})
         if not device:
             return {"success": False, "error": "Device not found"}
         
         device_type = device.get("type", "default")
-        session_id = f"{user_id}_{message.device_id}"
+        session_id = f"{user_id}_{device_id}"
         
         # Get chat history for context
-        history = await get_chat_history(user_id, message.device_id)
+        history = await get_chat_history(user_id, device_id)
         
-        # Generate AI response
+        # Prepare context for AI if there are referenced messages
+        context_messages = []
+        if referenced_messages:
+            for ref_msg_id in referenced_messages:
+                ref_msg = await db.chat_messages.find_one({"id": ref_msg_id})
+                if ref_msg:
+                    context_messages.append({
+                        "id": ref_msg["id"],
+                        "message": ref_msg["message"],
+                        "sender": ref_msg["sender"],
+                        "timestamp": ref_msg.get("timestamp", ""),
+                        "file_attachments": ref_msg.get("file_attachments", [])
+                    })
+        
+        # Generate AI response with context
         try:
             ai_chat = await get_ai_chat_instance(device_type, session_id)
-            user_message = UserMessage(text=message.message)
+            
+            # Build enhanced prompt with context
+            enhanced_message = message
+            if context_messages:
+                context_text = "Previous messages being referenced:\n"
+                for ctx_msg in context_messages:
+                    context_text += f"- [{ctx_msg['sender']}]: {ctx_msg['message']}\n"
+                    if ctx_msg.get('file_attachments'):
+                        for attachment in ctx_msg['file_attachments']:
+                            context_text += f"  📎 {attachment['filename']} ({attachment['file_type']})\n"
+                enhanced_message = f"{context_text}\nCurrent message: {message}"
+            
+            if file_attachments:
+                file_list = "Attached files:\n"
+                for attachment in file_attachments:
+                    file_list += f"📎 {attachment['filename']} ({attachment['file_type']}, {attachment['file_size']} bytes)\n"
+                enhanced_message = f"{enhanced_message}\n\n{file_list}"
+            
+            user_message = UserMessage(text=enhanced_message)
             ai_response = await ai_chat.send_message(user_message)
             
             # Store AI response as chat message
             ai_chat_msg = ChatMessage(
                 user_id=user_id,
-                device_id=message.device_id,
+                device_id=device_id,
                 message=ai_response,
                 sender="ai",
                 ai_response=True
@@ -856,28 +915,28 @@ async def send_chat_message(user_id: str, message: ChatMessageCreate):
             history.extend([
                 {
                     "id": user_chat_msg.id,
-                    "message": message.message,
-                    "sender": "user",
-                    "timestamp": user_chat_msg.timestamp.isoformat(),
-                    "ai_response": False
+                    "message": message,
+                    "sender": sender,
+                    "file_attachments": file_attachments,
+                    "referenced_messages": referenced_messages,
+                    "timestamp": user_chat_msg.timestamp.isoformat()
                 },
                 {
                     "id": ai_chat_msg.id,
                     "message": ai_response,
-                    "sender": "ai", 
-                    "timestamp": ai_chat_msg.timestamp.isoformat(),
-                    "ai_response": True
+                    "sender": "ai",
+                    "timestamp": ai_chat_msg.timestamp.isoformat()
                 }
             ])
             
             # Store updated history
-            await store_chat_history(user_id, message.device_id, history)
+            await store_chat_history(user_id, device_id, history)
             
             # Send AI response via WebSocket if connected
             if user_id in manager.active_connections:
                 await manager.send_personal_message({
                     "type": "ai_response",
-                    "device_id": message.device_id,
+                    "device_id": device_id,
                     "message": ai_response,
                     "message_id": ai_chat_msg.id,
                     "timestamp": ai_chat_msg.timestamp.isoformat()
