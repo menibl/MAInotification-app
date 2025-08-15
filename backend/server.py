@@ -101,15 +101,18 @@ AI_PERSONALITIES = {
     }
 }
 
-async def get_ai_chat_instance(device_type: str, session_id: str):
-    """Get AI chat instance for device type"""
+async def get_ai_chat_instance(device_type: str, session_id: str, has_images: bool = False):
+    """Get AI chat instance for device type, with vision support if images are present"""
     personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+    
+    # Use vision model if images are present
+    model = "gpt-4-vision-preview" if has_images else personality["model"]
     
     chat = LlmChat(
         api_key=os.environ.get('OPENAI_API_KEY'),
         session_id=session_id,
         system_message=personality["system_message"]
-    ).with_model("openai", personality["model"])
+    ).with_model("openai", model)
     
     return chat
 
