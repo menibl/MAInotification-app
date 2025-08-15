@@ -1,0 +1,54 @@
+{
+  "short_name": "DeviceChat",
+  "name": "Device Chat - IoT Communication",
+  "description": "Chat with your IoT devices and receive real-time notifications",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%233b82f6'/%3E%3Cpath d='M30 35h40v30H30z' fill='white'/%3E%3Ccircle cx='35' cy='45' r='3' fill='%233b82f6'/%3E%3Ccircle cx='50' cy='45' r='3' fill='%233b82f6'/%3E%3Ccircle cx='65' cy='45' r='3' fill='%233b82f6'/%3E%3C/svg%3E",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='80' fill='%233b82f6'/%3E%3Cpath d='M56 70h80v52H56z' fill='white'/%3E%3Ccircle cx='70' cy='86' r='6' fill='%233b82f6'/%3E%3Ccircle cx='96' cy='86' r='6' fill='%233b82f6'/%3E%3Ccircle cx='122' cy='86' r='6' fill='%233b82f6'/%3E%3C/svg%3E",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='200' fill='%233b82f6'/%3E%3Cpath d='M156 180h200v152H156z' fill='white'/%3E%3Ccircle cx='186' cy='226' r='16' fill='%233b82f6'/%3E%3Ccircle cx='256' cy='226' r='16' fill='%233b82f6'/%3E%3Ccircle cx='326' cy='226' r='16' fill='%233b82f6'/%3E%3C/svg%3E",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3b82f6",
+  "background_color": "#f9fafb",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities", "communication"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844'%3E%3Crect width='390' height='844' fill='%23f9fafb'/%3E%3Crect x='0' y='0' width='390' height='60' fill='white'/%3E%3Ctext x='195' y='35' text-anchor='middle' fill='%23374151' font-size='16' font-family='system-ui'%3EDevice Chat%3C/text%3E%3Crect x='20' y='80' width='350' height='700' fill='white' rx='8'/%3E%3Ctext x='195' y='200' text-anchor='middle' fill='%236b7280'%3EYour IoT devices appear here%3C/text%3E%3C/svg%3E",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Device Chat main screen"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Notifications",
+      "short_name": "Alerts",
+      "description": "View device notifications",
+      "url": "/?view=notifications",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'%3E%3Cpath d='M12 2C10.9 2 10 2.9 10 4v1.29C7.12 6.14 5 8.82 5 12v5l-2 2v1h16v-1l-2-2v-5c0-3.18-2.12-5.86-5-6.71V4c0-1.1-.9-2-2-2z'/%3E%3Ccircle cx='12' cy='21' r='2'/%3E%3C/svg%3E",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}
