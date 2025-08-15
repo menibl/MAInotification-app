@@ -527,36 +527,67 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
       {/* Input */}
       <div className="border-t bg-white">
-        {/* Referenced messages preview */}
-        {referencedMessages.length > 0 && (
+        {/* Referenced messages and notifications preview */}
+        {(referencedMessages.length > 0 || selectedNotifications.length > 0) && (
           <div className="px-4 py-2 bg-blue-50 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Reply size={14} className="text-blue-600" />
                 <span className="text-sm text-blue-700">
-                  {multiSelectMode ? 
-                    `${referencedMessages.length} messages selected` : 
-                    'Replying to message'}
+                  {referencedMessages.length > 0 && selectedNotifications.length > 0 
+                    ? `${referencedMessages.length} messages + ${selectedNotifications.length} notifications selected`
+                    : referencedMessages.length > 0
+                      ? multiSelectMode ? `${referencedMessages.length} messages selected` : 'Replying to message'
+                      : `${selectedNotifications.length} notification${selectedNotifications.length > 1 ? 's' : ''} selected`
+                  }
                 </span>
               </div>
               <button
-                onClick={clearReferences}
+                onClick={clearAllSelections}
                 className="text-blue-600 hover:text-blue-800"
               >
                 <X size={16} />
               </button>
             </div>
-            <div className="flex items-center space-x-2 mt-1">
-              <label className="flex items-center space-x-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={multiSelectMode}
-                  onChange={(e) => setMultiSelectMode(e.target.checked)}
-                  className="w-3 h-3"
-                />
-                <span>Multi-select mode</span>
-              </label>
-            </div>
+            
+            {/* Show selected notifications preview */}
+            {selectedNotifications.length > 0 && (
+              <div className="mt-2 space-y-1">
+                <div className="text-xs text-blue-600 font-medium">Selected Notifications:</div>
+                {selectedNotifications.map((notif, index) => (
+                  <div key={notif.id} className="flex items-center space-x-2 p-2 bg-white rounded text-xs">
+                    <Bell size={10} className="text-blue-500" />
+                    <span className="flex-1 truncate">{notif.content}</span>
+                    {notif.media_url && (
+                      <div className="flex items-center space-x-1 text-green-600">
+                        <Image size={10} />
+                        <span>+Media</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => toggleNotificationSelection(notif)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {referencedMessages.length > 0 && (
+              <div className="flex items-center space-x-2 mt-1">
+                <label className="flex items-center space-x-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={multiSelectMode}
+                    onChange={(e) => setMultiSelectMode(e.target.checked)}
+                    className="w-3 h-3"
+                  />
+                  <span>Multi-select mode</span>
+                </label>
+              </div>
+            )}
           </div>
         )}
         
