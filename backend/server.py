@@ -1066,41 +1066,57 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                             context_text += f"  🔗 {url}\n"
                 enhanced_message = f"{context_text}\nCurrent message: {message}"
             
-            # Include actual file contents for AI analysis
-            if file_contents_for_ai:
-                file_content_text = "\n\nAttached files with content:\n"
-                for file_content in file_contents_for_ai:
-                    file_content_text += f"\n📎 **{file_content['filename']}** ({file_content['type']} file):\n"
-                    if file_content['type'] == 'text':
-                        file_content_text += f"```\n{file_content['content']}\n```\n"
-                    elif file_content['type'] == 'image' and has_images:
-                        file_content_text += f"{file_content['content']}\nImage URL: {file_content.get('file_url', 'N/A')}\n"
-                    else:
-                        file_content_text += f"{file_content['content']}\n"
-                enhanced_message = f"{enhanced_message}{file_content_text}"
-            elif file_attachments:
-                # Fallback to just metadata if content reading failed
-                file_list = "\n\nAttached files:\n"
-                for attachment in file_attachments:
-                    file_list += f"📎 {attachment['filename']} ({attachment['file_type']}, {attachment['file_size']} bytes)\n"
-                enhanced_message = f"{enhanced_message}{file_list}"
-            
-            # Include media URLs
-            if media_urls:
-                media_content = "\n\nMedia URLs shared:\n"
-                for url in media_urls:
-                    if is_image_content(url=url):
-                        media_content += f"🖼️ Image: {url}\n"
-                    elif any(url.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mov', '.webm', '.mkv']):
-                        media_content += f"🎥 Video: {url}\n"
-                    else:
-                        media_content += f"🔗 Media: {url}\n"
-                enhanced_message = f"{enhanced_message}{media_content}"
+            # Create the user message with proper vision support
+            if has_images:
+                print(f"DEBUG: Using vision model with images detected")
+                # Use vision-specific message creation
+                vision_message, file_attachments_for_vision = await create_vision_message(
+                    enhanced_message, 
+                    file_contents_for_ai, 
+                    media_urls
+                )
                 
-                if has_images:
-                    enhanced_message += "\n[Note: When analyzing images from URLs, I can see and analyze the visual content directly.]\n"
+                user_message = UserMessage(
+                    text=vision_message,
+                    file_contents=file_attachments_for_vision if file_attachments_for_vision else None
+                )
+            else:
+                print(f"DEBUG: Using text-only model")
+                # Standard text-only message
+                text_content = enhanced_message
+                
+                # Include actual file contents for AI analysis (text files)
+                if file_contents_for_ai:
+                    file_content_text = "\n\nAttached files with content:\n"
+                    for file_content in file_contents_for_ai:
+                        file_content_text += f"\n📎 **{file_content['filename']}** ({file_content['type']} file):\n"
+                        if file_content['type'] == 'text':
+                            file_content_text += f"```\n{file_content['content']}\n```\n"
+                        else:
+                            file_content_text += f"{file_content['content']}\n"
+                    text_content += file_content_text
+                elif file_attachments:
+                    # Fallback to just metadata if content reading failed
+                    file_list = "\n\nAttached files:\n"
+                    for attachment in file_attachments:
+                        file_list += f"📎 {attachment['filename']} ({attachment['file_type']}, {attachment['file_size']} bytes)\n"
+                    text_content += file_list
+                
+                # Include media URLs
+                if media_urls:
+                    media_content = "\n\nMedia URLs shared:\n"
+                    for url in media_urls:
+                        if is_image_content(url=url):
+                            media_content += f"🖼️ Image: {url}\n"
+                        elif any(url.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mov', '.webm', '.mkv']):
+                            media_content += f"🎥 Video: {url}\n"
+                        else:
+                            media_content += f"🔗 Media: {url}\n"
+                    text_content += media_content
+                
+                user_message = UserMessage(text=text_content)
             
-            user_message = UserMessage(text=enhanced_message)
+            print(f"DEBUG: Sending message to AI with has_images={has_images}")
             ai_response = await ai_chat.send_message(user_message)
             
             # Store AI response as chat message
