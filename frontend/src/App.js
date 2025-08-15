@@ -374,29 +374,106 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-white">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!inputMessage.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-          >
-            <Send size={18} />
-          </button>
-        </div>
-        {!isConnected && (
-          <div className="text-xs text-gray-500 mt-2 text-center">
-            💬 Chat via HTTP (WebSocket disconnected)
+      <div className="border-t bg-white">
+        {/* Referenced messages preview */}
+        {referencedMessages.length > 0 && (
+          <div className="px-4 py-2 bg-blue-50 border-b">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Reply size={14} className="text-blue-600" />
+                <span className="text-sm text-blue-700">
+                  {multiSelectMode ? 
+                    `${referencedMessages.length} messages selected` : 
+                    'Replying to message'}
+                </span>
+              </div>
+              <button
+                onClick={clearReferences}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2 mt-1">
+              <label className="flex items-center space-x-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={multiSelectMode}
+                  onChange={(e) => setMultiSelectMode(e.target.checked)}
+                  className="w-3 h-3"
+                />
+                <span>Multi-select mode</span>
+              </label>
+            </div>
           </div>
         )}
+        
+        {/* File attachments preview */}
+        {selectedFiles.length > 0 && (
+          <div className="px-4 py-2 bg-gray-50 border-b">
+            <div className="flex items-center space-x-2 mb-2">
+              <Paperclip size={14} className="text-gray-600" />
+              <span className="text-sm text-gray-700">{selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected</span>
+            </div>
+            <div className="space-y-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                  <div className="flex items-center space-x-2">
+                    {getFileIcon(file)}
+                    <span className="text-sm truncate max-w-48">{file.name}</span>
+                    <span className="text-xs text-gray-500">({formatFileSize(file.size)})</span>
+                  </div>
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="p-4">
+          <div className="flex space-x-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              multiple
+              className="hidden"
+              accept="*/*"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+              title="Attach files"
+            >
+              <Paperclip size={18} />
+            </button>
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type a message..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!inputMessage.trim() && selectedFiles.length === 0}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <Send size={18} />
+            </button>
+          </div>
+          {!isConnected && (
+            <div className="text-xs text-gray-500 mt-2 text-center">
+              💬 Chat via HTTP (WebSocket disconnected)
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
