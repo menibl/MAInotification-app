@@ -149,6 +149,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   const [mediaUrls, setMediaUrls] = useState(['']);
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [referencedMessages, setReferencedMessages] = useState([]);
+  const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
