@@ -248,6 +248,8 @@ class DeviceChatAPITester:
                 return self.log_test("OpenAI Response Quality", False, "AI response too short or empty")
         
         return success
+
+    def test_mark_notification_read(self):
         """Test marking notification as read"""
         # First get notifications to find one to mark as read
         success, notifications = self.run_test("Get Notifications for Read Test", "GET", f"notifications/{self.user_id}", 200)
