@@ -347,11 +347,11 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
               <>
                 <span className="opacity-50">•</span>
                 <span 
-                  className="opacity-75 cursor-pointer hover:opacity-100 flex items-center space-x-1"
+                  className="cursor-pointer hover:text-blue-600 flex items-center space-x-1 transition-colors"
                   onClick={() => setShowRoleSettings(!showRoleSettings)}
                   title="Click to change AI role"
                 >
-                  <span>{currentRole}</span>
+                  <span>🤖 {currentRole}</span>
                   <Settings size={12} />
                 </span>
               </>
