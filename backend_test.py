@@ -2,6 +2,7 @@
 """
 Comprehensive Backend API Testing for Device Chat PWA
 Tests all REST endpoints, WebSocket functionality, and data persistence
+Enhanced with File Upload and Message Referencing Tests
 """
 import requests
 import sys
@@ -10,6 +11,9 @@ from datetime import datetime
 import time
 import websocket
 import threading
+import os
+import tempfile
+from pathlib import Path
 
 class DeviceChatAPITester:
     def __init__(self, base_url="https://devicepush.preview.emergentagent.com"):
