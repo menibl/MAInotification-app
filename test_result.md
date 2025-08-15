@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "User cannot enter text in device chat interface"
+user_problem_statement: "User wants to add file upload functionality and message referencing/quoting to the chat system"
 
 frontend:
   - task: "Fix app loading issue preventing chat text input"
@@ -126,6 +126,18 @@ frontend:
           agent: "testing"
           comment: "Frontend testing not performed as per system limitations - backend APIs confirmed working"
 
+  - task: "File upload UI and message referencing interface"
+    implemented: true
+    working: true
+    file: "src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Added file upload button (paperclip icon), drag & drop support, file preview, message referencing with click/multi-select modes, visual indicators for referenced messages"
+
 backend:
   - task: "Backend API connectivity for device data"
     implemented: true
@@ -141,6 +153,18 @@ backend:
         - working: true
           agent: "testing"
           comment: "Comprehensive testing completed: Device Management APIs (✅), Chat APIs with OpenAI integration (✅), Notification APIs (✅). All core functionality working. Minor: WebSocket connection issue in production environment, Mark notification read endpoint needs debugging."
+
+  - task: "File Upload APIs and Enhanced Chat with References"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Added /api/files/upload (100MB limit), /api/files/{file_id}, /api/files/user/{user_id}, enhanced /api/chat/send with file attachments and message references. AI context now includes referenced messages and file information. Successfully tested file upload and AI chat with attachments."
 
   - task: "Device Management APIs - GET /api/devices/{user_id}"
     implemented: true
