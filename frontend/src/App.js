@@ -465,25 +465,51 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             ) : (
               <div className="flex justify-center">
                 <div 
-                  className={`max-w-md px-4 py-3 rounded-lg border-l-4 cursor-pointer transition-colors ${
-                    item.read 
-                      ? 'bg-gray-50 border-gray-300' 
-                      : 'bg-blue-50 border-blue-400'
+                  className={`max-w-md px-4 py-3 rounded-lg border-l-4 cursor-pointer transition-colors relative ${
+                    selectedNotifications.some(n => n.id === item.id)
+                      ? 'bg-green-100 border-green-400 ring-2 ring-green-300'
+                      : item.read 
+                        ? 'bg-gray-50 border-gray-300 hover:bg-gray-100' 
+                        : 'bg-blue-50 border-blue-400 hover:bg-blue-100'
                   }`}
-                  onClick={() => !item.read && onMarkNotificationRead(item.id)}
+                  onClick={() => {
+                    if (!item.read) {
+                      onMarkNotificationRead(item.id);
+                    }
+                    toggleNotificationSelection(item);
+                  }}
                 >
+                  {/* Selection indicator */}
+                  {selectedNotifications.some(n => n.id === item.id) && (
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <Check size={12} className="text-white" />
+                    </div>
+                  )}
+                  
                   <div className="flex items-start space-x-3">
-                    <Bell size={16} className={item.read ? 'text-gray-400' : 'text-blue-500'} />
+                    <Bell size={16} className={
+                      selectedNotifications.some(n => n.id === item.id) 
+                        ? 'text-green-600' 
+                        : item.read ? 'text-gray-400' : 'text-blue-500'
+                    } />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-800">
                         Device Notification
+                        {selectedNotifications.some(n => n.id === item.id) && (
+                          <span className="ml-2 text-xs bg-green-200 text-green-800 px-2 py-1 rounded">
+                            Selected for chat
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {item.content}
                       </p>
                       {item.media_url && (
-                        <div className="mt-2">
-                          <MediaViewer url={item.media_url} />
+                        <div className="mt-2 p-2 bg-white rounded border">
+                          <div className="flex items-center space-x-2 text-xs text-gray-600">
+                            <Image size={12} />
+                            <span>Media: {item.media_url.substring(0, 30)}...</span>
+                          </div>
                         </div>
                       )}
                       <p className="text-xs text-gray-500 mt-2">
