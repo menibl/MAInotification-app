@@ -1339,6 +1339,208 @@ async def simulate_device_notification(
     
     return {"success": success, "message": "Notification sent" if success else "User not connected"}
 
+# Chat Settings Management APIs
+@api_router.get("/chat/settings/{user_id}/{device_id}")
+async def get_chat_settings(user_id: str, device_id: str):
+    """Get current chat settings for a user-device combination"""
+    
+    settings = await db.chat_settings.find_one({
+        "user_id": user_id, 
+        "device_id": device_id
+    })
+    
+    if not settings:
+        # Return default settings based on device type
+        device = await db.devices.find_one({"id": device_id})
+        device_type = device.get("type", "default") if device else "default"
+        
+        default_personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+        
+        return {
+            "user_id": user_id,
+            "device_id": device_id,
+            "role_name": f"{device_type.title()} Assistant",
+            "system_message": default_personality["system_message"],
+            "instructions": None,
+            "model": default_personality["model"],
+            "is_default": True
+        }
+    
+    return {
+        "user_id": settings["user_id"],
+        "device_id": settings["device_id"], 
+        "role_name": settings["role_name"],
+        "system_message": settings["system_message"],
+        "instructions": settings.get("instructions"),
+        "model": settings["model"],
+        "is_default": False,
+        "updated_at": settings["updated_at"]
+    }
+
+@api_router.put("/chat/settings/{user_id}/{device_id}")
+async def update_chat_settings(user_id: str, device_id: str, settings_update: ChatSettingsUpdate):
+    """Update chat settings for a user-device combination"""
+    
+    # Check if settings exist
+    existing_settings = await db.chat_settings.find_one({
+        "user_id": user_id,
+        "device_id": device_id
+    })
+    
+    if existing_settings:
+        # Update existing settings
+        update_data = {k: v for k, v in settings_update.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        
+        await db.chat_settings.update_one(
+            {"user_id": user_id, "device_id": device_id},
+            {"$set": update_data}
+        )
+        
+        updated_settings = await db.chat_settings.find_one({
+            "user_id": user_id,
+            "device_id": device_id
+        })
+        
+    else:
+        # Create new settings
+        device = await db.devices.find_one({"id": device_id})
+        device_type = device.get("type", "default") if device else "default"
+        default_personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+        
+        new_settings = ChatSettings(
+            user_id=user_id,
+            device_id=device_id,
+            role_name=settings_update.role_name or f"{device_type.title()} Assistant",
+            system_message=settings_update.system_message or default_personality["system_message"],
+            instructions=settings_update.instructions,
+            model=settings_update.model or default_personality["model"]
+        )
+        
+        await db.chat_settings.insert_one(new_settings.dict())
+        updated_settings = new_settings.dict()
+    
+    return {
+        "success": True,
+        "message": "Chat settings updated successfully",
+        "settings": {
+            "role_name": updated_settings["role_name"],
+            "system_message": updated_settings["system_message"],
+            "instructions": updated_settings.get("instructions"),
+            "model": updated_settings["model"]
+        }
+    }
+
+@api_router.post("/chat/settings/parse-command")
+async def parse_role_change_command(command: RoleChangeCommand):
+    """Parse natural language commands to change AI role/instructions"""
+    
+    message = command.message.lower()
+    user_id = command.user_id
+    device_id = command.device_id
+    
+    # Patterns for role changes
+    role_patterns = [
+        r"change your role to (.+)",
+        r"act as (.+)",
+        r"you are now (.+)",
+        r"become (.+)",
+        r"your new role is (.+)",
+        r"switch to (.+) mode",
+        r"be a (.+)"
+    ]
+    
+    # Patterns for instruction changes
+    instruction_patterns = [
+        r"change your instructions to (.+)",
+        r"your new instructions are (.+)",
+        r"follow these instructions: (.+)",
+        r"new instructions: (.+)",
+        r"update your instructions to (.+)"
+    ]
+    
+    import re
+    
+    # Check for role changes
+    for pattern in role_patterns:
+        match = re.search(pattern, message)
+        if match:
+            new_role = match.group(1).strip()
+            
+            # Create appropriate system message for the role
+            system_message = f"You are {new_role}. Be helpful and respond according to this role in all your interactions."
+            
+            # Update settings
+            await update_chat_settings(user_id, device_id, ChatSettingsUpdate(
+                role_name=new_role.title(),
+                system_message=system_message
+            ))
+            
+            return {
+                "success": True,
+                "detected": "role_change",
+                "new_role": new_role.title(),
+                "confirmation_message": f"I have changed my role to {new_role}. How can I help you in this new capacity?",
+                "settings_updated": True
+            }
+    
+    # Check for instruction changes
+    for pattern in instruction_patterns:
+        match = re.search(pattern, message)
+        if match:
+            new_instructions = match.group(1).strip()
+            
+            # Update settings
+            await update_chat_settings(user_id, device_id, ChatSettingsUpdate(
+                instructions=new_instructions,
+                system_message=f"You are an AI assistant. Follow these specific instructions: {new_instructions}"
+            ))
+            
+            return {
+                "success": True,
+                "detected": "instruction_change", 
+                "new_instructions": new_instructions,
+                "confirmation_message": f"I have updated my instructions. I will now: {new_instructions}",
+                "settings_updated": True
+            }
+    
+    # Check for reset commands
+    reset_patterns = [
+        r"reset your role",
+        r"go back to default",
+        r"reset to original",
+        r"default mode",
+        r"reset instructions"
+    ]
+    
+    for pattern in reset_patterns:
+        if re.search(pattern, message):
+            # Get device type for default settings
+            device = await db.devices.find_one({"id": device_id})
+            device_type = device.get("type", "default") if device else "default"
+            default_personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+            
+            # Reset to default
+            await update_chat_settings(user_id, device_id, ChatSettingsUpdate(
+                role_name=f"{device_type.title()} Assistant",
+                system_message=default_personality["system_message"],
+                instructions=None,
+                model=default_personality["model"]
+            ))
+            
+            return {
+                "success": True,
+                "detected": "reset",
+                "confirmation_message": f"I have reset to my default {device_type} assistant role.",
+                "settings_updated": True
+            }
+    
+    return {
+        "success": False,
+        "detected": "none",
+        "message": "No role or instruction change command detected."
+    }
+
 # File Upload Endpoints
 @api_router.post("/files/upload")
 async def upload_file(
