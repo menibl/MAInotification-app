@@ -226,7 +226,7 @@ class ChatMessage(BaseModel):
     device_id: str
     message: str
     media_url: Optional[str] = None
-    file_attachments: Optional[List[Dict[str, str]]] = None  # List of file info: {filename, file_path, file_type, file_size}
+    file_attachments: Optional[List[Dict[str, Any]]] = None  # List of file info: {filename, file_path, file_type, file_size}
     referenced_messages: Optional[List[str]] = None  # List of message IDs being referenced/quoted
     sender: str  # 'user', 'device', or 'ai'
     ai_response: bool = False  # True if this is an AI-generated response
