@@ -341,9 +341,22 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
         }`}></div>
         <div className="flex-1">
           <h3 className="font-medium text-gray-800">{device.name}</h3>
-          <p className="text-sm text-gray-500">
-            {isConnected ? 'Connected' : 'Disconnected'} • {device.type}
-          </p>
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <span>{isConnected ? 'Connected' : 'Disconnected'} • {device.type}</span>
+            {currentRole && (
+              <>
+                <span className="opacity-50">•</span>
+                <span 
+                  className="opacity-75 cursor-pointer hover:opacity-100 flex items-center space-x-1"
+                  onClick={() => setShowRoleSettings(!showRoleSettings)}
+                  title="Click to change AI role"
+                >
+                  <span>{currentRole}</span>
+                  <Settings size={12} />
+                </span>
+              </>
+            )}
+          </div>
         </div>
         <MoreVertical size={20} className="text-gray-400" />
       </div>
