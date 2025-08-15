@@ -534,6 +534,17 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             >
               <Paperclip size={18} />
             </button>
+            <button
+              onClick={() => setShowMediaInput(!showMediaInput)}
+              className={`px-3 py-2 rounded-lg ${
+                showMediaInput 
+                  ? 'text-blue-700 bg-blue-100 hover:bg-blue-200' 
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+              title="Add image/video URLs"
+            >
+              <Image size={18} />
+            </button>
             <input
               type="text"
               value={inputMessage}
@@ -544,7 +555,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             />
             <button
               onClick={handleSend}
-              disabled={!inputMessage.trim() && selectedFiles.length === 0}
+              disabled={!inputMessage.trim() && selectedFiles.length === 0 && mediaUrls.filter(url => url.trim()).length === 0}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               <Send size={18} />
