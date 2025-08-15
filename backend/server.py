@@ -938,6 +938,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
             device_id=device_id,
             message=message,
             sender=sender,
+            media_urls=media_urls if media_urls else None,
             file_attachments=file_attachments if file_attachments else None,
             referenced_messages=referenced_messages
         )
