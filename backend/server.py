@@ -718,15 +718,16 @@ async def send_push_notification(notification: PushNotificationRequest):
         "timestamp": datetime.utcnow().isoformat()
     }
     
-    # VAPID keys (you should generate your own in production)
+    # VAPID keys from environment variables
     vapid_private_key = os.environ.get('VAPID_PRIVATE_KEY')
     vapid_public_key = os.environ.get('VAPID_PUBLIC_KEY')
     vapid_email = os.environ.get('VAPID_EMAIL', 'mailto:admin@device-chat.com')
     
     if not vapid_private_key or not vapid_public_key:
+        logging.warning("VAPID keys not configured properly")
         return {
             "success": False,
-            "message": "VAPID keys not configured. Please set VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY environment variables.",
+            "message": "Push notifications not configured. Please set VAPID keys in environment variables.",
             "sent_count": 0,
             "failed_count": len(subscriptions),
             "total_subscriptions": len(subscriptions)
