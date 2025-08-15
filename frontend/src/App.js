@@ -164,6 +164,25 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     scrollToBottom();
   }, [messages, deviceNotifications]);
 
+  useEffect(() => {
+    // Load current role when device changes
+    if (device) {
+      loadCurrentRole();
+    }
+  }, [device]);
+
+  const loadCurrentRole = async () => {
+    if (!device) return;
+    
+    try {
+      const response = await axios.get(`${API}/chat/settings/${USER_ID}/${device.id}`);
+      setCurrentRole(response.data.role_name);
+    } catch (error) {
+      console.error('Failed to load current role:', error);
+      setCurrentRole('AI Assistant');
+    }
+  };
+
   const handleSend = async () => {
     const validMediaUrls = mediaUrls.filter(url => url.trim() !== '');
     
