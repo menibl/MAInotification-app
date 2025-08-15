@@ -256,15 +256,36 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           <div key={`${item.type}-${item.id}`}>
             {item.type === 'message' ? (
               <div className={`flex ${item.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg space-y-2 ${
-                  item.sender === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : item.sender === 'ai'
-                    ? 'bg-green-100 text-green-800 border border-green-200'
-                    : item.sender === 'system'
-                    ? 'bg-red-100 text-red-800 border border-red-200'
-                    : 'bg-gray-200 text-gray-800'
-                }`}>
+                <div 
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg space-y-2 relative cursor-pointer ${
+                    referencedMessages.includes(item.id) 
+                      ? 'ring-2 ring-blue-400' 
+                      : ''
+                  } ${
+                    item.sender === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : item.sender === 'ai'
+                      ? 'bg-green-100 text-green-800 border border-green-200'
+                      : item.sender === 'system'
+                      ? 'bg-red-100 text-red-800 border border-red-200'
+                      : 'bg-gray-200 text-gray-800'
+                  }`}
+                  onClick={() => toggleMessageReference(item.id)}
+                >
+                  {/* Reference indicator */}
+                  {referencedMessages.includes(item.id) && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Check size={10} className="text-white" />
+                    </div>
+                  )}
+                  
+                  {/* Reply indicator for quick reference mode */}
+                  {!multiSelectMode && referencedMessages.includes(item.id) && (
+                    <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Reply size={12} className="text-white" />
+                    </div>
+                  )}
+
                   {item.sender === 'ai' && (
                     <div className="flex items-center space-x-2 mb-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -277,7 +298,31 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                       <span className="text-xs font-medium text-red-700">System</span>
                     </div>
                   )}
+                  
+                  {/* Referenced messages preview */}
+                  {item.referenced_messages && item.referenced_messages.length > 0 && (
+                    <div className="mb-2 p-2 bg-black bg-opacity-10 rounded text-xs">
+                      <Reply size={12} className="inline mr-1" />
+                      Replying to {item.referenced_messages.length} message{item.referenced_messages.length > 1 ? 's' : ''}
+                    </div>
+                  )}
+                  
                   <p className="text-sm">{item.message}</p>
+                  
+                  {/* File attachments */}
+                  {item.file_attachments && item.file_attachments.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {item.file_attachments.map((file, idx) => (
+                        <div key={idx} className="flex items-center space-x-2 p-2 bg-black bg-opacity-10 rounded text-xs">
+                          {file.file_type.startsWith('image/') ? <Image size={12} /> :
+                           file.file_type.startsWith('video/') ? <Video size={12} /> :
+                           <File size={12} />}
+                          <span>{file.filename}</span>
+                          <span className="text-opacity-70">({formatFileSize(file.file_size)})</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {item.media_url && (
                     <MediaViewer url={item.media_url} />
                   )}
