@@ -472,6 +472,51 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           </div>
         )}
         
+        {/* Media URLs preview */}
+        {showMediaInput && (
+          <div className="px-4 py-2 bg-blue-50 border-b">
+            <div className="flex items-center space-x-2 mb-2">
+              <Image size={14} className="text-blue-600" />
+              <span className="text-sm text-blue-700">Media URLs (Images & Videos)</span>
+            </div>
+            <div className="space-y-2">
+              {mediaUrls.map((url, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => updateMediaUrl(index, e.target.value)}
+                    placeholder="https://example.com/image.jpg or video.mp4"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div className="flex items-center space-x-1">
+                    {url && isValidUrl(url) && (
+                      <>
+                        {isImageUrl(url) && <Image size={14} className="text-green-600" title="Image detected" />}
+                        {isVideoUrl(url) && <Video size={14} className="text-purple-600" title="Video detected" />}
+                        {!isImageUrl(url) && !isVideoUrl(url) && <File size={14} className="text-gray-600" title="Other media" />}
+                      </>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeMediaUrl(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addMediaUrl}
+                className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm"
+              >
+                <Plus size={14} />
+                <span>Add another URL</span>
+              </button>
+            </div>
+          </div>
+        )}
+        
         <div className="p-4">
           <div className="flex space-x-2">
             <input
