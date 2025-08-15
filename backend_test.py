@@ -260,22 +260,38 @@ class DeviceChatAPITester:
         if not self.created_devices:
             return self.log_test("OpenAI Integration", False, "No devices available")
             
-        message_data = {
+        url = f"{self.api_url}/chat/send"
+        params = {
+            "user_id": self.user_id,
             "device_id": self.created_devices[0],
             "message": "What is your purpose as a security camera AI?",
             "sender": "user"
         }
         
-        success, response = self.run_test("OpenAI Chat Integration", "POST", f"chat/send?user_id={self.user_id}", 200, message_data)
-        
-        if success and response.get('ai_response'):
-            ai_message = response['ai_response'].get('message', '')
-            if ai_message and len(ai_message) > 10:  # Basic check for meaningful response
-                return self.log_test("OpenAI Response Quality", True, f"AI responded with {len(ai_message)} characters")
+        try:
+            response = requests.post(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('ai_response'):
+                    ai_message = result['ai_response'].get('message', '')
+                    if ai_message and len(ai_message) > 10:  # Basic check for meaningful response
+                        self.log_test("OpenAI Response Quality", True, f"AI responded with {len(ai_message)} characters")
+                        return True, result
+                    else:
+                        self.log_test("OpenAI Response Quality", False, "AI response too short or empty")
+                        return False, {}
+                else:
+                    self.log_test("OpenAI Integration", False, "No AI response in result")
+                    return False, {}
             else:
-                return self.log_test("OpenAI Response Quality", False, "AI response too short or empty")
-        
-        return success
+                self.log_test("OpenAI Integration", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("OpenAI Integration", False, f"Error: {str(e)}")
+            return False, {}
 
     def test_mark_notification_read(self):
         """Test marking notification as read"""
