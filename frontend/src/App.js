@@ -854,7 +854,7 @@ const App = () => {
     loadChatMessages(device.id);
   };
 
-  const handleSendMessage = async (deviceId, message, files = [], referencedMessages = []) => {
+  const handleSendMessage = async (deviceId, message, files = [], referencedMessages = [], mediaUrls = []) => {
     try {
       // Upload files first if any
       const fileIds = [];
@@ -877,12 +877,16 @@ const App = () => {
         }
       }
 
+      // Clean media URLs (remove empty ones)
+      const validMediaUrls = mediaUrls.filter(url => url.trim() !== '');
+
       const newMessage = {
         id: Date.now().toString(),
         user_id: USER_ID,
         device_id: deviceId,
         message: message,
         sender: 'user',
+        media_urls: validMediaUrls.length > 0 ? validMediaUrls : null,
         file_attachments: files.map((file, index) => ({
           file_id: fileIds[index] || '',
           filename: file.name,
@@ -899,16 +903,18 @@ const App = () => {
       
       // Send to backend for AI response
       const requestData = {
-        user_id: USER_ID,
-        message: message,
         device_id: deviceId,
+        message: message,
         sender: 'user',
         referenced_messages: referencedMessages.length > 0 ? referencedMessages : undefined,
-        file_ids: fileIds.length > 0 ? fileIds : undefined
+        file_ids: fileIds.length > 0 ? fileIds : undefined,
+        media_urls: validMediaUrls.length > 0 ? validMediaUrls : undefined
       };
       
-      const response = await axios.post(`${API}/chat/send`, null, {
-        params: requestData
+      const response = await axios.post(`${API}/chat/send?user_id=${USER_ID}`, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
       if (response.data.success && response.data.ai_response) {
