@@ -155,18 +155,20 @@ async def create_vision_message(message: str, file_contents_for_ai: List[Dict], 
     # Process uploaded image files
     for file_content in file_contents_for_ai:
         if file_content['type'] == 'image' and 'file_url' in file_content:
-            # For uploaded image files, use file path
+            # For uploaded image files, convert to base64 for OpenAI
             try:
                 # Convert the URL to local file path
                 file_id = file_content['file_url'].split('/')[-1]
                 file_record = await db.file_uploads.find_one({"id": file_id})
                 if file_record and Path(file_record["file_path"]).exists():
-                    file_attachment = FileContentWithMimeType(
-                        file_path=file_record["file_path"],
-                        mime_type=file_record["file_type"]
-                    )
-                    file_attachments.append(file_attachment)
-                    vision_text_parts.append(f"\n[Uploaded Image: {file_content['filename']}]")
+                    # Read file and convert to base64
+                    async with aiofiles.open(file_record["file_path"], 'rb') as f:
+                        image_data = await f.read()
+                        image_base64 = base64.b64encode(image_data).decode('utf-8')
+                        
+                        image_content = ImageContent(image_base64=image_base64)
+                        file_attachments.append(image_content)
+                        vision_text_parts.append(f"\n[Uploaded Image: {file_content['filename']}]")
             except Exception as e:
                 print(f"Failed to process uploaded image {file_content['filename']}: {e}")
                 vision_text_parts.append(f"\n[Image Upload Error: Could not process {file_content['filename']}]")
@@ -195,6 +197,7 @@ async def create_vision_message(message: str, file_contents_for_ai: List[Dict], 
     # Combine all text parts
     enhanced_message = "\n".join(vision_text_parts)
     
+    print(f"DEBUG: Created vision message with {len(file_attachments)} image attachments")
     return enhanced_message, file_attachments
 
 async def store_chat_history(user_id: str, device_id: str, messages: List[Dict[str, Any]]):
