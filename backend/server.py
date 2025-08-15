@@ -829,17 +829,59 @@ async def send_chat_message(
     try:
         # Process file attachments if provided
         file_attachments = []
+        file_contents_for_ai = []
+        
         if file_ids:
             for file_id in file_ids:
                 file_record = await db.file_uploads.find_one({"id": file_id})
                 if file_record:
-                    file_attachments.append({
+                    file_info = {
                         "file_id": file_record["id"],
                         "filename": file_record["original_filename"],
                         "file_type": file_record["file_type"],
                         "file_size": file_record["file_size"],
                         "url": f"/api/files/{file_record['id']}"
-                    })
+                    }
+                    file_attachments.append(file_info)
+                    
+                    # Try to read file content for AI analysis
+                    file_path = Path(file_record["file_path"])
+                    if file_path.exists():
+                        try:
+                            # Handle different file types
+                            if file_record["file_type"].startswith("text/") or file_record["original_filename"].endswith((".txt", ".md", ".py", ".js", ".html", ".css", ".json", ".xml", ".csv")):
+                                # Read text files directly
+                                async with aiofiles.open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                    content = await f.read()
+                                    # Limit content size to prevent token overflow (max ~8000 characters)
+                                    if len(content) > 8000:
+                                        content = content[:8000] + "\n... [Content truncated due to length]"
+                                    file_contents_for_ai.append({
+                                        "filename": file_record["original_filename"],
+                                        "type": "text",
+                                        "content": content
+                                    })
+                            elif file_record["file_type"].startswith("image/"):
+                                # For images, we can't send content to text-based AI, but provide description
+                                file_contents_for_ai.append({
+                                    "filename": file_record["original_filename"],
+                                    "type": "image",
+                                    "content": f"[IMAGE FILE: {file_record['original_filename']} - {file_record['file_type']} - {file_record['file_size']} bytes. Note: I cannot directly view images, but I can discuss them based on your description or filename.]"
+                                })
+                            else:
+                                # For other file types, provide basic info
+                                file_contents_for_ai.append({
+                                    "filename": file_record["original_filename"],
+                                    "type": "other",
+                                    "content": f"[FILE: {file_record['original_filename']} - {file_record['file_type']} - {file_record['file_size']} bytes. Note: I cannot directly read this file type, but I can discuss it based on your description or filename.]"
+                                })
+                        except Exception as e:
+                            # If file reading fails, still provide basic info
+                            file_contents_for_ai.append({
+                                "filename": file_record["original_filename"],
+                                "type": "error",
+                                "content": f"[FILE: {file_record['original_filename']} - Could not read content: {str(e)}]"
+                            })
         
         # Store user message
         user_chat_msg = ChatMessage(
