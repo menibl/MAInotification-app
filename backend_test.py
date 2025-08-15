@@ -10,10 +10,10 @@ from datetime import datetime
 import time
 
 class DeviceChatAPITester:
-    def __init__(self, base_url="http://localhost:8001"):
+    def __init__(self, base_url="https://devicepush.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
-        self.user_id = "test-user-123"
+        self.user_id = "demo-user-123"
         self.tests_run = 0
         self.tests_passed = 0
         self.created_devices = []
