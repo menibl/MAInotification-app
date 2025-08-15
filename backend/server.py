@@ -107,17 +107,38 @@ AI_PERSONALITIES = {
     }
 }
 
-async def get_ai_chat_instance(device_type: str, session_id: str, has_images: bool = False):
+async def get_ai_chat_instance(device_type: str, session_id: str, has_images: bool = False, user_id: str = None, device_id: str = None):
     """Get AI chat instance for device type, with vision support if images are present"""
-    personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+    
+    # Try to get custom settings first
+    custom_settings = None
+    if user_id and device_id:
+        custom_settings = await db.chat_settings.find_one({
+            "user_id": user_id,
+            "device_id": device_id
+        })
+    
+    if custom_settings:
+        # Use custom settings
+        system_message = custom_settings["system_message"]
+        model = custom_settings["model"]
+        print(f"DEBUG: Using custom chat settings - Role: {custom_settings['role_name']}")
+    else:
+        # Use default personality
+        personality = AI_PERSONALITIES.get(device_type, AI_PERSONALITIES["default"])
+        system_message = personality["system_message"]
+        model = personality["model"]
+        print(f"DEBUG: Using default personality for {device_type}")
     
     # Use vision model if images are present - updated to use current model
-    model = "gpt-4o" if has_images else personality["model"]
+    if has_images:
+        model = "gpt-4o"
+        print(f"DEBUG: Switching to vision model: {model}")
     
     chat = LlmChat(
         api_key=os.environ.get('OPENAI_API_KEY'),
         session_id=session_id,
-        system_message=personality["system_message"]
+        system_message=system_message
     ).with_model("openai", model)
     
     return chat
