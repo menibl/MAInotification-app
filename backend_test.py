@@ -16,10 +16,13 @@ class DeviceChatAPITester:
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.user_id = "demo-user-123"
+        self.test_device_id = "123456"  # camera202 as mentioned in review request
         self.tests_run = 0
         self.tests_passed = 0
         self.created_devices = []
         self.created_notifications = []
+        self.websocket_messages = []
+        self.websocket_connected = False
 
     def log_test(self, name, success, details=""):
         """Log test results"""
