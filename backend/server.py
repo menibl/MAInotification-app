@@ -16,7 +16,7 @@ import asyncio
 import aiofiles
 import shutil
 from pywebpush import webpush, WebPushException
-from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType, ImageContent
 import requests
 import base64
 from io import BytesIO
