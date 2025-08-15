@@ -817,17 +817,16 @@ async def get_user_push_subscriptions(user_id: str):
 
 # Chat Endpoints
 @api_router.post("/chat/send")
-async def send_chat_message(
-    user_id: str,
-    message: str,
-    device_id: str,
-    sender: str = "user",
-    referenced_messages: Optional[List[str]] = None,
-    file_ids: Optional[List[str]] = None
-):
+async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
     """Send a chat message with optional file attachments and message references"""
     
     try:
+        # Extract data from the model
+        device_id = message_data.device_id
+        message = message_data.message
+        sender = message_data.sender
+        referenced_messages = message_data.referenced_messages
+        file_ids = message_data.file_ids
         # Process file attachments if provided
         file_attachments = []
         file_contents_for_ai = []
