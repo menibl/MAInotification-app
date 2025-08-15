@@ -129,12 +129,34 @@ class DeviceChatAPITester:
         if not self.created_devices:
             return self.log_test("Send Chat Message", False, "No devices available")
             
-        message_data = {
+        url = f"{self.api_url}/chat/send"
+        params = {
+            "user_id": self.user_id,
             "device_id": self.created_devices[0],
             "message": "Hello from test!",
             "sender": "user"
         }
-        return self.run_test("Send Chat Message", "POST", f"chat/send?user_id={self.user_id}", 200, message_data)
+        
+        try:
+            response = requests.post(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('message_id'):
+                    self.chat_messages.append(result['message_id'])
+                    self.log_test("Send Chat Message", True, f"Message ID: {result['message_id']}")
+                    return True, result
+                else:
+                    self.log_test("Send Chat Message", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Send Chat Message", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Send Chat Message", False, f"Error: {str(e)}")
+            return False, {}
 
     def test_get_chat_history(self):
         """Test getting chat history"""
