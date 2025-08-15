@@ -162,10 +162,13 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   }, [messages, deviceNotifications]);
 
   const handleSend = async () => {
-    if ((inputMessage.trim() || selectedFiles.length > 0) && device) {
-      await onSendMessage(device.id, inputMessage.trim(), selectedFiles, referencedMessages);
+    const validMediaUrls = mediaUrls.filter(url => url.trim() !== '');
+    if ((inputMessage.trim() || selectedFiles.length > 0 || validMediaUrls.length > 0) && device) {
+      await onSendMessage(device.id, inputMessage.trim(), selectedFiles, referencedMessages, validMediaUrls);
       setInputMessage('');
       setSelectedFiles([]);
+      setMediaUrls(['']);
+      setShowMediaInput(false);
       setReferencedMessages([]);
       setMultiSelectMode(false);
     }
@@ -186,6 +189,38 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addMediaUrl = () => {
+    setMediaUrls(prev => [...prev, '']);
+  };
+
+  const updateMediaUrl = (index, value) => {
+    setMediaUrls(prev => prev.map((url, i) => i === index ? value : url));
+  };
+
+  const removeMediaUrl = (index) => {
+    setMediaUrls(prev => prev.filter((_, i) => i !== index));
+    if (mediaUrls.length <= 1) {
+      setShowMediaInput(false);
+    }
+  };
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const isImageUrl = (url) => {
+    return /\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i.test(url);
+  };
+
+  const isVideoUrl = (url) => {
+    return /\.(mp4|avi|mov|webm|mkv)(\?.*)?$/i.test(url);
   };
 
   const toggleMessageReference = (messageId) => {
