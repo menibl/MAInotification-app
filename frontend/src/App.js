@@ -502,6 +502,35 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             <Image size={16} />
             <span className="sr-only">Send image URL for analysis</span>
           </button>
+          <button
+            onClick={() => {
+              const urls = prompt('Enter one or more image URLs (comma-separated):');
+              if (!urls || !device) return;
+              const list = urls.split(',').map(u => u.trim()).filter(Boolean);
+              if (list.length === 0) return;
+              axios.post(`${API}/chat/image-direct?user_id=${USER_ID}`, {
+                device_id: device.id,
+                media_urls: list,
+                question: null
+              }).then(res => {
+                if (res.data.success) {
+                  if (res.data.displayed_in_chat && typeof reloadChat === 'function') {
+                    reloadChat();
+                  }
+                } else {
+                  alert(res.data.error || 'Failed to analyze images');
+                }
+              }).catch(err => {
+                console.error('Failed to send multiple image URLs:', err);
+                alert('Failed to analyze images.');
+              });
+            }}
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Send multiple image URLs directly to AI for analysis"
+          >
+            <Image size={16} />
+            <span className="sr-only">Send multiple image URLs for analysis</span>
+          </button>
           <MoreVertical size={20} className="text-gray-400" />
         </div>
       </div>
