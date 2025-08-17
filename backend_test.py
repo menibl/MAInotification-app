@@ -950,7 +950,7 @@ class DeviceChatAPITester:
             
             if success:
                 result = response.json()
-                if result.get('success') and 'prompt_text' in result:
+                if 'prompt_text' in result and 'user_id' in result and 'device_id' in result:
                     self.log_test("Camera Prompt GET", True, f"Retrieved prompt: {result.get('prompt_text', '')[:50]}...")
                     return True, result
                 else:
