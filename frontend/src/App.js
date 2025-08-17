@@ -175,6 +175,14 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     }
   }, [device]);
 
+  useEffect(() => {
+    // Load current role and camera prompt when device changes
+    if (device) {
+      loadCurrentRole();
+      loadCameraPrompt();
+    }
+  }, [device]);
+
   const loadCurrentRole = async () => {
     if (!device) return;
     
@@ -185,6 +193,72 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       console.error('Failed to load current role:', error);
       setCurrentRole('AI Assistant');
     }
+  };
+
+  const loadCameraPrompt = async () => {
+    if (!device) return;
+    
+    try {
+      const response = await axios.get(`${API}/camera/prompt/${USER_ID}/${device.id}`);
+      setCameraPrompt(response.data.prompt_text);
+      setPromptInstructions(response.data.instructions);
+    } catch (error) {
+      console.error('Failed to load camera prompt:', error);
+      setCameraPrompt('General security monitoring');
+    }
+  };
+
+  const updateCameraPrompt = async (instructions) => {
+    if (!device) return;
+    
+    try {
+      const response = await axios.put(`${API}/camera/prompt/${USER_ID}/${device.id}`, {
+        instructions: instructions
+      });
+      
+      if (response.data.success) {
+        setCameraPrompt(response.data.prompt_text);
+        setPromptInstructions(instructions);
+        setShowPromptSettings(false);
+      }
+    } catch (error) {
+      console.error('Failed to update camera prompt:', error);
+    }
+  };
+
+  const handleDirectImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !device) return;
+    
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result.split(',')[1]; // Remove data:image/...;base64, prefix
+      
+      try {
+        const response = await axios.post(`${API}/chat/image-direct?user_id=${USER_ID}`, {
+          device_id: device.id,
+          image_data: base64,
+          question: null // No question, let AI analyze based on camera prompt
+        });
+        
+        if (response.data.success) {
+          console.log(`Image analysis: ${response.data.analysis_type}`);
+          if (response.data.displayed_in_chat) {
+            // Reload messages to show new chat entries
+            // This would be handled by the parent component
+            console.log('Image displayed in chat');
+          } else {
+            console.log('Image logged but not displayed - routine activity');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to send direct image:', error);
+      }
+    };
+    
+    reader.readAsDataURL(file);
+    event.target.value = ''; // Reset input
   };
 
   const handleSend = async () => {
