@@ -1535,19 +1535,18 @@ If this shows something noteworthy, provide detailed analysis.
             # If should display in chat, also add to regular chat messages
             if display_in_chat:
                 # Add user message to chat
+                media_urls_to_store = []
+                if image_chat.image_url:
+                    media_urls_to_store.append(image_chat.image_url)
+                if image_chat.media_urls:
+                    media_urls_to_store.extend([u for u in image_chat.media_urls if u])
+                
                 user_chat_msg = ChatMessage(
                     user_id=user_id,
                     device_id=device_id,
-                    message=image_chat.question or "📸 Image sent for analysis",
+                    message=image_chat.question or "📸 Image(s) sent for analysis",
                     sender="user",
-                    media_urls=[image_chat.image_url] if image_chat.image_url else None,  # Store URL if provided
-                    file_attachments=[{
-                        "filename": "direct_image.jpg",
-                        "file_type": "image/jpeg",
-                        "file_size": len(image_chat.image_data) * 3 // 4 if image_chat.image_data else 0,
-                        "image_data": image_chat.image_data if image_chat.image_data else None,
-                        "image_url": image_chat.image_url if image_chat.image_url else None
-                    }]
+                    media_urls=media_urls_to_store if media_urls_to_store else None,
                 )
                 await db.chat_messages.insert_one(user_chat_msg.dict())
                 
