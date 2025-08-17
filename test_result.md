@@ -276,6 +276,9 @@ backend:
     working: false
     file: "server.py"
     stuck_count: 1
+    - agent: "main"
+      message: "Implemented image link support for direct analysis API (single and multiple URLs). Updated chat UI to include buttons for single URL and multi-URL input. Ensured chat input and selections clear after send. Requesting backend testing only per user preference."
+
     priority: "medium"
     needs_retesting: false
     status_history:
