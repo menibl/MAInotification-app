@@ -1508,7 +1508,7 @@ If this shows something noteworthy, provide detailed analysis.
             direct_chat = DirectImageChat(
                 user_id=user_id,
                 device_id=device_id,
-                image_data=image_chat.image_data,
+                image_data=image_chat.image_data or f"URL:{image_chat.image_url}",
                 question=image_chat.question,
                 ai_response=ai_response,
                 display_in_chat=display_in_chat
