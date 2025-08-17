@@ -373,6 +373,33 @@ class ChatSettingsUpdate(BaseModel):
     instructions: Optional[str] = None
     model: Optional[str] = None
 
+class DirectImageChat(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    device_id: str
+    image_data: str  # base64 encoded image
+    question: Optional[str] = None
+    ai_response: str
+    display_in_chat: bool  # Whether to display in chat or just log
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class DirectImageChatCreate(BaseModel):
+    device_id: str
+    image_data: str  # base64 encoded
+    question: Optional[str] = None
+
+class CameraPrompt(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    device_id: str
+    prompt_text: str
+    instructions: str  # What the user wants to look for
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class CameraPromptCreate(BaseModel):
+    instructions: str  # User's description of what to look for
+
 class RoleChangeCommand(BaseModel):
     user_id: str
     device_id: str
