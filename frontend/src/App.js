@@ -246,7 +246,6 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           console.log(`Image analysis: ${response.data.analysis_type}`);
           if (response.data.displayed_in_chat) {
             // Reload messages to show new chat entries
-            // This would be handled by the parent component
             console.log('Image displayed in chat');
           } else {
             console.log('Image logged but not displayed - routine activity');
@@ -259,6 +258,31 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     
     reader.readAsDataURL(file);
     event.target.value = ''; // Reset input
+  };
+
+  const handleDirectImageUrl = async () => {
+    const url = prompt('Enter image URL:');
+    if (!url || !device) return;
+    
+    try {
+      const response = await axios.post(`${API}/chat/image-direct?user_id=${USER_ID}`, {
+        device_id: device.id,
+        image_url: url,
+        question: null
+      });
+      
+      if (response.data.success) {
+        console.log(`Image URL analysis: ${response.data.analysis_type}`);
+        if (response.data.displayed_in_chat) {
+          console.log('Image URL displayed in chat');
+        } else {
+          console.log('Image URL logged but not displayed - routine activity');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to send direct image URL:', error);
+      alert('Failed to analyze image from URL. Please check the URL.');
+    }
   };
 
   const handleSend = async () => {
