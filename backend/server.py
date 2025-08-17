@@ -1472,10 +1472,23 @@ If this is routine/normal activity, respond with 'NO_DISPLAY'.
 If this shows something noteworthy, provide detailed analysis.
 """
         
-        # Convert base64 image for vision analysis
+        # Convert base64 image or URL for vision analysis
         try:
             from emergentintegrations.llm.chat import ImageContent
-            image_content = ImageContent(image_base64=image_chat.image_data)
+            
+            image_content = None
+            if image_chat.image_data:
+                # Use provided base64 data
+                image_content = ImageContent(image_base64=image_chat.image_data)
+            elif image_chat.image_url:
+                # Download image from URL and convert to base64
+                image_base64 = await download_image_as_base64(image_chat.image_url)
+                if image_base64:
+                    image_content = ImageContent(image_base64=image_base64)
+                else:
+                    return {"success": False, "error": "Failed to download image from URL"}
+            else:
+                return {"success": False, "error": "Either image_data or image_url must be provided"}
             
             user_message = UserMessage(
                 text=enhanced_message,
