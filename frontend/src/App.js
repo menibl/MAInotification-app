@@ -500,6 +500,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             title="Send image URL directly to AI for analysis"
           >
             <Image size={16} />
+            <span className="sr-only">Send image URL for analysis</span>
           </button>
           <MoreVertical size={20} className="text-gray-400" />
         </div>
