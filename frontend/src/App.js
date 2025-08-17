@@ -153,8 +153,12 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [currentRole, setCurrentRole] = useState('');
   const [showRoleSettings, setShowRoleSettings] = useState(false);
+  const [cameraPrompt, setCameraPrompt] = useState('');
+  const [showPromptSettings, setShowPromptSettings] = useState(false);
+  const [promptInstructions, setPromptInstructions] = useState('');
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
