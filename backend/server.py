@@ -1423,7 +1423,9 @@ async def simulate_device_notification(
 # Direct Image Chat API
 @api_router.post("/chat/image-direct")
 async def send_image_directly_to_chat(user_id: str, image_chat: DirectImageChatCreate):
-    """Send image directly to chat with optional question - AI decides if to display or just log"""
+    """Send image(s) directly to chat with optional question.
+    Supports base64 image_data, single image_url, or multiple media_urls (image URLs).
+    AI decides whether to display in chat based on camera prompt and content."""
     
     try:
         device_id = image_chat.device_id
