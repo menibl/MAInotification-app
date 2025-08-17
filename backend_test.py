@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 
 class DeviceChatAPITester:
-    def __init__(self, base_url="https://8b6b2575-d42f-4bc0-80fe-15fb1cd93712.preview.emergentagent.com"):
+    def __init__(self, base_url="https://aiconnect-pwa.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.user_id = "demo-user-123"
