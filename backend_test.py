@@ -679,6 +679,339 @@ class DeviceChatAPITester:
             except:
                 pass  # Ignore cleanup errors
 
+    def generate_base64_red_dot_png(self):
+        """Generate a small red dot PNG as base64 data"""
+        # This is a minimal 1x1 red pixel PNG in base64
+        return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+
+    def test_image_direct_single_url(self):
+        """Test image-direct API with single image_url"""
+        if not self.created_devices:
+            return self.log_test("Image Direct Single URL", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "image_url": "https://picsum.photos/200.jpg"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'ai_response' in result and 'displayed_in_chat' in result:
+                    self.log_test("Image Direct Single URL", True, f"Success: {result.get('success')}, Displayed: {result.get('displayed_in_chat')}")
+                    return True, result
+                else:
+                    self.log_test("Image Direct Single URL", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("Image Direct Single URL", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct Single URL", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_image_direct_multiple_urls(self):
+        """Test image-direct API with multiple media_urls"""
+        if not self.created_devices:
+            return self.log_test("Image Direct Multiple URLs", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "media_urls": ["https://picsum.photos/200.jpg", "https://picsum.photos/300.png"]
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'ai_response' in result and 'displayed_in_chat' in result:
+                    self.log_test("Image Direct Multiple URLs", True, f"Success: {result.get('success')}, Displayed: {result.get('displayed_in_chat')}")
+                    return True, result
+                else:
+                    self.log_test("Image Direct Multiple URLs", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("Image Direct Multiple URLs", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct Multiple URLs", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_image_direct_base64(self):
+        """Test image-direct API with base64 image_data"""
+        if not self.created_devices:
+            return self.log_test("Image Direct Base64", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "image_data": self.generate_base64_red_dot_png(),
+            "question": "Is there a person in this image?"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'ai_response' in result and 'displayed_in_chat' in result:
+                    self.log_test("Image Direct Base64", True, f"Success: {result.get('success')}, Displayed: {result.get('displayed_in_chat')}")
+                    return True, result
+                else:
+                    self.log_test("Image Direct Base64", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("Image Direct Base64", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct Base64", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_image_direct_no_image_error(self):
+        """Test image-direct API error case with no image fields"""
+        if not self.created_devices:
+            return self.log_test("Image Direct No Image Error", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "question": "Analyze this image"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            # Should return error (400 or 422) or success=false
+            if response.status_code in [400, 422]:
+                self.log_test("Image Direct No Image Error", True, f"Correctly returned error status {response.status_code}")
+                return True, {}
+            elif response.status_code == 200:
+                result = response.json()
+                if not result.get('success'):
+                    self.log_test("Image Direct No Image Error", True, "Correctly returned success=false")
+                    return True, result
+                else:
+                    self.log_test("Image Direct No Image Error", False, "Should have failed but returned success=true")
+                    return False, {}
+            else:
+                self.log_test("Image Direct No Image Error", False, f"Unexpected status {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct No Image Error", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_image_direct_invalid_url(self):
+        """Test image-direct API with invalid/non-image URL"""
+        if not self.created_devices:
+            return self.log_test("Image Direct Invalid URL", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "image_url": "https://httpbin.org/status/404"  # Non-image URL that returns 404
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            # Should return error or success=false
+            if response.status_code == 200:
+                result = response.json()
+                if not result.get('success'):
+                    self.log_test("Image Direct Invalid URL", True, "Correctly handled invalid URL")
+                    return True, result
+                else:
+                    self.log_test("Image Direct Invalid URL", False, "Should have failed with invalid URL")
+                    return False, {}
+            else:
+                self.log_test("Image Direct Invalid URL", False, f"Unexpected status {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct Invalid URL", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_image_direct_chat_storage(self):
+        """Test that image-direct API stores messages in chat when displayed_in_chat=true"""
+        if not self.created_devices:
+            return self.log_test("Image Direct Chat Storage", False, "No devices available")
+        
+        # First, get current chat message count
+        chat_url = f"{self.api_url}/chat/{self.user_id}/{self.test_device_id}"
+        try:
+            initial_response = requests.get(chat_url)
+            initial_count = len(initial_response.json()) if initial_response.status_code == 200 else 0
+        except:
+            initial_count = 0
+        
+        # Send image-direct request
+        url = f"{self.api_url}/chat/image-direct"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "media_urls": ["https://picsum.photos/200.jpg"],
+            "question": "What do you see in this image?"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('success') and result.get('displayed_in_chat'):
+                    # Check if new messages were added to chat
+                    time.sleep(1)  # Wait for message to be stored
+                    final_response = requests.get(chat_url)
+                    if final_response.status_code == 200:
+                        final_count = len(final_response.json())
+                        if final_count > initial_count:
+                            # Check if the new message has media_urls
+                            messages = final_response.json()
+                            latest_message = messages[-1] if messages else None
+                            if latest_message and latest_message.get('media_urls'):
+                                self.log_test("Image Direct Chat Storage", True, f"Message stored with media_urls: {latest_message.get('media_urls')}")
+                                return True, result
+                            else:
+                                self.log_test("Image Direct Chat Storage", False, "Message stored but missing media_urls")
+                                return False, {}
+                        else:
+                            self.log_test("Image Direct Chat Storage", False, "No new messages added to chat")
+                            return False, {}
+                    else:
+                        self.log_test("Image Direct Chat Storage", False, "Could not retrieve chat messages")
+                        return False, {}
+                else:
+                    self.log_test("Image Direct Chat Storage", True, "Not displayed in chat (as expected)")
+                    return True, result
+            else:
+                self.log_test("Image Direct Chat Storage", False, f"Status {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Image Direct Chat Storage", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_chat_send_media_urls_regression(self):
+        """Test that existing chat send with media_urls still works (regression test)"""
+        if not self.created_devices:
+            return self.log_test("Chat Send Media URLs Regression", False, "No devices available")
+        
+        url = f"{self.api_url}/chat/send"
+        params = {"user_id": self.user_id}
+        data = {
+            "device_id": self.test_device_id,
+            "message": "Check these images",
+            "media_urls": ["https://picsum.photos/200.jpg"],
+            "sender": "user"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and result.get('ai_response'):
+                    ai_message = result['ai_response'].get('message', '')
+                    self.log_test("Chat Send Media URLs Regression", True, f"AI responded with {len(ai_message)} characters")
+                    return True, result
+                else:
+                    self.log_test("Chat Send Media URLs Regression", False, "Invalid response format")
+                    return False, {}
+            else:
+                self.log_test("Chat Send Media URLs Regression", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Chat Send Media URLs Regression", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_camera_prompt_get(self):
+        """Test GET camera prompt endpoint"""
+        url = f"{self.api_url}/camera/prompt/{self.user_id}/{self.test_device_id}"
+        
+        try:
+            response = requests.get(url)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'prompt_text' in result:
+                    self.log_test("Camera Prompt GET", True, f"Retrieved prompt: {result.get('prompt_text', '')[:50]}...")
+                    return True, result
+                else:
+                    self.log_test("Camera Prompt GET", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("Camera Prompt GET", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Camera Prompt GET", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_camera_prompt_put(self):
+        """Test PUT camera prompt endpoint"""
+        url = f"{self.api_url}/camera/prompt/{self.user_id}/{self.test_device_id}"
+        data = {
+            "instructions": "people at front door"
+        }
+        
+        try:
+            response = requests.put(url, json=data)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'prompt_text' in result:
+                    self.log_test("Camera Prompt PUT", True, f"Updated prompt: {result.get('prompt_text', '')[:50]}...")
+                    return True, result
+                else:
+                    self.log_test("Camera Prompt PUT", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("Camera Prompt PUT", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("Camera Prompt PUT", False, f"Error: {str(e)}")
+            return False, {}
+
+    def run_image_direct_tests(self):
+        """Run all image-direct API tests"""
+        print("\n🖼️ Testing Image-Direct API Extensions...")
+        
+        # Test various image-direct API scenarios
+        self.test_image_direct_single_url()
+        self.test_image_direct_multiple_urls()
+        self.test_image_direct_base64()
+        self.test_image_direct_no_image_error()
+        self.test_image_direct_invalid_url()
+        self.test_image_direct_chat_storage()
+        
+        # Test regression - existing chat send with media_urls
+        print("\n🔄 Testing Regression - Chat Send with Media URLs...")
+        self.test_chat_send_media_urls_regression()
+        
+        # Test camera prompt endpoints
+        print("\n📹 Testing Camera Prompt Endpoints...")
+        self.test_camera_prompt_get()
+        self.test_camera_prompt_put()
+
     def test_status_endpoints(self):
         """Test original status endpoints"""
         # Test create status check
