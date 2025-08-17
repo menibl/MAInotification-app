@@ -247,6 +247,9 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           if (response.data.displayed_in_chat) {
             // Reload messages to show new chat entries
             console.log('Image displayed in chat');
+            if (typeof reloadChat === 'function') {
+              reloadChat();
+            }
           } else {
             console.log('Image logged but not displayed - routine activity');
           }
