@@ -385,7 +385,8 @@ class DirectImageChat(BaseModel):
 
 class DirectImageChatCreate(BaseModel):
     device_id: str
-    image_data: str  # base64 encoded
+    image_data: Optional[str] = None  # base64 encoded
+    image_url: Optional[str] = None   # URL to image
     question: Optional[str] = None
 
 class CameraPrompt(BaseModel):
