@@ -1525,6 +1525,7 @@ const App = () => {
             onSendMessage={handleSendMessage}
             onMarkNotificationRead={handleMarkNotificationRead}
             isConnected={isConnected}
+            reloadChat={() => selectedDevice && loadChatMessages(selectedDevice.id)}
           />
         )}
         
