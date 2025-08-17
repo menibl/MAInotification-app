@@ -488,6 +488,13 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           >
             <Image size={16} />
           </button>
+          <button
+            onClick={handleDirectImageUrl}
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Send image URL directly to AI for analysis"
+          >
+            <Image size={16} />
+          </button>
           <MoreVertical size={20} className="text-gray-400" />
         </div>
       </div>
