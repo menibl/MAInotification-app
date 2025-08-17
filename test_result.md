@@ -134,6 +134,30 @@ frontend:
         - working: true
           agent: "main"
           comment: "Added file upload button (paperclip icon), drag & drop support, file preview, message referencing with click/multi-select modes, visual indicators for referenced messages"
+  - task: "Clear chat input and selections after message send"
+    implemented: true
+    working: true
+    file: "src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "On successful send, we now reset text input, media URL inputs, selected files, referenced messages, and selected notifications. Draft is preserved only on errors."
+
+  - task: "Extend image-direct API to support multiple image URLs"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Extended DirectImageChatCreate with media_urls. Backend now accepts base64, single image_url, or multiple media_urls; converts to base64 and forwards to vision model. Frontend buttons added for single and multiple URL submission."
+
 
   - task: "Media URL input and display interface"
     implemented: true
