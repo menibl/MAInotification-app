@@ -435,9 +435,65 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
               </>
             )}
           </div>
+          {/* Camera Prompt Display */}
+          {cameraPrompt && (
+            <div 
+              className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded cursor-pointer hover:bg-blue-100 transition-colors"
+              onClick={() => setShowPromptSettings(!showPromptSettings)}
+              title="Camera monitoring instructions - click to change"
+            >
+              📹 Monitoring: {promptInstructions || 'General security monitoring'}
+            </div>
+          )}
         </div>
-        <MoreVertical size={20} className="text-gray-400" />
+        <div className="flex items-center space-x-2">
+          <input
+            type="file"
+            ref={imageInputRef}
+            onChange={handleDirectImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            onClick={() => imageInputRef.current?.click()}
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Send image directly to AI for analysis"
+          >
+            <Image size={16} />
+          </button>
+          <MoreVertical size={20} className="text-gray-400" />
+        </div>
       </div>
+      
+      {/* Prompt Settings Modal */}
+      {showPromptSettings && (
+        <div className="px-4 py-3 bg-yellow-50 border-b">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-yellow-800">Camera Monitoring Instructions</span>
+            <button onClick={() => setShowPromptSettings(false)} className="text-yellow-600">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="space-y-2">
+            <textarea
+              value={promptInstructions}
+              onChange={(e) => setPromptInstructions(e.target.value)}
+              placeholder="Tell me what you want to monitor for (e.g., 'people entering restricted areas', 'packages left unattended', 'vehicles in parking lot after hours')"
+              className="w-full p-2 text-sm border border-yellow-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              rows="3"
+            />
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => updateCameraPrompt(promptInstructions)}
+                className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+              >
+                Update Monitoring
+              </button>
+              <span className="text-xs text-yellow-600">AI will analyze images based on these instructions</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messages & Notifications */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
