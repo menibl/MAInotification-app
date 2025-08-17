@@ -1418,6 +1418,222 @@ async def simulate_device_notification(
     
     return {"success": success, "message": "Notification sent" if success else "User not connected"}
 
+# Direct Image Chat API
+@api_router.post("/chat/image-direct")
+async def send_image_directly_to_chat(user_id: str, image_chat: DirectImageChatCreate):
+    """Send image directly to chat with optional question - AI decides if to display or just log"""
+    
+    try:
+        device_id = image_chat.device_id
+        
+        # Get device info
+        device = await db.devices.find_one({"id": device_id})
+        if not device:
+            return {"success": False, "error": "Device not found"}
+        
+        # Get current camera prompt for this device
+        camera_prompt = await db.camera_prompts.find_one({
+            "user_id": user_id,
+            "device_id": device_id
+        })
+        
+        # Build AI query
+        device_type = device.get("type", "default")
+        session_id = f"{user_id}_{device_id}_direct"
+        
+        # Use vision model for image analysis
+        ai_chat = await get_ai_chat_instance(device_type, session_id, has_images=True, user_id=user_id, device_id=device_id)
+        
+        # Create enhanced prompt with camera instructions
+        base_message = image_chat.question or "Analyze this image from the camera."
+        
+        if camera_prompt:
+            enhanced_message = f"""
+Camera Monitoring Instructions: {camera_prompt['prompt_text']}
+
+User's current search focus: {camera_prompt['instructions']}
+
+Image Analysis Request: {base_message}
+
+Based on the camera monitoring instructions above, analyze this image and determine:
+1. Does this image contain something relevant to what we're monitoring for?
+2. If YES: Provide a detailed analysis with specific observations
+3. If NO: Simply respond with 'NO_DISPLAY' and I will only log this for record keeping
+
+Be thorough in your analysis when something relevant is detected.
+"""
+        else:
+            enhanced_message = f"""
+Analyze this security camera image: {base_message}
+
+Determine if this shows anything significant that should be brought to the user's attention.
+If this is routine/normal activity, respond with 'NO_DISPLAY'.
+If this shows something noteworthy, provide detailed analysis.
+"""
+        
+        # Convert base64 image for vision analysis
+        try:
+            from emergentintegrations.llm.chat import ImageContent
+            image_content = ImageContent(image_base64=image_chat.image_data)
+            
+            user_message = UserMessage(
+                text=enhanced_message,
+                file_contents=[image_content]
+            )
+            
+            print(f"DEBUG: Sending direct image to AI with vision model")
+            ai_response = await ai_chat.send_message(user_message)
+            
+            # Determine if should display in chat
+            display_in_chat = not ai_response.strip().startswith('NO_DISPLAY')
+            
+            if not display_in_chat:
+                ai_response = "Image logged for monitoring - no significant activity detected."
+            
+            # Store the direct image chat record
+            direct_chat = DirectImageChat(
+                user_id=user_id,
+                device_id=device_id,
+                image_data=image_chat.image_data,
+                question=image_chat.question,
+                ai_response=ai_response,
+                display_in_chat=display_in_chat
+            )
+            
+            await db.direct_image_chats.insert_one(direct_chat.dict())
+            
+            # If should display in chat, also add to regular chat messages
+            if display_in_chat:
+                # Add user message to chat
+                user_chat_msg = ChatMessage(
+                    user_id=user_id,
+                    device_id=device_id,
+                    message=image_chat.question or "📸 Image sent for analysis",
+                    sender="user",
+                    media_urls=None,  # We'll handle image differently
+                    file_attachments=[{
+                        "filename": "direct_image.jpg",
+                        "file_type": "image/jpeg",
+                        "file_size": len(image_chat.image_data) * 3 // 4,  # Approximate base64 to bytes
+                        "image_data": image_chat.image_data  # Store base64 directly
+                    }]
+                )
+                await db.chat_messages.insert_one(user_chat_msg.dict())
+                
+                # Add AI response to chat
+                ai_chat_msg = ChatMessage(
+                    user_id=user_id,
+                    device_id=device_id,
+                    message=ai_response,
+                    sender="ai",
+                    ai_response=True
+                )
+                await db.chat_messages.insert_one(ai_chat_msg.dict())
+            
+            return {
+                "success": True,
+                "displayed_in_chat": display_in_chat,
+                "ai_response": ai_response,
+                "message_id": direct_chat.id,
+                "analysis_type": "significant" if display_in_chat else "routine"
+            }
+            
+        except Exception as e:
+            print(f"ERROR: Vision analysis failed: {e}")
+            return {"success": False, "error": f"Vision analysis failed: {str(e)}"}
+            
+    except Exception as e:
+        print(f"ERROR: Direct image chat failed: {e}")
+        return {"success": False, "error": str(e)}
+
+# Camera Prompt Management API
+@api_router.get("/camera/prompt/{user_id}/{device_id}")
+async def get_camera_prompt(user_id: str, device_id: str):
+    """Get current camera monitoring prompt"""
+    
+    prompt = await db.camera_prompts.find_one({
+        "user_id": user_id,
+        "device_id": device_id
+    })
+    
+    if not prompt:
+        return {
+            "user_id": user_id,
+            "device_id": device_id,
+            "prompt_text": "General security monitoring",
+            "instructions": "Monitor for any unusual or suspicious activity",
+            "is_default": True
+        }
+    
+    return {
+        "user_id": prompt["user_id"],
+        "device_id": prompt["device_id"],
+        "prompt_text": prompt["prompt_text"],
+        "instructions": prompt["instructions"],
+        "updated_at": prompt["updated_at"],
+        "is_default": False
+    }
+
+@api_router.put("/camera/prompt/{user_id}/{device_id}")
+async def update_camera_prompt(user_id: str, device_id: str, prompt_create: CameraPromptCreate):
+    """Update camera monitoring prompt based on user instructions"""
+    
+    try:
+        # Get device info for context
+        device = await db.devices.find_one({"id": device_id})
+        device_type = device.get("type", "camera") if device else "camera"
+        device_name = device.get("name", device_id) if device else device_id
+        
+        # Generate appropriate prompt based on user instructions
+        ai_generated_prompt = f"""
+You are monitoring {device_name} ({device_type}) for the following:
+{prompt_create.instructions}
+
+When analyzing images from this camera, focus specifically on:
+- Detecting: {prompt_create.instructions}
+- Context: Security monitoring for {device_type}
+- Alert level: Report anything relevant to the monitoring criteria
+- Ignore: Routine activity not related to the search criteria
+
+Provide detailed analysis when criteria are met, or respond with 'NO_DISPLAY' for routine activity.
+"""
+        
+        # Check if prompt exists
+        existing_prompt = await db.camera_prompts.find_one({
+            "user_id": user_id,
+            "device_id": device_id
+        })
+        
+        if existing_prompt:
+            # Update existing
+            await db.camera_prompts.update_one(
+                {"user_id": user_id, "device_id": device_id},
+                {"$set": {
+                    "prompt_text": ai_generated_prompt,
+                    "instructions": prompt_create.instructions,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+        else:
+            # Create new
+            new_prompt = CameraPrompt(
+                user_id=user_id,
+                device_id=device_id,
+                prompt_text=ai_generated_prompt,
+                instructions=prompt_create.instructions
+            )
+            await db.camera_prompts.insert_one(new_prompt.dict())
+        
+        return {
+            "success": True,
+            "message": "Camera monitoring prompt updated successfully",
+            "prompt_text": ai_generated_prompt,
+            "instructions": prompt_create.instructions
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Chat Settings Management APIs
 @api_router.get("/chat/settings/{user_id}/{device_id}")
 async def get_chat_settings(user_id: str, device_id: str):
