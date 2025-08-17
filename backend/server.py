@@ -1479,23 +1479,36 @@ If this shows something noteworthy, provide detailed analysis.
         try:
             from emergentintegrations.llm.chat import ImageContent
             
-            image_content = None
+            image_contents = []
             if image_chat.image_data:
                 # Use provided base64 data
-                image_content = ImageContent(image_base64=image_chat.image_data)
-            elif image_chat.image_url:
-                # Download image from URL and convert to base64
+                image_contents.append(ImageContent(image_base64=image_chat.image_data))
+            
+            # Handle single image_url
+            if image_chat.image_url:
                 image_base64 = await download_image_as_base64(image_chat.image_url)
                 if image_base64:
-                    image_content = ImageContent(image_base64=image_base64)
+                    image_contents.append(ImageContent(image_base64=image_base64))
                 else:
-                    return {"success": False, "error": "Failed to download image from URL"}
-            else:
-                return {"success": False, "error": "Either image_data or image_url must be provided"}
+                    return {"success": False, "error": "Failed to download image from image_url"}
+            
+            # Handle multiple media_urls (image URLs)
+            if image_chat.media_urls:
+                for url in image_chat.media_urls:
+                    if not url:
+                        continue
+                    image_base64 = await download_image_as_base64(url)
+                    if image_base64:
+                        image_contents.append(ImageContent(image_base64=image_base64))
+                    else:
+                        print(f"WARN: Could not download image from {url}")
+            
+            if not image_contents:
+                return {"success": False, "error": "Provide at least one image via image_data, image_url, or media_urls"}
             
             user_message = UserMessage(
                 text=enhanced_message,
-                file_contents=[image_content]
+                file_contents=image_contents
             )
             
             print(f"DEBUG: Sending direct image to AI with vision model")
