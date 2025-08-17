@@ -285,7 +285,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           : `Referencing notifications:\n${notificationContext}`;
       }
       
-      await onSendMessage(device.id, enhancedMessage, selectedFiles, referencedMessages, allMediaUrls);
+      // Clear input immediately for better UX
       setInputMessage('');
       setSelectedFiles([]);
       setMediaUrls(['']);
@@ -293,6 +293,9 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       setReferencedMessages([]);
       setSelectedNotifications([]);
       setMultiSelectMode(false);
+      
+      // Send message
+      await onSendMessage(device.id, enhancedMessage, selectedFiles, referencedMessages, allMediaUrls);
     }
   };
 
