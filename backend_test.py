@@ -1063,6 +1063,9 @@ class DeviceChatAPITester:
         self.test_chat_with_message_references()
         self.test_chat_with_files_and_references()
         
+        # Image-Direct API Tests (FOCUS OF THIS REVIEW)
+        self.run_image_direct_tests()
+        
         # OpenAI integration test
         print("\n🤖 Testing OpenAI Integration...")
         self.test_openai_integration()
