@@ -278,6 +278,9 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
         console.log(`Image URL analysis: ${response.data.analysis_type}`);
         if (response.data.displayed_in_chat) {
           console.log('Image URL displayed in chat');
+          if (typeof reloadChat === 'function') {
+            reloadChat();
+          }
         } else {
           console.log('Image URL logged but not displayed - routine activity');
         }
