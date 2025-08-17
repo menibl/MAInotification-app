@@ -300,7 +300,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Extend image-direct API to support image_url and multiple media_urls"
     - "Clear chat input and selections after send on frontend"
   stuck_tasks:
     - "WebSocket connectivity - /ws/{user_id} endpoint"
