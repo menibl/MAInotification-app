@@ -1524,12 +1524,13 @@ If this shows something noteworthy, provide detailed analysis.
                     device_id=device_id,
                     message=image_chat.question or "📸 Image sent for analysis",
                     sender="user",
-                    media_urls=None,  # We'll handle image differently
+                    media_urls=[image_chat.image_url] if image_chat.image_url else None,  # Store URL if provided
                     file_attachments=[{
                         "filename": "direct_image.jpg",
                         "file_type": "image/jpeg",
-                        "file_size": len(image_chat.image_data) * 3 // 4,  # Approximate base64 to bytes
-                        "image_data": image_chat.image_data  # Store base64 directly
+                        "file_size": len(image_chat.image_data) * 3 // 4 if image_chat.image_data else 0,
+                        "image_data": image_chat.image_data if image_chat.image_data else None,
+                        "image_url": image_chat.image_url if image_chat.image_url else None
                     }]
                 )
                 await db.chat_messages.insert_one(user_chat_msg.dict())
