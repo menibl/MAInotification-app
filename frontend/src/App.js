@@ -610,7 +610,34 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           <MoreVertical size={20} className="text-gray-400" />
         </div>
       </div>
-      
+
+      {/* Video Windows */}
+      <div className="px-4 pt-3 pb-1 border-b bg-white">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-lg border bg-black/5 p-2">
+            <div className="text-xs text-gray-600 mb-1">Latest Event Video</div>
+            {latestVideoUrl ? (
+              <video key={latestVideoUrl} src={latestVideoUrl} controls className="w-full h-40 md:h-56 rounded-md bg-black" />
+            ) : (
+              <div className="w-full h-40 md:h-56 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                No recent video
+              </div>
+            )}
+          </div>
+          <div className="rounded-lg border bg-black/5 p-2">
+            <div className="text-xs text-gray-600 mb-1">Live Stream</div>
+            <iframe
+              key={liveStreamUrl}
+              src={liveStreamUrl}
+              title="Live HLS Stream"
+              className="w-full h-40 md:h-56 rounded-md border-0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Prompt Settings Modal */}
       {showPromptSettings && (
         <div className="px-4 py-3 bg-yellow-50 border-b">
