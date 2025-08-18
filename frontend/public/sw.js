@@ -91,6 +91,16 @@ self.addEventListener('push', (event) => {
     }
   }
 
+  // Play custom sound if provided
+  if (notificationData.sound_url) {
+    try {
+      const audio = new Audio(notificationData.sound_url);
+      audio.play().catch(() => {});
+    } catch (e) {
+      console.warn('Failed to play sound:', e);
+    }
+  }
+
   event.waitUntil(
     self.registration.showNotification(notificationData.title, {
       body: notificationData.body,
