@@ -171,7 +171,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   }, [messages, deviceNotifications]);
 
   useEffect(() => {
-    // Listen to SW postMessage for navigation with context (video_url)
+    // Listen to SW postMessage for navigation with context (video_url) and sound playback
     const onMessage = (event) => {
       if (event?.data?.type === 'navigate_to_device') {
         // Only apply if relevant device
@@ -179,6 +179,17 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           const vid = event.data.video_url;
           if (vid && isVideoUrl(vid)) {
             setOverrideVideoUrl(vid);
+          }
+        }
+      }
+      if (event?.data?.type === 'play_sound') {
+        const url = event.data.sound_url || (event.data.sound_id ? `${window.location.origin}/api/sounds/${event.data.sound_id}` : null);
+        if (url) {
+          try {
+            const audio = new Audio(url);
+            audio.play().catch(() => {});
+          } catch (e) {
+            console.warn('Failed to play sound in page context', e);
           }
         }
       }
