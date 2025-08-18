@@ -292,6 +292,45 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   };
 
   const handleSend = async () => {
+    // Natural-language camera prompt update (no AI response), per user preference
+    if (device && inputMessage.trim()) {
+      const lowered = inputMessage.trim().toLowerCase();
+      if (/(monitor for|update camera prompt to|update prompt to|please monitor|look for|watch for)/.test(lowered)) {
+        try {
+          const res = await axios.post(`${API}/camera/prompt/parse-command`, {
+            user_id: USER_ID,
+            device_id: device.id,
+            message: inputMessage.trim(),
+          });
+          if (res.data.success && res.data.settings_updated) {
+            // Show confirmation in chat as a system message
+            const systemMsg = {
+              id: Date.now().toString() + '_sys',
+              user_id: USER_ID,
+              device_id: device.id,
+              message: res.data.confirmation_message || 'Camera monitoring updated',
+              sender: 'system',
+              timestamp: new Date().toISOString(),
+            };
+            setMessages(prev => [...prev, systemMsg]);
+            // Refresh header prompt
+            await loadCameraPrompt();
+            // Clear inputs and selections
+            setInputMessage('');
+            setSelectedFiles([]);
+            setMediaUrls(['']);
+            setShowMediaInput(false);
+            setReferencedMessages([]);
+            setSelectedNotifications([]);
+            setMultiSelectMode(false);
+            return; // Do not send to AI
+          }
+        } catch (e) {
+          console.error('Camera prompt update failed', e);
+        }
+      }
+    }
+
     const validMediaUrls = mediaUrls.filter(url => url.trim() !== '');
     
     // Add notification media URLs to mediaUrls if any notifications are selected
