@@ -1639,7 +1639,21 @@ If this shows something noteworthy, provide detailed analysis.
                     ai_response=True
                 )
                 await db.chat_messages.insert_one(ai_chat_msg.dict())
-
+                
+                # If a video_url was provided, store as a notification so UI can show it as latest event
+                if image_chat.video_url:
+                    try:
+                        video_notif = Notification(
+                            user_id=user_id,
+                            device_id=device_id,
+                            type='media',
+                            content='Event video',
+                            media_url=image_chat.video_url
+                        )
+                        await db.notifications.insert_one(video_notif.dict())
+                    except Exception as e:
+                        logging.warning(f"Failed to store video_url notification: {e}")
+                
                 # Send push notification for significant activity
                 try:
                   title = f"{device.get('name', device_id)}: Significant activity"
