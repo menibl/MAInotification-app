@@ -1621,7 +1621,7 @@ const App = () => {
         )}
         
         <h1 className="text-lg font-semibold text-gray-800">
-          {currentView === 'devices' && 'Device Chat'}
+          {currentView === 'devices' && 'MAI Focus'}
           {currentView === 'chat' && selectedDevice?.name}
           {currentView === 'notifications' && 'Notifications'}
         </h1>
