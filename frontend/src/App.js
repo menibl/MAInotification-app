@@ -1624,6 +1624,24 @@ const App = () => {
             onMarkNotificationRead={handleMarkNotificationRead}
             isConnected={isConnected}
             reloadChat={() => selectedDevice && loadChatMessages(selectedDevice.id)}
+            loadFullHistory={async () => {
+              if (!selectedDevice) return;
+              try {
+                const resp = await axios.get(`${API}/chat/${USER_ID}/${selectedDevice.id}/history`);
+                if (resp.data && Array.isArray(resp.data.history)) {
+                  setMessages(resp.data.history.map(h => ({
+                    id: h.id,
+                    user_id: USER_ID,
+                    device_id: selectedDevice.id,
+                    message: h.message,
+                    sender: h.sender,
+                    timestamp: h.timestamp || new Date().toISOString()
+                  })));
+                }
+              } catch (err) {
+                console.error('Failed to load full history:', err);
+              }
+            }}
           />
         )}
         
