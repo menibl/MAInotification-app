@@ -158,6 +158,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   const [promptInstructions, setPromptInstructions] = useState('');
   const [overrideVideoUrl, setOverrideVideoUrl] = useState(null);
   const messagesEndRef = useRef(null);
+  const showFullHistoryRef = useRef(false);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
