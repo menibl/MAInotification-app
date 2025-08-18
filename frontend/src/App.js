@@ -362,7 +362,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       setReferencedMessages([]);
       setSelectedNotifications([]);
       setMultiSelectMode(false);
-      
+
       // Send message
       await onSendMessage(device.id, enhancedMessage, selectedFiles, referencedMessages, allMediaUrls);
     }
