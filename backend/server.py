@@ -1771,6 +1771,88 @@ async def camera_prompt_parse_command(cmd: CameraPromptCommand):
     result = await parse_camera_prompt_text(cmd.user_id, cmd.device_id, cmd.message)
     return result
 
+async def camera_prompt_fix_from_feedback(command: CameraPromptFixCommand) -> Dict[str, Any]:
+    """Update camera monitoring prompt based on corrective feedback from user"""
+    
+    try:
+        user_id = command.user_id
+        device_id = command.device_id
+        feedback_message = command.message
+        
+        # Get current camera prompt
+        current_prompt = await db.camera_prompts.find_one({
+            "user_id": user_id,
+            "device_id": device_id
+        })
+        
+        if not current_prompt:
+            return {"success": False, "error": "No existing camera prompt found to update"}
+        
+        # Get device info for context
+        device = await db.devices.find_one({"id": device_id})
+        device_type = device.get("type", "camera") if device else "camera"
+        device_name = device.get("name", device_id) if device else device_id
+        
+        # Get referenced AI message context if provided
+        context_info = ""
+        if command.referenced_messages:
+            for msg_id in command.referenced_messages:
+                ref_msg = await db.chat_messages.find_one({"id": msg_id})
+                if ref_msg and ref_msg.get("sender") == "ai":
+                    context_info = f"Previous AI analysis: {ref_msg['message'][:200]}..."
+                    break
+        
+        # Use AI to analyze the feedback and update instructions
+        session_id = f"prompt_fix_{user_id}_{device_id}"
+        ai_chat = LlmChat(
+            api_key=os.environ.get('OPENAI_API_KEY'),
+            session_id=session_id,
+            system_message="You are an AI assistant that helps refine camera monitoring instructions based on user feedback."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        analysis_prompt = f"""
+Current camera monitoring instructions: {current_prompt['instructions']}
+
+User feedback about the monitoring: {feedback_message}
+
+{context_info}
+
+Based on this corrective feedback, provide updated monitoring instructions that address the user's concerns. The instructions should be:
+1. Clear and specific
+2. Address the issues mentioned in the feedback
+3. Maintain the core monitoring purpose
+4. Be concise (1-2 sentences)
+
+Respond with only the updated instructions, nothing else.
+"""
+        
+        user_message = UserMessage(text=analysis_prompt)
+        updated_instructions = await ai_chat.send_message(user_message)
+        updated_instructions = updated_instructions.strip()
+        
+        # Update the camera prompt with new instructions
+        update_result = await update_camera_prompt(user_id, device_id, CameraPromptCreate(instructions=updated_instructions))
+        
+        if not update_result.get("success"):
+            return {"success": False, "error": "Failed to update camera prompt"}
+        
+        return {
+            "success": True,
+            "instructions": updated_instructions,
+            "prompt_text": update_result.get("prompt_text"),
+            "confirmation_message": f"Updated monitoring based on your feedback. New focus: {updated_instructions}"
+        }
+        
+    except Exception as e:
+        logging.error(f"Failed to process camera prompt fix: {e}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/camera/prompt/fix-from-feedback")
+async def camera_prompt_fix_endpoint(command: CameraPromptFixCommand):
+    """API endpoint to fix camera prompt based on user feedback"""
+    result = await camera_prompt_fix_from_feedback(command)
+    return result
+
 # Chat Settings Management APIs
 @api_router.get("/chat/settings/{user_id}/{device_id}")
 async def get_chat_settings(user_id: str, device_id: str):
