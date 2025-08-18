@@ -325,6 +325,8 @@ class PushNotificationRequest(BaseModel):
     badge: Optional[str] = None
     image: Optional[str] = None
     video_url: Optional[str] = None
+    sound_id: Optional[str] = None  # e.g., 'significant', 'alert'
+    sound_url: Optional[str] = None  # absolute URL to an audio file
     data: Optional[Dict[str, Any]] = None
     actions: Optional[List[Dict[str, str]]] = None
     require_interaction: Optional[bool] = False
