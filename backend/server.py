@@ -407,6 +407,12 @@ class CameraPromptCommand(BaseModel):
     device_id: str
     message: str
 
+class CameraPromptFixCommand(BaseModel):
+    user_id: str
+    device_id: str
+    message: str
+    referenced_messages: Optional[List[str]] = None
+
 class RoleChangeCommand(BaseModel):
     user_id: str
     device_id: str
