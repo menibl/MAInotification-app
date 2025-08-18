@@ -1952,7 +1952,24 @@ async def parse_role_change_command(command: RoleChangeCommand):
     message = command.message.lower()
     user_id = command.user_id
     device_id = command.device_id
-    
+
+    # If user is giving corrective feedback about analysis, route to prompt-fix flow
+    if any(k in message for k in ["wrong", "mistake", "incorrect", "should have", "shouldn't", "misclassified", "false positive", "false alarm", "it was"]) and len(message.split()) > 3:
+        # Try to use the last AI message as context automatically
+        last_ai = await db.chat_messages.find({"user_id": user_id, "device_id": device_id, "sender": "ai"}).sort("timestamp", -1).limit(1).to_list(1)
+        last_ai_id = last_ai[0]["id"] if last_ai else None
+        from fastapi.encoders import jsonable_encoder
+        fix_payload = CameraPromptFixCommand(user_id=user_id, device_id=device_id, message=command.message, referenced_messages=[last_ai_id] if last_ai_id else None)
+        fix_result = await camera_prompt_fix_from_feedback(fix_payload)
+        if fix_result.get("success"):
+            return {
+                "success": True,
+                "detected": "prompt_fix",
+                "confirmation_message": f"Updated monitoring based on your feedback. New focus: {fix_result['instructions']}",
+                "settings_updated": True,
+                "new_instructions": fix_result.get("instructions")
+            }
+
     # Patterns for role changes
     role_patterns = [
         r"change your role to (.+)",
