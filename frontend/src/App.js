@@ -439,17 +439,8 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     if (!showFullHistoryRef.current) {
       showFullHistoryRef.current = true;
       try {
-        // Fetch larger history JSON (server returns full history document)
-        const resp = await axios.get(`${API}/chat/${USER_ID}/${device.id}/history`);
-        if (resp.data && Array.isArray(resp.data.history)) {
-          setMessages(resp.data.history.map(h => ({
-            id: h.id,
-            user_id: USER_ID,
-            device_id: device.id,
-            message: h.message,
-            sender: h.sender,
-            timestamp: h.timestamp || new Date().toISOString()
-          })));
+        if (typeof loadFullHistory === 'function') {
+          await loadFullHistory();
         }
       } catch (err) {
         console.error('Failed to load full history:', err);
