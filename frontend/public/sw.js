@@ -82,7 +82,8 @@ self.addEventListener('push', (event) => {
       const payload = event.data.json();
       notificationData = {
         ...notificationData,
-        ...payload
+        ...payload,
+        data: { ...(notificationData.data || {}), ...(payload.data || {}) }
       };
     } catch (e) {
       console.error('Error parsing push notification data:', e);
