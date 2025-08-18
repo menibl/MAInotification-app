@@ -1676,7 +1676,8 @@ If this shows something noteworthy, provide detailed analysis.
                           "device_id": device_id,
                           "type": "ai_analysis",
                           "analysis_type": "significant",
-                          "message_id": ai_chat_msg.id
+                          "message_id": ai_chat_msg.id,
+                          "video_url": image_chat.video_url if image_chat.video_url else (image_chat.media_urls[0] if (image_chat.media_urls and any(image_chat.media_urls[0].lower().endswith(ext) for ext in [".mp4", ".mov", ".webm", ".mkv"])) else None)
                       },
                       require_interaction=True
                   )
