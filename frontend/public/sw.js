@@ -121,6 +121,11 @@ self.addEventListener('notificationclick', (event) => {
         }
         // Otherwise, open new window
         if (clients.openWindow) {
+          // Deep-link into the device chat if device_id is present in data
+          if (notificationData && notificationData.data && notificationData.data.device_id) {
+            const target = `/?device_id=${encodeURIComponent(notificationData.data.device_id)}`;
+            return clients.openWindow(target);
+          }
           return clients.openWindow('/');
         }
       })
