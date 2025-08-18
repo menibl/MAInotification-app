@@ -1309,7 +1309,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                             title=title,
                             body=body,
                             image=notif_image,
-                            video_url=notif_image if notif_image and any((notif_image or '').toLowerCase().endsWith(ext) for ext in [".mp4", ".mov", ".webm", ".mkv"]) else None,
+                            video_url=notif_image if notif_image and any(notif_image.lower().endswith(ext) for ext in [".mp4", ".mov", ".webm", ".mkv"]) else None,
                             data={
                                 "user_id": user_id,
                                 "device_id": device_id,
