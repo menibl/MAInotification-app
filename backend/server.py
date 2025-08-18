@@ -1278,6 +1278,47 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 ai_response=True
             )
             await db.chat_messages.insert_one(ai_chat_msg.dict())
+
+            # Send push for significant AI response when images were involved
+            try:
+                if has_images:
+                    low = (ai_response or '').lower()
+                    significant = not any(kw in low for kw in [
+                        'no_display', 'routine', 'no significant', 'nothing significant', 'no notable'
+                    ])
+                    if significant:
+                        # Choose an image for the notification
+                        notif_image = None
+                        if media_urls:
+                            # Prefer the first media url
+                            notif_image = media_urls[0]
+                        else:
+                            # Look for first image attachment url
+                            if file_attachments:
+                                for att in file_attachments:
+                                    if att.get('file_type', '').startswith('image/') and att.get('url'):
+                                        notif_image = att['url']
+                                        break
+                        title = f"{device.get('name', device_id)}: Significant activity"
+                        body = ai_response if len(ai_response) <= 180 else ai_response[:177] + '...'
+                        push_req = PushNotificationRequest(
+                            user_id=user_id,
+                            device_id=device_id,
+                            title=title,
+                            body=body,
+                            image=notif_image,
+                            data={
+                                "user_id": user_id,
+                                "device_id": device_id,
+                                "type": "ai_analysis",
+                                "analysis_type": "significant",
+                                "message_id": ai_chat_msg.id
+                            },
+                            require_interaction=True
+                        )
+                        await send_push_notification(push_req)
+            except Exception as e:
+                logging.warning(f"Failed to send push for chat AI response: {e}")
             
             # Update chat history with both messages
             history.extend([
