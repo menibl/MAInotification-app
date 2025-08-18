@@ -53,7 +53,7 @@ self.addEventListener('push', (event) => {
   console.log('Push notification received:', event);
   
   let notificationData = {
-    title: 'MAI Focus',
+    title: 'Device Chat',
     body: 'New notification from your device',
     icon: '/manifest-icon-192.png',
     badge: '/manifest-icon-192.png',
