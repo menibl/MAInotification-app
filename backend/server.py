@@ -921,6 +921,16 @@ async def send_push_notification(notification: PushNotificationRequest):
         "requireInteraction": notification.require_interaction,
         "timestamp": datetime.utcnow().isoformat()
     }
+
+    # Ensure deep-link info is present in data
+    try:
+        if not isinstance(payload["data"], dict):
+            payload["data"] = {}
+        payload["data"].setdefault("device_id", notification.device_id)
+        if notification.video_url:
+            payload["data"]["video_url"] = notification.video_url
+    except Exception as _:
+        pass
     
     # VAPID keys from environment variables
     vapid_private_key = os.environ.get('VAPID_PRIVATE_KEY')
