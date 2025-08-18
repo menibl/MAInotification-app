@@ -1631,13 +1631,7 @@ const App = () => {
         </h1>
         
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-200"
-            title="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+
           {pushSupported && (
             <button
               onClick={pushSubscribed ? unsubscribeFromPush : subscribeToPush}
