@@ -17,7 +17,7 @@ import aiofiles
 import shutil
 from pywebpush import webpush, WebPushException
 from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType, ImageContent
-import requests
+import httpx
 import base64
 from io import BytesIO
 
@@ -146,24 +146,24 @@ async def get_ai_chat_instance(device_type: str, session_id: str, has_images: bo
 async def download_image_as_base64(url: str) -> Optional[str]:
     """Download an image from URL and convert to base64"""
     try:
-        response = requests.get(url, timeout=10, stream=True)
-        if response.status_code == 200:
-            # Get content type to determine format
-            content_type = response.headers.get('content-type', '').lower()
-            if not content_type.startswith('image/'):
-                return None
-            
-            # Read image data
-            image_data = BytesIO()
-            for chunk in response.iter_content(chunk_size=8192):
-                image_data.write(chunk)
-            
-            # Convert to base64
-            image_data.seek(0)
-            image_base64 = base64.b64encode(image_data.getvalue()).decode('utf-8')
-            return image_base64
+        async with httpx.AsyncClient(timeout=10) as client:
+            async with client.stream("GET", url) as response:
+                response.raise_for_status()
+
+                content_type = response.headers.get("content-type", "").lower()
+                if not content_type.startswith("image/"):
+                    return None
+
+                image_data = BytesIO()
+                async for chunk in response.aiter_bytes():
+                    image_data.write(chunk)
+
+        image_base64 = base64.b64encode(image_data.getvalue()).decode("utf-8")
+        return image_base64
+    except httpx.HTTPStatusError as e:
+        print(f"Failed to download image from {url}: {e}")
         return None
-    except Exception as e:
+    except httpx.RequestError as e:
         print(f"Failed to download image from {url}: {e}")
         return None
 
