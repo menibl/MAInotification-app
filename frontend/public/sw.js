@@ -117,7 +117,8 @@ self.addEventListener('notificationclick', (event) => {
       clients.matchAll({ type: 'window' }).then((clientList) => {
         // If app is already open, focus it
         for (const client of clientList) {
-          if (client.url === self.location.origin + '/' && 'focus' in client) {
+          if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+            client.postMessage({ type: 'navigate_to_device', device_id: data.device_id, video_url: data.video_url });
             return client.focus();
           }
         }
@@ -125,7 +126,8 @@ self.addEventListener('notificationclick', (event) => {
         if (clients.openWindow) {
           // Deep-link into the device chat if device_id is present in data
           if (data && data.device_id) {
-            const target = `/?device_id=${encodeURIComponent(data.device_id)}`;
+            const qs = new URLSearchParams({ device_id: data.device_id, video_url: data.video_url || '' }).toString();
+            const target = `/?${qs}`;
             return clients.openWindow(target);
           }
           return clients.openWindow('/');
