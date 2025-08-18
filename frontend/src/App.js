@@ -306,16 +306,10 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             referenced_messages: (messages.slice().reverse().find(m => m.device_id === device.id && m.sender === 'ai')?.id) ? [messages.slice().reverse().find(m => m.device_id === device.id && m.sender === 'ai').id] : []
           });
           if (res.data.success) {
-            // Append system confirmation (backend also stores one; this improves UX instantly)
-            const systemMsg = {
-              id: Date.now().toString() + '_sys_fix',
-              user_id: USER_ID,
-              device_id: device.id,
-              message: `Updated monitoring based on your feedback. New focus: ${res.data.instructions}`,
-              sender: 'system',
-              timestamp: new Date().toISOString(),
-            };
-            setMessages(prev => [...prev, systemMsg]);
+            // Refresh chat and header prompt
+            if (typeof reloadChat === 'function') {
+              await reloadChat();
+            }
             await loadCameraPrompt();
             // Clear inputs and selections as per preference
             setInputMessage('');
