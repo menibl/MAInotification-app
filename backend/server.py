@@ -1654,6 +1654,7 @@ If this shows something noteworthy, provide detailed analysis.
                       title=title,
                       body=body,
                       image=notif_image,
+                      video_url=notif_image if notif_image and any(notif_image.lower().endswith(ext) for ext in [".mp4", ".mov", ".webm", ".mkv"]) else None,
                       data={
                           "user_id": user_id,
                           "device_id": device_id,
