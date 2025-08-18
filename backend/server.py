@@ -324,6 +324,7 @@ class PushNotificationRequest(BaseModel):
     icon: Optional[str] = None
     badge: Optional[str] = None
     image: Optional[str] = None
+    video_url: Optional[str] = None
     data: Optional[Dict[str, Any]] = None
     actions: Optional[List[Dict[str, str]]] = None
     require_interaction: Optional[bool] = False
