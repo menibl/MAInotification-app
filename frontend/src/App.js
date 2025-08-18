@@ -1154,6 +1154,12 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 const App = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   useEffect(() => {
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
     const root = document.documentElement;
     if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
     localStorage.setItem('theme', theme);
