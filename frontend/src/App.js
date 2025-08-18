@@ -340,17 +340,10 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             message: inputMessage.trim(),
           });
           if (res.data.success && res.data.settings_updated) {
-            // Show confirmation in chat as a system message
-            const systemMsg = {
-              id: Date.now().toString() + '_sys',
-              user_id: USER_ID,
-              device_id: device.id,
-              message: res.data.confirmation_message || 'Camera monitoring updated',
-              sender: 'system',
-              timestamp: new Date().toISOString(),
-            };
-            setMessages(prev => [...prev, systemMsg]);
-            // Refresh header prompt
+            // Refresh chat and header prompt
+            if (typeof reloadChat === 'function') {
+              await reloadChat();
+            }
             await loadCameraPrompt();
             // Clear inputs and selections
             setInputMessage('');
