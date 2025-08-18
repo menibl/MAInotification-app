@@ -567,12 +567,53 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header (minimal) */}
+      {/* Header (minimal) with sound test and device default sound select */}
       <div className="px-4 py-3 border-b bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-800 text-sm md:text-base truncate">
-          <span className="font-semibold truncate">{device.name}</span>
-          <span className="text-gray-400">•</span>
-          <span className="truncate">{promptInstructions || 'General security monitoring'}</span>
+        <div className="flex items-center gap-3 text-gray-800 text-sm md:text-base truncate">
+          <div className="flex-1 flex items-center gap-2 truncate">
+            <span className="font-semibold truncate">{device.name}</span>
+            <span className="text-gray-400">•</span>
+            <span className="truncate">{promptInstructions || 'General security monitoring'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              className="border rounded px-2 py-1 text-xs text-gray-700"
+              value={device?.settings?.default_sound_id || ''}
+              onChange={async (e) => {
+                const default_sound_id = e.target.value || null;
+                try {
+                  const res = await axios.put(`${API}/devices/${device.id}`, {
+                    settings: {
+                      ...(device.settings || {}),
+                      default_sound_id
+                    }
+                  });
+                  if (res.data) {
+                    onDeviceUpdated && onDeviceUpdated(res.data);
+                  }
+                } catch (err) {
+                  console.error('Failed to save default sound', err);
+                }
+              }}
+            >
+              <option value="">No sound</option>
+              <option value="significant">Significant</option>
+              <option value="alert">Alert</option>
+              <option value="routine">Routine</option>
+            </select>
+            <button
+              onClick={() => {
+                const sid = device?.settings?.default_sound_id;
+                const url = sid ? `${window.location.origin}/api/sounds/${sid}` : null;
+                if (url) {
+                  const audio = new Audio(url);
+                  audio.play().catch(() => {});
+                }
+              }}
+              className="px-2 py-1 bg-blue-600 text-white rounded text-xs"
+              title="Test sound"
+            >Test</button>
+          </div>
         </div>
       </div>
 
