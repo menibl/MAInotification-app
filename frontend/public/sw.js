@@ -95,15 +95,18 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  // Play custom sound if provided
-  if (notificationData.sound_url) {
-    try {
-      const audio = new Audio(notificationData.sound_url);
-      audio.play().catch(() => {});
-    } catch (e) {
-      console.warn('Failed to play sound:', e);
-    }
-  }
+  // Notify all open clients to play sound in page context (more reliable than SW)
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      clientList.forEach((client) => {
+        client.postMessage({
+          type: 'play_sound',
+          sound_id: notificationData.sound_id || null,
+          sound_url: notificationData.sound_url || null,
+        });
+      });
+    })
+  );
 
   event.waitUntil(
     self.registration.showNotification(notificationData.title, {
