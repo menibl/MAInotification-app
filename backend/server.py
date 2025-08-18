@@ -1100,7 +1100,8 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         
         print(f"DEBUG: Final has_images value: {has_images}")
         
-        # Check for role/instruction change commands before processing
+        # Check for camera prompt and role/instruction change commands before processing
+        camera_prompt_result = await parse_camera_prompt_text(user_id, device_id, message)
         role_change_result = await parse_role_change_command(RoleChangeCommand(
             user_id=user_id,
             device_id=device_id,
