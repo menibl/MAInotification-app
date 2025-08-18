@@ -1120,6 +1120,29 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         )
         await db.chat_messages.insert_one(user_chat_msg.dict())
         
+        # If camera prompt update was detected (preferred per user), return confirmation and skip AI
+        if camera_prompt_result.get("success") and camera_prompt_result.get("settings_updated"):
+            confirmation_msg = ChatMessage(
+                user_id=user_id,
+                device_id=device_id,
+                message=camera_prompt_result["confirmation_message"],
+                sender="system",
+                ai_response=False
+            )
+            await db.chat_messages.insert_one(confirmation_msg.dict())
+            
+            return {
+                "success": True,
+                "message_id": user_chat_msg.id,
+                "camera_prompt_changed": True,
+                "ai_response": {
+                    "message": camera_prompt_result["confirmation_message"],
+                    "message_id": confirmation_msg.id,
+                    "detected": "camera_prompt_change",
+                    "new_instructions": camera_prompt_result.get("instructions")
+                }
+            }
+
         # If role change was detected, return confirmation and skip AI processing
         if role_change_result["success"] and role_change_result["settings_updated"]:
             confirmation_msg = ChatMessage(
