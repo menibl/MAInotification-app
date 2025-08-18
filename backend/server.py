@@ -918,6 +918,8 @@ async def send_push_notification(notification: PushNotificationRequest):
         "badge": notification.badge or "/manifest-icon-192.png",
         "image": notification.image,
         "video_url": notification.video_url,
+        "sound_id": notification.sound_id,
+        "sound_url": notification.sound_url,
         "data": notification.data or {},
         "actions": notification.actions or [],
         "requireInteraction": notification.require_interaction,
