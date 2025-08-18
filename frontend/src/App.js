@@ -292,6 +292,49 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   };
 
   const handleSend = async () => {
+    // 1) Corrective-feedback auto-detection to improve monitoring prompt before sending to AI
+    if (device && inputMessage.trim()) {
+      const loweredFull = inputMessage.trim().toLowerCase();
+      const feedbackHint = /(wrong|mistake|incorrect|should have|shouldn't|misclassified|false positive|false alarm|it was)/;
+      if (feedbackHint.test(loweredFull) && inputMessage.trim().split(/\s+/).length > 3) {
+        try {
+          const res = await axios.post(`${API}/camera/prompt/fix-from-feedback`, {
+            user_id: USER_ID,
+            device_id: device.id,
+            message: inputMessage.trim(),
+            // Try to reference the latest AI message for context
+            referenced_messages: (messages.slice().reverse().find(m => m.device_id === device.id && m.sender === 'ai')?.id) ? [messages.slice().reverse().find(m => m.device_id === device.id && m.sender === 'ai').id] : []
+          });
+          if (res.data.success) {
+            // Append system confirmation (backend also stores one; this improves UX instantly)
+            const systemMsg = {
+              id: Date.now().toString() + '_sys_fix',
+              user_id: USER_ID,
+              device_id: device.id,
+              message: `Updated monitoring based on your feedback. New focus: ${res.data.instructions}`,
+              sender: 'system',
+              timestamp: new Date().toISOString(),
+            };
+            setMessages(prev => [...prev, systemMsg]);
+            await loadCameraPrompt();
+            // Clear inputs and selections as per preference
+            setInputMessage('');
+            setSelectedFiles([]);
+            setMediaUrls(['']);
+            setShowMediaInput(false);
+            setReferencedMessages([]);
+            setSelectedNotifications([]);
+            setMultiSelectMode(false);
+            return; // Stop here; do not send to AI
+          }
+        } catch (e) {
+          console.error('Prompt fix from feedback failed', e);
+          // Fallthrough to normal send if this fails
+        }
+      }
+    }
+
+    // 2) Natural-language camera prompt update (no AI response), per user preference
     // Natural-language camera prompt update (no AI response), per user preference
     if (device && inputMessage.trim()) {
       const lowered = inputMessage.trim().toLowerCase();
