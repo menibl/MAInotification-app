@@ -18,9 +18,7 @@ import {
   X,
   Reply,
   Check,
-  File,
-  Moon,
-  Sun
+  File
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
