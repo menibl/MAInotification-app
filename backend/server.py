@@ -972,7 +972,7 @@ async def send_push_notification(notification: PushNotificationRequest):
             device_id=notification.device_id,  # Use the required device_id
             type='push',
             content=f"{notification.title}: {notification.body}",
-            media_url=notification.image,
+            media_url=notification.video_url or notification.image,
             read=False,
             timestamp=datetime.utcnow()
         )
