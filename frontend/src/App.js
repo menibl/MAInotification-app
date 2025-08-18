@@ -1605,7 +1605,7 @@ const App = () => {
   
 
   return (
-    <div className={`h-screen ${theme === 'dark' ? 'dark' : ''} bg-background text-foreground flex flex-col`}>
+    <div className="h-screen bg-gray-50 flex flex-col">
       {/* Mobile Navigation Header */}
       <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
         {currentView !== 'devices' && (
