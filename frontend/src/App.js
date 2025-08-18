@@ -636,7 +636,9 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
               title="Live HLS Stream"
               className="w-full h-40 md:h-56 rounded-md border-0"
               allow="autoplay; encrypted-media; picture-in-picture"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
               allowFullScreen
+              referrerPolicy="no-referrer"
             />
           </div>
         </div>
