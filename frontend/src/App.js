@@ -1611,12 +1611,6 @@ const App = () => {
 
   
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
   return (
     <div className={`h-screen ${theme === 'dark' ? 'dark' : ''} bg-background text-foreground flex flex-col`}>
       {/* Mobile Navigation Header */}
