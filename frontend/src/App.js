@@ -621,7 +621,10 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
           <div className="rounded-lg border bg-black/5 p-2">
             <div className="text-xs text-gray-600 mb-1">Latest Event Video</div>
             {latestVideoUrl ? (
-              <video key={latestVideoUrl} src={latestVideoUrl} controls className="w-full h-40 md:h-56 rounded-md bg-black" />
+              <video key={latestVideoUrl} controls className="w-full h-40 md:h-56 rounded-md bg-black" preload="metadata">
+                <source src={latestVideoUrl} />
+                Your browser does not support the video tag.
+              </video>
             ) : (
               <div className="w-full h-40 md:h-56 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
                 No recent video
