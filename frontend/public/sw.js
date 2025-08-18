@@ -85,6 +85,10 @@ self.addEventListener('push', (event) => {
         ...payload,
         data: { ...(notificationData.data || {}), ...(payload.data || {}) }
       };
+      // Map sound_id to local sound_url if missing
+      if (!notificationData.sound_url && notificationData.sound_id) {
+        notificationData.sound_url = `${self.location.origin}/api/sounds/${notificationData.sound_id}`;
+      }
     } catch (e) {
       console.error('Error parsing push notification data:', e);
       notificationData.body = event.data.text() || notificationData.body;
