@@ -1735,12 +1735,29 @@ async def parse_camera_prompt_text(user_id: str, device_id: str, message: str) -
         return {"success": False, "settings_updated": False, "error": update_result.get("error", "Failed to update camera prompt")}
 
     confirmation = f"Camera monitoring updated. I will now monitor for: {instructions}"
+
+    # Store a system confirmation message in chat
+    try:
+        system_msg = ChatMessage(
+            user_id=user_id,
+            device_id=device_id,
+            message=confirmation,
+            sender="system",
+            ai_response=False
+        )
+        await db.chat_messages.insert_one(system_msg.dict())
+        message_id = system_msg.id
+    except Exception as e:
+        logging.error(f"Failed to store camera prompt confirmation message: {e}")
+        message_id = None
+
     return {
         "success": True,
         "settings_updated": True,
         "instructions": instructions,
         "prompt_text": update_result.get("prompt_text"),
-        "confirmation_message": confirmation
+        "confirmation_message": confirmation,
+        "message_id": message_id
     }
 
 @api_router.post("/camera/prompt/parse-command")
