@@ -2294,6 +2294,43 @@ async def delete_file(file_id: str):
     
     return {"success": True, "message": "File deleted successfully"}
 
+
+# Generated sound endpoints
+import io, struct, math, wave
+
+@api_router.get("/sounds/{sound_id}")
+async def get_sound(sound_id: str, duration: float = 0.35):
+    """Generate a simple WAV tone for notification sounds.
+    sound_id: one of ['significant','alert','routine']
+    """
+    sound_map = {
+        'significant': 880.0,  # A5
+        'alert': 660.0,        # E5
+        'routine': 440.0       # A4
+    }
+    freq = sound_map.get(sound_id.lower(), 440.0)
+
+    sample_rate = 44100
+    n_samples = int(duration * sample_rate)
+    volume = 0.5
+
+    buffer = io.BytesIO()
+    with wave.open(buffer, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)  # 16-bit
+        wf.setframerate(sample_rate)
+        for i in range(n_samples):
+            t = i / sample_rate
+            # Simple sine wave
+            val = int(volume * 32767 * math.sin(2 * math.pi * freq * t))
+            wf.writeframes(struct.pack('<h', val))
+
+    buffer.seek(0)
+    headers = {
+        'Content-Disposition': f'inline; filename="{sound_id}.wav"'
+    }
+    return StreamingResponse(buffer, media_type='audio/wav', headers=headers)
+
 # Original endpoints
 @api_router.get("/")
 async def root():
