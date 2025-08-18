@@ -402,6 +402,11 @@ class CameraPrompt(BaseModel):
 class CameraPromptCreate(BaseModel):
     instructions: str  # User's description of what to look for
 
+class CameraPromptCommand(BaseModel):
+    user_id: str
+    device_id: str
+    message: str
+
 class RoleChangeCommand(BaseModel):
     user_id: str
     device_id: str
