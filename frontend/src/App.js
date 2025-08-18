@@ -521,93 +521,12 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="p-4 border-b bg-gray-50 flex items-center space-x-3">
-        <div className={`w-3 h-3 rounded-full ${
-          device.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-        }`}></div>
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-800">{device.name}</h3>
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span>{isConnected ? 'Connected' : 'Disconnected'} • {device.type}</span>
-            {currentRole && (
-              <>
-                <span className="opacity-50">•</span>
-                <span 
-                  className="cursor-pointer hover:text-blue-600 flex items-center space-x-1 transition-colors"
-                  onClick={() => setShowRoleSettings(!showRoleSettings)}
-                  title="Click to change AI role"
-                >
-                  <span>🤖 {currentRole}</span>
-                  <Settings size={12} />
-                </span>
-              </>
-            )}
-          </div>
-          {/* Camera Prompt Display */}
-          {cameraPrompt && (
-            <div 
-              className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded cursor-pointer hover:bg-blue-100 transition-colors"
-              onClick={() => setShowPromptSettings(!showPromptSettings)}
-              title="Camera monitoring instructions - click to change"
-            >
-              📹 Monitoring: {promptInstructions || 'General security monitoring'}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="file"
-            ref={imageInputRef}
-            onChange={handleDirectImageUpload}
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            onClick={() => imageInputRef.current?.click()}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Send image directly to AI for analysis"
-          >
-            <Image size={16} />
-          </button>
-          <button
-            onClick={handleDirectImageUrl}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Send image URL directly to AI for analysis"
-          >
-            <Image size={16} />
-            <span className="sr-only">Send image URL for analysis</span>
-          </button>
-          <button
-            onClick={() => {
-              const urls = prompt('Enter one or more image URLs (comma-separated):');
-              if (!urls || !device) return;
-              const list = urls.split(',').map(u => u.trim()).filter(Boolean);
-              if (list.length === 0) return;
-              axios.post(`${API}/chat/image-direct?user_id=${USER_ID}`, {
-                device_id: device.id,
-                media_urls: list,
-                question: null
-              }).then(res => {
-                if (res.data.success) {
-                  if (res.data.displayed_in_chat && typeof reloadChat === 'function') {
-                    reloadChat();
-                  }
-                } else {
-                  alert(res.data.error || 'Failed to analyze images');
-                }
-              }).catch(err => {
-                console.error('Failed to send multiple image URLs:', err);
-                alert('Failed to analyze images.');
-              });
-            }}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Send multiple image URLs directly to AI for analysis"
-          >
-            <Image size={16} />
-            <span className="sr-only">Send multiple image URLs for analysis</span>
-          </button>
-          <MoreVertical size={20} className="text-gray-400" />
+      {/* Header (minimal) */}
+      <div className="px-4 py-3 border-b bg-gray-50">
+        <div className="flex items-center gap-2 text-gray-800 text-sm md:text-base truncate">
+          <span className="font-semibold truncate">{device.name}</span>
+          <span className="text-gray-400">•</span>
+          <span className="truncate">{promptInstructions || 'General security monitoring'}</span>
         </div>
       </div>
 
