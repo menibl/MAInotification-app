@@ -1602,7 +1602,7 @@ const App = () => {
     );
   }
 
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  
 
   useEffect(() => {
     const root = document.documentElement;
