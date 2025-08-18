@@ -169,6 +169,23 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   }, [messages, deviceNotifications]);
 
   useEffect(() => {
+    // Listen to SW postMessage for navigation with context (video_url)
+    const onMessage = (event) => {
+      if (event?.data?.type === 'navigate_to_device') {
+        // Only apply if relevant device
+        if (!device || event.data.device_id === device.id) {
+          const vid = event.data.video_url;
+          if (vid && isVideoUrl(vid)) {
+            setOverrideVideoUrl(vid);
+          }
+        }
+      }
+    };
+    navigator.serviceWorker?.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
+  }, [device]);
+
+  useEffect(() => {
     // Load current role when device changes
     if (device) {
       loadCurrentRole();
