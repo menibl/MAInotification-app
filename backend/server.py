@@ -1669,6 +1669,61 @@ Provide detailed analysis when criteria are met, or respond with 'NO_DISPLAY' fo
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+async def parse_camera_prompt_text(user_id: str, device_id: str, message: str) -> Dict[str, Any]:
+    """Detect natural language instructions to update camera prompt from a chat message.
+    Returns a dict with keys: success, settings_updated, instructions, prompt_text, confirmation_message
+    """
+    import re
+
+    text = (message or '').strip()
+    lowered = text.lower()
+
+    if not text:
+        return {"success": False, "settings_updated": False}
+
+    patterns = [
+        r"monitor for\s+(.+)$",
+        r"update camera prompt to\s+(.+)$",
+        r"update prompt to\s+(.+)$",
+        r"please monitor\s+(.+)$",
+        r"look for\s+(.+)$",
+        r"watch for\s+(.+)$",
+    ]
+
+    instructions = None
+    for p in patterns:
+        m = re.search(p, lowered)
+        if m:
+            instructions = m.group(1).strip()
+            break
+
+    if not instructions:
+        # Fallback: if intent words exist, use the whole message as instructions
+        if any(kw in lowered for kw in ["prompt", "monitor", "watch for", "look for"]):
+            instructions = text
+
+    if not instructions:
+        return {"success": True, "settings_updated": False}
+
+    # Apply update
+    update_result = await update_camera_prompt(user_id, device_id, CameraPromptCreate(instructions=instructions))
+    if not update_result.get("success"):
+        return {"success": False, "settings_updated": False, "error": update_result.get("error", "Failed to update camera prompt")}
+
+    confirmation = f"Camera monitoring updated. I will now monitor for: {instructions}"
+    return {
+        "success": True,
+        "settings_updated": True,
+        "instructions": instructions,
+        "prompt_text": update_result.get("prompt_text"),
+        "confirmation_message": confirmation
+    }
+
+@api_router.post("/camera/prompt/parse-command")
+async def camera_prompt_parse_command(cmd: CameraPromptCommand):
+    result = await parse_camera_prompt_text(cmd.user_id, cmd.device_id, cmd.message)
+    return result
+
 # Chat Settings Management APIs
 @api_router.get("/chat/settings/{user_id}/{device_id}")
 async def get_chat_settings(user_id: str, device_id: str):
