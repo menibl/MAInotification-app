@@ -1594,6 +1594,35 @@ If this shows something noteworthy, provide detailed analysis.
                     ai_response=True
                 )
                 await db.chat_messages.insert_one(ai_chat_msg.dict())
+
+                # Send push notification for significant activity
+                try:
+                  title = f"{device.get('name', device_id)}: Significant activity"
+                  body = ai_response if len(ai_response) <= 180 else ai_response[:177] + '...'
+                  # Prefer first provided URL for notification image if available
+                  notif_image = None
+                  if image_chat.image_url:
+                      notif_image = image_chat.image_url
+                  elif image_chat.media_urls and len(image_chat.media_urls) > 0:
+                      notif_image = image_chat.media_urls[0]
+                  push_req = PushNotificationRequest(
+                      user_id=user_id,
+                      device_id=device_id,
+                      title=title,
+                      body=body,
+                      image=notif_image,
+                      data={
+                          "user_id": user_id,
+                          "device_id": device_id,
+                          "type": "ai_analysis",
+                          "analysis_type": "significant",
+                          "message_id": ai_chat_msg.id
+                      },
+                      require_interaction=True
+                  )
+                  await send_push_notification(push_req)
+                except Exception as e:
+                  logging.warning(f"Failed to send push notification for displayed_in_chat: {e}")
             
             return {
                 "success": True,
