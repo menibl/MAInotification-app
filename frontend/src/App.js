@@ -511,7 +511,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     .filter(n => n && n.media_url && isVideoUrl(n.media_url))
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
   const latestVideoUrl = latestVideoNotif?.media_url || null;
-  const liveStreamUrl = `https://www.maifocus.com/show/${device.id}`;
+  const liveStreamUrl = `https://www.maifocus.com/show/${device.id}${device.id}`;
 
   // Combine messages and notifications for this device, sorted by timestamp
   const allItems = [
