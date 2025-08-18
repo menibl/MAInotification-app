@@ -542,7 +542,11 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     .filter(n => n && n.media_url && isVideoUrl(n.media_url))
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
   const latestVideoUrl = overrideVideoUrl || latestVideoNotif?.media_url || null;
-  const liveStreamUrl = `https://www.maifocus.com/show/${device.id}`; // device id at end per requirement
+  const liveStreamUrl = device?.settings?.live_stream_url 
+    ? device.settings.live_stream_url 
+    : (device?.settings?.hls_path 
+        ? `https://www.maifocus.com/show/${device.settings.hls_path}` 
+        : `https://www.maifocus.com/show/${device.id}`);
 
   // Combine messages and notifications for this device, sorted by timestamp
   const allItems = [
