@@ -200,12 +200,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
   }, [device]);
 
-  useEffect(() => {
-    // Load current role when device changes
-    if (device) {
-      loadCurrentRole();
-    }
-  }, [device]);
+  /* merged into the next effect that also loads camera prompt */
 
   useEffect(() => {
     // Load current role and camera prompt when device changes
