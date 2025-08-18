@@ -389,6 +389,7 @@ class DirectImageChatCreate(BaseModel):
     image_data: Optional[str] = None  # base64 encoded
     image_url: Optional[str] = None   # URL to image
     media_urls: Optional[List[str]] = None  # Multiple image URLs for analysis
+    video_url: Optional[str] = None   # Optional event video URL to store/show
     question: Optional[str] = None
 
 class CameraPrompt(BaseModel):
