@@ -1156,12 +1156,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
 // Main App Component
 const App = () => {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+
   const [currentView, setCurrentView] = useState('devices');
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
