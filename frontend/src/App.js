@@ -1648,6 +1648,12 @@ const App = () => {
                 console.error('Failed to load full history:', err);
               }
             }}
+            onDeviceUpdated={(updated) => {
+              // Update selectedDevice state with new settings
+              setSelectedDevice(prev => prev && prev.id === updated.id ? { ...prev, ...updated } : prev);
+              // Also refresh devices list
+              loadDevices();
+            }}
           />
         )}
         
