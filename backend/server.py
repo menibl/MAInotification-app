@@ -458,6 +458,31 @@ class ChatHistory(BaseModel):
     ai_personality: Optional[AIPersonality] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    password_hash: Optional[str] = None
+    totp_enabled: bool = False
+    totp_secret: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class Enable2FAResponse(BaseModel):
+    otpauth_url: str
+    secret: str
+
+class Verify2FARequest(BaseModel):
+    email: str
+    code: str
+
+
 
 class Notification(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
