@@ -42,6 +42,13 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
+JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-change')
+JWT_ALG = 'HS256'
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+OAUTH_GOOGLE_REDIRECT_URI = os.environ.get('OAUTH_GOOGLE_REDIRECT_URI')
+
+
 app = FastAPI()
 
 # Create a router with the /api prefix
