@@ -898,6 +898,134 @@ async def delete_all_user_devices_safe(user_id: str):
             status_code=500, 
             detail=f"Failed to delete devices: {str(e)}"
         )
+# Auth helpers
+
+def create_jwt(email: str) -> str:
+    payload = {
+        'sub': email,
+        'email': email,
+        'iat': int(datetime.utcnow().timestamp()),
+        'exp': int((datetime.utcnow()).timestamp()) + 60*60*24*7
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
+
+async def get_user_by_email(email: str) -> Optional[dict]:
+    return await db.users.find_one({ 'email': email.lower() })
+
+async def ensure_user(email: str) -> dict:
+    user = await get_user_by_email(email)
+    if user:
+        return user
+    doc = User(email=email.lower()).dict()
+    await db.users.insert_one(doc)
+    return doc
+
+@api_router.post('/auth/register')
+async def auth_register(req: RegisterRequest):
+    email = req.email.strip().lower()
+    existing = await get_user_by_email(email)
+    if existing:
+        return { 'success': False, 'error': 'Email already registered' }
+    pw_hash = bcrypt.hashpw(req.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    user = User(email=email, password_hash=pw_hash)
+    await db.users.insert_one(user.dict())
+    token = create_jwt(email)
+    return { 'success': True, 'token': token, 'email': email }
+
+@api_router.post('/auth/login')
+async def auth_login(req: LoginRequest):
+    email = req.email.strip().lower()
+    user = await get_user_by_email(email)
+    if not user or not user.get('password_hash'):
+        return { 'success': False, 'error': 'Invalid credentials' }
+    if not bcrypt.checkpw(req.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+        return { 'success': False, 'error': 'Invalid credentials' }
+    if user.get('totp_enabled'):
+        # 2FA required, return partial
+        return { 'success': True, 'requires_2fa': True, 'email': email }
+    token = create_jwt(email)
+    return { 'success': True, 'token': token, 'email': email }
+
+@api_router.post('/auth/enable-2fa')
+async def enable_2fa(email: str):
+    # Create secret and return otpauth URL
+    user = await ensure_user(email)
+    if user.get('totp_enabled') and user.get('totp_secret'):
+        secret = user['totp_secret']
+    else:
+        secret = pyotp.random_base32()
+        await db.users.update_one({'email': email}, {'$set': { 'totp_secret': secret }}, upsert=True)
+    totp = pyotp.TOTP(secret)
+    otpauth_url = totp.provisioning_uri(name=email, issuer_name='MAI Focus')
+    return Enable2FAResponse(otpauth_url=otpauth_url, secret=secret)
+
+@api_router.post('/auth/verify-2fa')
+async def verify_2fa(req: Verify2FARequest):
+    user = await get_user_by_email(req.email.strip().lower())
+    if not user or not user.get('totp_secret'):
+        return { 'success': False, 'error': '2FA not initialized' }
+    totp = pyotp.TOTP(user['totp_secret'])
+    if not totp.verify(req.code, valid_window=1):
+        return { 'success': False, 'error': 'Invalid code' }
+    # Mark enabled
+    await db.users.update_one({'email': user['email']}, {'$set': { 'totp_enabled': True }})
+    token = create_jwt(user['email'])
+    return { 'success': True, 'token': token, 'email': user['email'] }
+
+@api_router.get('/auth/me')
+async def auth_me(token: Optional[str] = None):
+    try:
+        t = token or ''
+        if not t:
+            return { 'authenticated': False }
+        data = jwt.decode(t, JWT_SECRET, algorithms=[JWT_ALG])
+        return { 'authenticated': True, 'email': data.get('email') }
+    except Exception:
+        return { 'authenticated': False }
+
+# Google OAuth minimal endpoints (start and callback)
+from urllib.parse import urlencode
+
+@api_router.get('/oauth/google/start')
+async def google_start():
+    params = {
+        'client_id': GOOGLE_CLIENT_ID,
+        'redirect_uri': OAUTH_GOOGLE_REDIRECT_URI,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'access_type': 'online',
+        'prompt': 'select_account'
+    }
+    url = 'https://accounts.google.com/o/oauth2/v2/auth?' + urlencode(params)
+    return RedirectResponse(url)
+
+@api_router.get('/oauth/google/callback')
+async def google_callback(code: str):
+    # Exchange code
+    token_resp = requests.post('https://oauth2.googleapis.com/token', data={
+        'client_id': GOOGLE_CLIENT_ID,
+        'client_secret': GOOGLE_CLIENT_SECRET,
+        'code': code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': OAUTH_GOOGLE_REDIRECT_URI
+    }, timeout=10)
+    if token_resp.status_code != 200:
+        return JSONResponse({ 'success': False, 'error': 'Token exchange failed' }, status_code=400)
+    tokens = token_resp.json()
+    id_token = tokens.get('id_token')
+    # Parse id_token (naive, skipping signature verification in MVP)
+    try:
+        data = jwt.decode(id_token, options={ 'verify_signature': False, 'verify_aud': False, 'verify_iss': False })
+        email = data.get('email')
+        if not email:
+            return JSONResponse({ 'success': False, 'error': 'No email in token' }, status_code=400)
+        await ensure_user(email)
+        token = create_jwt(email)
+        return { 'success': True, 'token': token, 'email': email }
+    except Exception as e:
+        return JSONResponse({ 'success': False, 'error': str(e) }, status_code=400)
+
+
 
 # Push Notification Endpoints
 @api_router.post("/push/subscribe")
