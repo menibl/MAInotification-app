@@ -1021,7 +1021,8 @@ async def google_callback(code: str):
             return JSONResponse({ 'success': False, 'error': 'No email in token' }, status_code=400)
         await ensure_user(email)
         token = create_jwt(email)
-        return { 'success': True, 'token': token, 'email': email }
+        # Redirect back to frontend with token/email so the SPA can store it
+        return RedirectResponse(url=f"/?token={token}&email={email}")
     except Exception as e:
         return JSONResponse({ 'success': False, 'error': str(e) }, status_code=400)
 
