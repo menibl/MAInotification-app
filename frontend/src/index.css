@@ -77,9 +77,7 @@ code {
 
 /* Premium high-tech theme */
 .premium body, .premium .app-root {
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(14,165,233,0.06), transparent 60%),
-              radial-gradient(900px 500px at 100% 10%, rgba(30,64,175,0.08), transparent 60%),
-              linear-gradient(180deg, #06080F 0%, #0A1220 100%);
+  background: #0B0F14; /* solid blackish background per request */
 }
 .premium .glass {
   background: rgba(10, 18, 32, 0.6);
