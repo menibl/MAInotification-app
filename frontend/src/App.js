@@ -874,7 +874,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white">
+      <div className="border-t border-blue-soft glass" style={{borderWidth:1}}>
         {/* Referenced messages and notifications preview */}
         {(referencedMessages.length > 0 || selectedNotifications.length > 0) && (
           <div className="px-4 py-2 bg-blue-50 border-b">
