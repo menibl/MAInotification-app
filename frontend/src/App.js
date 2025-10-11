@@ -1196,16 +1196,7 @@ const App = () => {
       localStorage.setItem('premium', premium ? '1' : '0');
     } catch {}
   }, [premium]);
-  // 
-  const [premium, setPremium] = useState(() => {
-    try { return localStorage.getItem('premium') !== '0'; } catch { return true; }
-  });
-  useEffect(() => {
-    try {
-      document.documentElement.classList.toggle('premium', !!premium);
-      localStorage.setItem('premium', premium ? '1' : '0');
-    } catch {}
-  }, [premium]);
+  // removed duplicate premium state/effect
 
   const [currentView, setCurrentView] = useState('devices');
   const [devices, setDevices] = useState([]);
