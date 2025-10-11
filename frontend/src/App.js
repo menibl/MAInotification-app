@@ -614,7 +614,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       </div>
 
       {/* Video Windows */}
-      <div className="px-4 pt-3 pb-1 border-b bg-white">
+      <div className="px-4 pt-3 pb-1 border-b border-blue-soft glass" style={{borderWidth:1}}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="rounded-lg border bg-black/5 p-2">
             <div className="text-xs text-gray-600 mb-1">Latest Event Video</div>
