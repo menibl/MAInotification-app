@@ -75,6 +75,35 @@ code {
 }
 
 
+/* Premium high-tech theme */
+.premium body, .premium .app-root {
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(14,165,233,0.06), transparent 60%),
+              radial-gradient(900px 500px at 100% 10%, rgba(30,64,175,0.08), transparent 60%),
+              linear-gradient(180deg, #06080F 0%, #0A1220 100%);
+}
+.premium .glass {
+  background: rgba(10, 18, 32, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(30, 43, 78, 0.6);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+}
+.premium .btn-primary {
+  background-image: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);
+  color: white;
+}
+.premium .btn-primary:hover {
+  filter: brightness(1.06);
+}
+.premium .text-soft { color: rgba(226,232,240,0.8); }
+.premium .text-faint { color: rgba(148,163,184,0.85); }
+.premium .border-blue-soft { border-color: rgba(30, 64, 175, 0.5) !important; }
+
+/* Thin blue scrollbar */
+.premium .overflow-y-auto::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.45); }
+.premium .overflow-y-auto::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.65); }
+
+
 
 @layer base {
   * {
