@@ -1,7 +1,7 @@
 // Service Worker for Device Chat PWA
 /* global self, caches, clients */
 
-const CACHE_NAME = 'device-chat-v1';
+const CACHE_NAME = 'device-chat-v2';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
