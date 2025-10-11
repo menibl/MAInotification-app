@@ -536,7 +536,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
   if (!device) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center glass" style={{borderWidth:1}}>
         <div className="text-center text-soft">
           <MessageCircle size={48} className="mx-auto mb-4 text-gray-300" />
           <p>Select a device to start chatting</p>
