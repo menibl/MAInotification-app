@@ -1033,7 +1033,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
               className={`px-3 py-2 rounded-lg ${
                 showMediaInput 
                   ? 'text-soft ring-1 ring-sky-500/60 bg-transparent hover:bg-sky-900/20' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  : 'text-faint hover:text-soft hover:ring-1 hover:ring-sky-600/50'
               }`}
               title="Add image/video URLs"
             >
