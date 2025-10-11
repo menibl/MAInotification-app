@@ -104,7 +104,7 @@ const MediaViewer = ({ url, type }) => {
 const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
   return (
     <div className="h-full glass rounded-lg" style={{borderWidth:1}}>
-      <div className="p-4 border-b bg-gray-50">
+      <div className="p-4 border-b border-blue-soft text-soft">
         <h2 className="text-lg font-semibold text-gray-800">My Devices</h2>
       </div>
       <div className="overflow-y-auto">
