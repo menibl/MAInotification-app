@@ -1678,6 +1678,11 @@ const App = () => {
         </h1>
         
         <div className="flex items-center space-x-2">
+          {/* Premium toggle */}
+          <label className="flex items-center gap-2 text-faint text-xs cursor-pointer select-none">
+            <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
+            Premium
+          </label>
 
           {pushSupported && (
             <button
