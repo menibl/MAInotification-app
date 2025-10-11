@@ -874,7 +874,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                         {item.content}
                       </p>
                       {item.media_url && (
-                        <div className="mt-2 p-2 bg-white rounded border">
+                        <div className="mt-2 p-2 glass rounded border-blue-soft" style={{borderWidth:1}}>
                           <div className="flex items-center space-x-2 text-xs text-gray-600">
                             <Image size={12} />
                             <span>Media: {item.media_url.substring(0, 30)}...</span>
