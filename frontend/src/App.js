@@ -1156,6 +1156,16 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
 // Main App Component
 const App = () => {
+  // Premium theme (black/blue high-tech) - default ON
+  const [premium, setPremium] = useState(() => {
+    try { return localStorage.getItem('premium') !== '0'; } catch { return true; }
+  });
+  useEffect(() => {
+    try {
+      document.documentElement.classList.toggle('premium', !!premium);
+      localStorage.setItem('premium', premium ? '1' : '0');
+    } catch {}
+  }, [premium]);
 
   const [currentView, setCurrentView] = useState('devices');
   const [devices, setDevices] = useState([]);
