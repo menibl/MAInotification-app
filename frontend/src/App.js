@@ -1234,15 +1234,9 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
 // Main App Component
 const App = () => {
-  const [premium, setPremium] = useState(() => {
-    try { return localStorage.getItem('premium') !== '0'; } catch { return true; }
-  });
   useEffect(() => {
-    try {
-      document.documentElement.classList.toggle('premium', !!premium);
-      localStorage.setItem('premium', premium ? '1' : '0');
-    } catch {}
-  }, [premium]);
+    try { document.documentElement.classList.add('premium'); } catch {}
+  }, []);
   // removed duplicate premium state/effect
 
   const [currentView, setCurrentView] = useState('devices');
