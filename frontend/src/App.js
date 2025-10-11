@@ -1637,7 +1637,7 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center glass" style={{borderWidth:1}}>
         <LoadingSpinner />
       </div>
     );
