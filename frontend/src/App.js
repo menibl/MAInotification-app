@@ -981,7 +981,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
               <div className="mt-2 space-y-1">
                 <div className="text-xs text-blue-600 font-medium">Selected Notifications:</div>
                 {selectedNotifications.map((notif, index) => (
-                  <div key={notif.id} className="flex items-center space-x-2 p-2 bg-white rounded text-xs">
+                  <div key={notif.id} className="flex items-center space-x-2 p-2 glass rounded text-xs border-blue-soft">
                     <Bell size={10} className="text-blue-500" />
                     <span className="flex-1 truncate">{notif.content}</span>
                     {notif.media_url && (
