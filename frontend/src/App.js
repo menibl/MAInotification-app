@@ -1191,7 +1191,10 @@ const App = () => {
     try { return localStorage.getItem('premium') !== '0'; } catch { return true; }
   });
   useEffect(() => {
-    try { localStorage.setItem('premium', premium ? '1' : '0'); } catch {}
+    try {
+      document.documentElement.classList.toggle('premium', !!premium);
+      localStorage.setItem('premium', premium ? '1' : '0');
+    } catch {}
   }, [premium]);
   // Premium theme (black/blue high-tech) - default ON
   const [premium, setPremium] = useState(() => {
