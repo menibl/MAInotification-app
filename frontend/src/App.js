@@ -767,8 +767,13 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                                 alt="Shared image"
                                 className="w-full max-w-xs rounded"
                                 onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextSibling.style.display = 'block';
+                                  try {
+                                    if (e?.target) {
+                                      e.target.style.display = 'none';
+                                      const fallback = e.target?.nextSibling;
+                                      if (fallback && fallback.style) fallback.style.display = 'block';
+                                    }
+                                  } catch {}
                                 }}
                               />
                               <div className="hidden p-2 text-xs text-faint">
@@ -781,8 +786,13 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                                 controls 
                                 className="w-full max-w-xs rounded"
                                 onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextSibling.style.display = 'block';
+                                  try {
+                                    if (e?.target) {
+                                      e.target.style.display = 'none';
+                                      const fallback = e.target?.nextSibling;
+                                      if (fallback && fallback.style) fallback.style.display = 'block';
+                                    }
+                                  } catch {}
                                 }}
                               >
                                 <source src={url} />
