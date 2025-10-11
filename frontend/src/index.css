@@ -1,4 +1,18 @@
 @tailwind base;
+/* Premium palette CSS variables */
+.premium {
+  --bg: #0B0F14;          /* page background */
+  --surface: rgba(14, 23, 38, 0.72); /* glass surface */
+  --border: #1E293B;       /* slate-700 */
+  --text: #E6EEF8;         /* soft white */
+  --text-soft: #9CC7F2;    /* cyan-ish */
+  --text-faint: #94A3B8;   /* slate-400 */
+  --accent: #3B82F6;       /* blue-500 */
+  --accent-2: #0EA5E9;     /* sky-500 */
+  --input-bg: #0D1320;     /* dark field */
+  --input-border: #22314B; /* dark field border */
+}
+
 @tailwind components;
 @tailwind utilities;
 
