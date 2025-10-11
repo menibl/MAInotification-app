@@ -771,7 +771,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                                   e.target.nextSibling.style.display = 'block';
                                 }}
                               />
-                              <div className="hidden p-2 text-xs">
+                              <div className="hidden p-2 text-xs text-faint">
                                 🖼️ <a href={url} target="_blank" rel="noopener noreferrer" className="underline">View Image</a>
                               </div>
                             </div>
@@ -788,7 +788,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                                 <source src={url} />
                                 Your browser does not support the video tag.
                               </video>
-                              <div className="hidden p-2 text-xs">
+                              <div className="hidden p-2 text-xs text-faint">
                                 🎥 <a href={url} target="_blank" rel="noopener noreferrer" className="underline">View Video</a>
                               </div>
                             </div>
