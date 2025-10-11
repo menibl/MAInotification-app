@@ -617,31 +617,51 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
       {/* Video Windows */}
       <div className="px-4 pt-3 pb-1 border-b border-blue-soft glass" style={{borderWidth:1}}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="rounded-lg border bg-black/5 p-2">
-            <div className="text-xs text-gray-600 mb-1">Latest Event Video</div>
+          <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
+            <div className="text-xs text-soft mb-1 flex items-center justify-between">
+              <span>Latest Event Video</span>
+              {latestVideoUrl && (
+                <a href={latestVideoUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
+                  <ExternalLink size={12} /> Open
+                </a>
+              )}
+            </div>
             {latestVideoUrl ? (
-              <video key={latestVideoUrl} controls className="w-full h-40 md:h-56 rounded-md bg-black" preload="metadata">
-                <source src={latestVideoUrl} />
-                Your browser does not support the video tag.
-              </video>
+              <div className="aspect-16-9">
+                <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft">
+                  <video key={latestVideoUrl} controls className="w-full h-full bg-black" preload="metadata">
+                    <source src={latestVideoUrl} />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
             ) : (
-              <div className="w-full h-40 md:h-56 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+              <div className="w-full h-44 md:h-56 rounded-md bg-[#0b0f14] flex items-center justify-center text-faint text-sm border border-blue-soft">
                 No recent video
               </div>
             )}
           </div>
-          <div className="rounded-lg border bg-black/5 p-2">
-            <div className="text-xs text-gray-600 mb-1">Live Stream</div>
-            <iframe
-              key={liveStreamUrl}
-              src={liveStreamUrl}
-              title="Live HLS Stream"
-              className="w-full h-40 md:h-56 rounded-md border-0"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              allowFullScreen
-              referrerPolicy="no-referrer"
-            />
+          <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
+            <div className="text-xs text-soft mb-1 flex items-center justify-between">
+              <span>Live Stream</span>
+              <a href={liveStreamUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
+                <ExternalLink size={12} /> Open
+              </a>
+            </div>
+            <div className="aspect-16-9">
+              <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft">
+                <iframe
+                  key={liveStreamUrl}
+                  src={liveStreamUrl}
+                  title="Live HLS Stream"
+                  className="w-full h-full border-0"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                  allowFullScreen
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
