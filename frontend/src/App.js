@@ -1648,7 +1648,7 @@ const App = () => {
   return (
     <div className="h-screen app-root flex flex-col premium">
       {/* Mobile Navigation Header */}
-      <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
+      <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
         {currentView !== 'devices' && (
           <button
             onClick={() => {
