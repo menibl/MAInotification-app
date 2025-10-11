@@ -124,7 +124,7 @@ const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
                 device.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
               }`}></div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-800">{device.name}</h3>
+                <h3 className="font-medium text-soft">{device.name}</h3>
                 <p className="text-sm text-gray-500 capitalize">{device.type}</p>
               </div>
               <MessageCircle size={18} className="text-gray-400" />
@@ -566,7 +566,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
     <div className="h-full flex flex-col glass" style={{borderWidth:1}}>
       {/* Header (minimal) with sound test and device default sound select */}
       <div className="px-4 py-3 border-b border-blue-soft text-soft">
-        <div className="flex items-center gap-3 text-gray-800 text-sm md:text-base truncate">
+        <div className="flex items-center gap-3 text-soft text-sm md:text-base truncate">
           <div className="flex-1 flex items-center gap-2 truncate">
             <span className="font-semibold truncate">{device.name}</span>
             <span className="text-gray-400">•</span>
@@ -714,7 +714,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                       ? 'bg-green-100 text-green-800 border border-green-200'
                       : item.sender === 'system'
                       ? 'bg-red-100 text-red-800 border border-red-200'
-                      : 'bg-gray-200 text-gray-800'
+                      : 'bg-gray-200 text-soft'
                   }`}
                   onClick={() => toggleMessageReference(item.id)}
                 >
@@ -872,7 +872,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                         : item.read ? 'text-gray-400' : 'text-blue-500'
                     } />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-soft">
                         Device Notification
                         {selectedNotifications.some(n => n.id === item.id) && (
                           <span className="ml-2 text-xs bg-green-200 text-green-800 px-2 py-1 rounded">
@@ -1148,7 +1148,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 mb-1">
-                    <p className="text-sm font-medium text-gray-800">
+                    <p className="text-sm font-medium text-soft">
                       {deviceName}
                     </p>
                     <span className={`px-2 py-1 text-xs rounded-full ${
@@ -1665,7 +1665,7 @@ const App = () => {
           </button>
         )}
         
-        <h1 className="text-lg font-semibold text-gray-800">
+        <h1 className="text-lg font-semibold text-soft">
           {currentView === 'devices' && 'MAI Focus'}
           {currentView === 'chat' && selectedDevice?.name}
           {currentView === 'notifications' && 'Notifications'}
