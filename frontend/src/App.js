@@ -18,7 +18,8 @@ import {
   X,
   Reply,
   Check,
-  File
+  File,
+  ExternalLink
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
