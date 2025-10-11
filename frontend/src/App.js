@@ -1059,7 +1059,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                     value={url}
                     onChange={(e) => updateMediaUrl(index, e.target.value)}
                     placeholder="https://example.com/image.jpg or video.mp4"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-soft bg-[#0D1320] text-soft"
                   />
                   <div className="flex items-center space-x-1">
                     {url && isValidUrl(url) && (
