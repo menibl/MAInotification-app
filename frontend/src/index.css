@@ -90,9 +90,15 @@ code {
 
 
 /* Premium high-tech theme */
-.premium body, .premium .app-root {
-  background: #0B0F14; /* solid blackish background per request */
-}
+.premium body, .premium .app-root { background: var(--bg); color: var(--text); }
+.premium .glass { background: var(--surface); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+.premium .border-blue-soft { border-color: var(--border) !important; }
+.premium .text-soft { color: var(--text); }
+.premium .text-faint { color: var(--text-faint); }
+.premium .btn-primary { background-image: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+.premium input, .premium textarea { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+.premium select { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+
 .premium .glass {
   background: rgba(10, 18, 32, 0.6);
   backdrop-filter: blur(10px);
