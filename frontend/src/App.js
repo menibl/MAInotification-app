@@ -619,55 +619,99 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
 
       {/* Video Windows */}
       <div className="px-4 pt-3 pb-1 border-b border-blue-soft glass" style={{borderWidth:1}}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
-            <div className="text-xs text-soft mb-1 flex items-center justify-between">
-              <span>Latest Event Video</span>
-              {latestVideoUrl && (
-                <a href={latestVideoUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
-                  <ExternalLink size={12} /> Open
-                </a>
-              )}
-            </div>
-            {latestVideoUrl ? (
-              <div className="aspect-16-9">
-                <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft">
-                  <video key={latestVideoUrl} controls className="w-full h-full bg-black" preload="metadata">
-                    <source src={latestVideoUrl} />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full h-44 md:h-56 rounded-md bg-[#0b0f14] flex items-center justify-center text-faint text-sm border border-blue-soft">
-                No recent video
-              </div>
+        <div className="flex items-center justify-between mb-2 text-xs text-soft">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMediaCollapsed(!mediaCollapsed)} className="px-2 py-1 rounded border border-blue-soft hover:bg-sky-900/10">
+              {mediaCollapsed ? 'Show Media' : 'Hide Media'}
+            </button>
+            {!mediaCollapsed && (
+              <>
+                <button onClick={() => setShowLatestModal(true)} className="px-2 py-1 rounded border border-blue-soft hover:bg-sky-900/10">Expand Latest</button>
+                <button onClick={() => setShowLiveModal(true)} className="px-2 py-1 rounded border border-blue-soft hover:bg-sky-900/10">Expand Live</button>
+              </>
             )}
           </div>
-          <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
-            <div className="text-xs text-soft mb-1 flex items-center justify-between">
-              <span>Live Stream</span>
-              <a href={liveStreamUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
-                <ExternalLink size={12} /> Open
-              </a>
+          <div className="text-faint">Media Panels</div>
+        </div>
+        {!mediaCollapsed && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
+              <div className="text-xs text-soft mb-1 flex items-center justify-between">
+                <span>Latest Event Video</span>
+                {latestVideoUrl && (
+                  <a href={latestVideoUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
+                    <ExternalLink size={12} /> Open
+                  </a>
+                )}
+              </div>
+              {latestVideoUrl ? (
+                <div className="aspect-16-9">
+                  <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft">
+                    <video key={latestVideoUrl} controls className="w-full h-full bg-black" preload="metadata" onClick={() => setShowLatestModal(true)}>
+                      <source src={latestVideoUrl} />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-44 md:h-56 rounded-md bg-[#0b0f14] flex items-center justify-center text-faint text-sm border border-blue-soft">
+                  No recent video
+                </div>
+              )}
             </div>
-            <div className="aspect-16-9">
-              <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft">
-                <iframe
-                  key={liveStreamUrl}
-                  src={liveStreamUrl}
-                  title="Live HLS Stream"
-                  className="w-full h-full border-0"
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                  allowFullScreen
-                  referrerPolicy="no-referrer"
-                />
+            <div className="rounded-lg glass p-2" style={{borderWidth:1}}>
+              <div className="text-xs text-soft mb-1 flex items-center justify-between">
+                <span>Live Stream</span>
+                <a href={liveStreamUrl} target="_blank" rel="noopener noreferrer" className="text-faint hover:text-soft flex items-center gap-1 text-xs">
+                  <ExternalLink size={12} /> Open
+                </a>
+              </div>
+              <div className="aspect-16-9">
+                <div className="aspect-inner rounded-md overflow-hidden border border-blue-soft" onClick={() => setShowLiveModal(true)}>
+                  <iframe
+                    key={liveStreamUrl}
+                    src={liveStreamUrl}
+                    title="Live HLS Stream"
+                    className="w-full h-full border-0"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                    allowFullScreen
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Media Modals */}
+      {showLatestModal && latestVideoUrl && (
+        <div className="media-modal" onClick={() => setShowLatestModal(false)}>
+          <div className="content" onClick={(e) => e.stopPropagation()}>
+            <video controls className="w-full h-full bg-black" preload="metadata">
+              <source src={latestVideoUrl} />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      )}
+      {showLiveModal && (
+        <div className="media-modal" onClick={() => setShowLiveModal(false)}>
+          <div className="content" onClick={(e) => e.stopPropagation()}>
+            <iframe
+              key={liveStreamUrl}
+              src={liveStreamUrl}
+              title="Live HLS Stream"
+              className="w-[90vw] h-[70vh] border-0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              allowFullScreen
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Prompt Settings Modal */}
       {showPromptSettings && (
