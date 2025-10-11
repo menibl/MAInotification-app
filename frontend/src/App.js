@@ -1106,7 +1106,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
           <div
             key={notification.id}
             className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
-              notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+              notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'glass border-blue-soft hover:ring-1 hover:ring-sky-600/40'
             }`}
             onClick={() => handleNotificationClick(notification)}
           >
