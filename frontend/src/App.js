@@ -564,7 +564,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
   return (
     <div className="h-full flex flex-col glass" style={{borderWidth:1}}>
       {/* Header (minimal) with sound test and device default sound select */}
-      <div className="px-4 py-3 border-b bg-gray-50">
+      <div className="px-4 py-3 border-b border-blue-soft text-soft">
         <div className="flex items-center gap-3 text-gray-800 text-sm md:text-base truncate">
           <div className="flex-1 flex items-center gap-2 truncate">
             <span className="font-semibold truncate">{device.name}</span>
