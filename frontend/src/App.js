@@ -112,10 +112,10 @@ const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
           <div
             key={device.id}
             onClick={() => onSelectDevice(device)}
-            className={`p-4 border-b cursor-pointer transition-colors ${
+            className={`p-4 border-b border-blue-soft cursor-pointer transition-colors rounded-lg mx-2 my-2 glass ${
               selectedDevice?.id === device.id 
-                ? 'bg-blue-50 border-blue-200' 
-                : 'hover:bg-gray-50'
+                ? 'ring-1 ring-sky-400' 
+                : 'hover:ring-1 hover:ring-sky-700/40'
             }`}
           >
             <div className="flex items-center space-x-3">
