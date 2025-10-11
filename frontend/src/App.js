@@ -1023,7 +1023,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+              className="px-3 py-2 text-faint hover:text-soft hover:ring-1 hover:ring-sky-600/50 rounded-lg"
               title="Attach files"
             >
               <Paperclip size={18} />
