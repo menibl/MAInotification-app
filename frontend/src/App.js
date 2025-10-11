@@ -759,7 +759,7 @@ const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNot
                   {item.media_urls && item.media_urls.length > 0 && (
                     <div className="mt-2 space-y-2">
                       {item.media_urls.map((url, idx) => (
-                        <div key={idx} className="border rounded-lg overflow-hidden bg-black bg-opacity-5">
+                        <div key={idx} className="border-blue-soft rounded-lg overflow-hidden glass" style={{borderWidth:1}}>
                           {/\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i.test(url) ? (
                             <div>
                               <img 
