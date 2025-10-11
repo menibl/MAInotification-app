@@ -102,6 +102,16 @@ code {
 /* Thin blue scrollbar */
 .premium .overflow-y-auto::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.45); }
 .premium .overflow-y-auto::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.65); }
+/* Aspect ratio helpers */
+.aspect-16-9 { position: relative; width: 100%; }
+.aspect-16-9::before { content: ""; display: block; padding-top: 56.25%; }
+.aspect-16-9 > .aspect-inner { position: absolute; inset: 0; }
+
+/* Overlay modal */
+.media-modal { position: fixed; inset: 0; background: rgba(2,6,12,0.85); z-index: 60; display: flex; align-items: center; justify-content: center; }
+.media-modal .content { max-width: 96vw; max-height: 90vh; border: 1px solid rgba(51,65,85,0.8); box-shadow: 0 12px 30px rgba(0,0,0,0.55); border-radius: 12px; overflow: hidden; background: rgba(11,15,20,0.85); }
+.media-modal img, .media-modal video { display: block; width: 100%; height: auto; }
+
 
 
 
