@@ -420,6 +420,13 @@ class DirectImageChatCreate(BaseModel):
     media_urls: Optional[List[str]] = None  # Multiple image URLs for analysis
     video_url: Optional[str] = None   # Optional event video URL to store/show
     question: Optional[str] = None
+    # Unified metadata
+    camera_id: Optional[str] = None
+    mission_id: Optional[str] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    image_url_single: Optional[str] = None  # alias in case clients send this
+    sound_id: Optional[str] = None
 
 class CameraPrompt(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
