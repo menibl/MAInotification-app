@@ -1898,19 +1898,27 @@ If this shows something noteworthy, provide detailed analysis.
                 )
                 await db.chat_messages.insert_one(user_chat_msg.dict())
                 
+                # Build AI metadata
+                ai_title = 'AI Analysis'
+                ai_body = ai_response
+                ai_image_url = req_image_url
+                ai_video_url = req_video_url
+                ai_sound_id = req_sound_id
+                
                 # Add AI response to chat
                 ai_chat_msg = ChatMessage(
                     user_id=user_id,
                     device_id=device_id,
                     message=ai_response,
                     sender="ai",
-                ai_title = 'AI Analysis'
-                ai_body = ai_response
-                ai_image_url = req_image_url
-                ai_video_url = req_video_url
-                ai_sound_id = req_sound_id
-
-                    ai_response=True
+                    ai_response=True,
+                    camera_id=req_camera_id,
+                    mission_id=req_mission_id,
+                    title=ai_title,
+                    body=ai_body,
+                    image_url=ai_image_url,
+                    video_url=ai_video_url,
+                    sound_id=ai_sound_id
                 )
                 await db.chat_messages.insert_one(ai_chat_msg.dict())
                 
