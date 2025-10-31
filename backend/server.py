@@ -1516,6 +1516,13 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 ai_response=True
             )
             await db.chat_messages.insert_one(ai_chat_msg.dict())
+            # Build AI metadata
+            ai_title = 'AI Analysis'
+            ai_body = ai_response
+            ai_image_url = first_image or req_image_url
+            ai_video_url = first_video or req_video_url
+            ai_sound_id = req_sound_id  # keep same sound by default
+
 
             # Send push for significant AI response when images were involved
             try:
