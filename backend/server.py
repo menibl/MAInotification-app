@@ -1513,7 +1513,15 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 device_id=device_id,
                 message=ai_response,
                 sender="ai",
-                ai_response=True
+                ai_response=True,
+                # unified metadata
+                camera_id=req_camera_id,
+                mission_id=req_mission_id,
+                title=ai_title,
+                body=ai_body,
+                image_url=ai_image_url,
+                video_url=ai_video_url,
+                sound_id=ai_sound_id
             )
             await db.chat_messages.insert_one(ai_chat_msg.dict())
             # Build AI metadata
