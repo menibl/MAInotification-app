@@ -353,6 +353,14 @@ class ChatMessage(BaseModel):
     referenced_messages: Optional[List[str]] = None  # List of message IDs being referenced/quoted
     sender: str  # 'user', 'device', or 'ai'
     ai_response: bool = False  # True if this is an AI-generated response
+    # New unified metadata fields
+    camera_id: Optional[str] = None
+    mission_id: Optional[str] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+    sound_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class ChatMessageCreate(BaseModel):
