@@ -1888,6 +1888,13 @@ If this shows something noteworthy, provide detailed analysis.
                     message=image_chat.question or "📸 Image(s) sent for analysis",
                     sender="user",
                     media_urls=media_urls_to_store if media_urls_to_store else None,
+                    camera_id=req_camera_id,
+                    mission_id=req_mission_id,
+                    title=req_title_user,
+                    body=req_body_user,
+                    image_url=req_image_url,
+                    video_url=req_video_url,
+                    sound_id=req_sound_id
                 )
                 await db.chat_messages.insert_one(user_chat_msg.dict())
                 
