@@ -1331,7 +1331,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 print(f"DEBUG: URL {url} is image: {is_img}")
                 if is_img:
                     has_images = True
-                    print(f"DEBUG: Found image URL, setting has_images=True")
+                    print("DEBUG: Found image URL, setting has_images=True")
                     break
         
         print(f"DEBUG: Final has_images value: {has_images}")
@@ -1456,7 +1456,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
             
             # Create the user message with proper vision support
             if has_images:
-                print(f"DEBUG: Using vision model with images detected")
+                print("DEBUG: Using vision model with images detected")
                 # Use vision-specific message creation
                 vision_message, file_attachments_for_vision = await create_vision_message(
                     enhanced_message, 
@@ -1469,7 +1469,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                     file_contents=file_attachments_for_vision if file_attachments_for_vision else None
                 )
             else:
-                print(f"DEBUG: Using text-only model")
+                print("DEBUG: Using text-only model")
                 # Standard text-only message
                 text_content = enhanced_message
                 
@@ -1841,7 +1841,7 @@ If this shows something noteworthy, provide detailed analysis.
                 file_contents=image_contents
             )
             
-            print(f"DEBUG: Sending direct image to AI with vision model")
+            print("DEBUG: Sending direct image to AI with vision model")
             ai_response = await ai_chat.send_message(user_message)
             
             # Determine if should display in chat
@@ -2564,7 +2564,10 @@ async def delete_file(file_id: str):
 
 
 # Generated sound endpoints
-import io, struct, math, wave
+import io
+import struct
+import math
+import wave
 
 @api_router.get("/sounds/{sound_id}")
 async def get_sound(sound_id: str, duration: float = 0.35):
