@@ -371,6 +371,14 @@ class ChatMessageCreate(BaseModel):
     referenced_messages: Optional[List[str]] = None
     file_ids: Optional[List[str]] = None
     sender: str = "user"
+    # New unified metadata (optional in request; server will fill defaults)
+    camera_id: Optional[str] = None
+    mission_id: Optional[str] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+    sound_id: Optional[str] = None
 
 class ChatSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
