@@ -1321,7 +1321,7 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
         req_video_url = (message_data.video_url if hasattr(message_data, 'video_url') else None) or first_video
         req_sound_id = (message_data.sound_id if hasattr(message_data, 'sound_id') else None) or dev_settings.get('default_sound_id')
 
-            print(f"DEBUG: Final file_contents_for_ai: {len(file_contents_for_ai)} items")
+        print(f"DEBUG: Final file_contents_for_ai: {len(file_contents_for_ai)} items")
         
         # Check media URLs for images
         if media_urls:
