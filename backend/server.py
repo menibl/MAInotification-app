@@ -1352,7 +1352,15 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
             sender=sender,
             media_urls=media_urls if media_urls else None,
             file_attachments=file_attachments if file_attachments else None,
-            referenced_messages=referenced_messages
+            referenced_messages=referenced_messages,
+            # unified metadata
+            camera_id=req_camera_id,
+            mission_id=req_mission_id,
+            title=req_title_user,
+            body=req_body_user,
+            image_url=req_image_url,
+            video_url=req_video_url,
+            sound_id=req_sound_id
         )
         await db.chat_messages.insert_one(user_chat_msg.dict())
         
