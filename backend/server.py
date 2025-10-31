@@ -1507,6 +1507,13 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
             print(f"DEBUG: Sending message to AI with has_images={has_images}")
             ai_response = await ai_chat.send_message(user_message)
             
+            # Build AI metadata
+            ai_title = 'AI Analysis'
+            ai_body = ai_response
+            ai_image_url = first_image or req_image_url
+            ai_video_url = first_video or req_video_url
+            ai_sound_id = req_sound_id  # keep same sound by default
+            
             # Store AI response as chat message
             ai_chat_msg = ChatMessage(
                 user_id=user_id,
@@ -1514,7 +1521,6 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 message=ai_response,
                 sender="ai",
                 ai_response=True,
-                # unified metadata
                 camera_id=req_camera_id,
                 mission_id=req_mission_id,
                 title=ai_title,
@@ -1524,12 +1530,6 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 sound_id=ai_sound_id
             )
             await db.chat_messages.insert_one(ai_chat_msg.dict())
-            # Build AI metadata
-            ai_title = 'AI Analysis'
-            ai_body = ai_response
-            ai_image_url = first_image or req_image_url
-            ai_video_url = first_video or req_video_url
-            ai_sound_id = req_sound_id  # keep same sound by default
 
 
             # Send push for significant AI response when images were involved
