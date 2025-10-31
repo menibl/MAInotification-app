@@ -1860,6 +1860,17 @@ If this shows something noteworthy, provide detailed analysis.
                 display_in_chat=display_in_chat
             )
             
+            # unified metadata for direct image flow
+            req_camera_id = image_chat.camera_id or device_id
+            req_mission_id = image_chat.mission_id or None
+            req_title_user = image_chat.title or 'User'
+            req_body_user = image_chat.body or (image_chat.question or '📸 Image(s) sent for analysis')
+            req_image_url = image_chat.image_url or (image_chat.media_urls[0] if (image_chat.media_urls) else None)
+            req_video_url = image_chat.video_url or None
+            # device default sound
+            dev = await db.devices.find_one({"id": device_id})
+            req_sound_id = image_chat.sound_id or ((dev or {}).get('settings', {}) or {}).get('default_sound_id')
+
             await db.direct_image_chats.insert_one(direct_chat.dict())
             
             # If should display in chat, also add to regular chat messages
