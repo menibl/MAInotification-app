@@ -1296,6 +1296,31 @@ async def send_chat_message(user_id: str, message_data: ChatMessageCreate):
                 else:
                     print(f"DEBUG: File record not found for ID: {file_id}")
             
+        # Compute unified metadata defaults
+        def is_video_url_fn(u: str) -> bool:
+            return any(u.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mov', '.webm', '.mkv'])
+        def is_image_url_fn(u: str) -> bool:
+            return any(u.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'])
+
+        first_image = None
+        first_video = None
+        for u in media_urls:
+            if not first_image and is_image_url_fn(u):
+                first_image = u
+            if not first_video and is_video_url_fn(u):
+                first_video = u
+        # Load device settings for defaults
+        device_for_defaults = await db.devices.find_one({"id": device_id})
+        dev_settings = (device_for_defaults or {}).get('settings', {}) if device_for_defaults else {}
+
+        req_camera_id = (message_data.camera_id if hasattr(message_data, 'camera_id') else None) or device_id
+        req_mission_id = (message_data.mission_id if hasattr(message_data, 'mission_id') else None) or None
+        req_title_user = (message_data.title if hasattr(message_data, 'title') else None) or 'User'
+        req_body_user = (message_data.body if hasattr(message_data, 'body') else None) or message
+        req_image_url = (message_data.image_url if hasattr(message_data, 'image_url') else None) or first_image
+        req_video_url = (message_data.video_url if hasattr(message_data, 'video_url') else None) or first_video
+        req_sound_id = (message_data.sound_id if hasattr(message_data, 'sound_id') else None) or dev_settings.get('default_sound_id')
+
             print(f"DEBUG: Final file_contents_for_ai: {len(file_contents_for_ai)} items")
         
         # Check media URLs for images
