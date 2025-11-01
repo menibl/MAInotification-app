@@ -1262,50 +1262,7 @@ const App = () => {
     };
   }, []);
 
-  // WebSocket removed
-    try {
-      const ws = new WebSocket(`${WS_URL}/ws/${USER_ID}`);
-      
-      ws.onopen = () => {
-        console.log('WS removed');
-        setIsConnected(true);
-        
-        // Send ping periodically to keep connection alive
-        const ping = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 30000);
-        
-        ws.pingInterval = ping;
-      };
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        /* ws removed */
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket disconnected');
-        setIsConnected(false);
-        if (ws.pingInterval) {
-          clearInterval(ws.pingInterval);
-        }
-        
-        // Reconnect after 3 seconds
-        setTimeout(connectWebSocket, 3000);
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-      
-      wsRef.current = ws;
-    } catch (error) {
-      console.error('Failed to connect WebSocket:', error);
-      setTimeout(connectWebSocket, 5000);
-    }
-  };
+  // WebSocket fully removed – no client WS connection
 
   /* ws removed */
 
