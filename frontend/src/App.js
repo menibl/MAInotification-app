@@ -1249,7 +1249,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [pushSupported, setPushSupported] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
-  const wsRef = useRef(null);
+  // WebSocket removed
 
   // Initialize WebSocket connection
   useEffect(() => {
