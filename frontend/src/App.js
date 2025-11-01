@@ -1245,7 +1245,7 @@ const App = () => {
   const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [deviceNotifications, setDeviceNotifications] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
+  // WebSocket removed – using REST + Push
   const [loading, setLoading] = useState(true);
   const [pushSupported, setPushSupported] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
