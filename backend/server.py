@@ -2048,6 +2048,205 @@ Provide detailed analysis when criteria are met, or respond with 'NO_DISPLAY' fo
                 {"$set": {
                     "prompt_text": ai_generated_prompt,
                     "instructions": prompt_create.instructions,
+# Missions data models and APIs
+class MissionCreate(BaseModel):
+    user_id: str
+    mission_name: str
+    description: Optional[str] = None
+    settings: Optional[Dict[str, Any]] = None
+    camera_ids: Optional[List[str]] = None
+
+@api_router.post("/missions")
+async def create_or_update_mission(m: MissionCreate):
+    try:
+        existing = await db.missions.find_one({"user_id": m.user_id, "mission_name": m.mission_name})
+        payload = {
+            "user_id": m.user_id,
+            "mission_name": m.mission_name,
+            "description": m.description,
+            "settings": m.settings or {},
+            "camera_ids": m.camera_ids or [],
+            "updated_at": datetime.utcnow()
+        }
+        if existing:
+            await db.missions.update_one({"_id": existing["_id"]}, {"$set": payload})
+            doc = await db.missions.find_one({"_id": existing["_id"]})
+        else:
+            payload["created_at"] = datetime.utcnow()
+            await db.missions.insert_one(payload)
+            doc = await db.missions.find_one({"user_id": m.user_id, "mission_name": m.mission_name})
+        doc["id"] = str(doc.get("_id")) if doc else None
+        doc.pop("_id", None)
+        return {"success": True, "mission": doc}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/missions/{user_id}")
+async def list_missions(user_id: str):
+    items = []
+    async for doc in db.missions.find({"user_id": user_id}).sort("mission_name", 1):
+        doc["id"] = str(doc.get("_id"))
+        doc.pop("_id", None)
+        items.append(doc)
+    return {"success": True, "missions": items}
+
+class AssignCamerasRequest(BaseModel):
+    camera_ids: List[str]
+
+@api_router.put("/missions/assign-cameras")
+async def assign_cameras_to_mission(user_id: str, mission_name: str, req: AssignCamerasRequest):
+    try:
+        res = await db.missions.update_one(
+            {"user_id": user_id, "mission_name": mission_name},
+            {"$set": {"camera_ids": req.camera_ids, "updated_at": datetime.utcnow()}},
+            upsert=False
+        )
+        if res.matched_count == 0:
+            return {"success": False, "error": "Mission not found"}
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.delete("/missions")
+async def delete_mission(user_id: str, mission_name: str):
+    try:
+        await db.missions.delete_one({"user_id": user_id, "mission_name": mission_name})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# Mission chat fan-out and aggregated history
+class MissionChatSend(BaseModel):
+    mission_name: str
+    message: str
+    media_url: Optional[str] = None
+    media_urls: Optional[List[str]] = None
+    referenced_messages: Optional[List[str]] = None
+    file_ids: Optional[List[str]] = None
+    # Unified metadata (optional)
+    camera_id: Optional[str] = None  # ignored for fan-out
+    mission_id: Optional[str] = None  # stays null per user decision
+    title: Optional[str] = None
+    body: Optional[str] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+    sound_id: Optional[str] = None
+
+@api_router.post("/chat/mission/send")
+async def mission_chat_send(user_id: str, payload: MissionChatSend):
+    try:
+        mission = await db.missions.find_one({"user_id": user_id, "mission_name": payload.mission_name})
+        if not mission:
+            return {"success": False, "error": "Mission not found"}
+        camera_ids = mission.get("camera_ids", [])
+        media_urls = payload.media_urls or ([payload.media_url] if payload.media_url else [])
+
+        # Create mission-level summary message (uses device_id as synthetic value)
+        mission_device_id = f"mission:{payload.mission_name}"
+        summary = ChatMessage(
+            user_id=user_id,
+            device_id=mission_device_id,
+            message=payload.message,
+            sender="user",
+            media_urls=media_urls if media_urls else None,
+            camera_id=None,
+            mission_id=None,
+            title=payload.title or "User",
+            body=payload.body or payload.message,
+            image_url=payload.image_url or (media_urls[0] if media_urls else None),
+            video_url=payload.video_url,
+            sound_id=payload.sound_id
+        )
+        await db.chat_messages.insert_one(summary.dict())
+
+        # Fan-out: create a user message per camera; AI generation is not triggered here to avoid recursion
+        per_camera = []
+        for cam in camera_ids:
+            msg = ChatMessage(
+                user_id=user_id,
+                device_id=cam,
+                message=payload.message,
+                sender="user",
+                media_urls=media_urls if media_urls else None,
+                camera_id=cam,
+                mission_id=None,
+                title=payload.title or "User",
+                body=payload.body or payload.message,
+                image_url=payload.image_url or (media_urls[0] if media_urls else None),
+                video_url=payload.video_url,
+                sound_id=payload.sound_id
+            )
+            await db.chat_messages.insert_one(msg.dict())
+            per_camera.append({"camera_id": cam, "message_id": msg.id})
+
+        return {
+            "success": True,
+            "mission_name": payload.mission_name,
+            "mission_message_id": summary.id,
+            "fan_out_count": len(per_camera),
+            "per_camera": per_camera
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/chat/mission/{user_id}/{mission_name}")
+async def mission_chat_history(user_id: str, mission_name: str, limit: int = 100):
+    mission = await db.missions.find_one({"user_id": user_id, "mission_name": mission_name})
+    if not mission:
+        return {"success": False, "error": "Mission not found"}
+    camera_ids = mission.get("camera_ids", [])
+    ids = [f"mission:{mission_name}"] + camera_ids
+    cursor = db.chat_messages.find({"user_id": user_id, "device_id": {"$in": ids}}).sort("timestamp", -1).limit(limit)
+    items = [doc async for doc in cursor]
+    # Normalize id and remove _id if exists
+    for it in items:
+        it.pop("_id", None)
+    return {"success": True, "messages": list(reversed(items))}
+
+# Global chat
+class GlobalChatSend(BaseModel):
+    message: str
+    media_url: Optional[str] = None
+    media_urls: Optional[List[str]] = None
+    referenced_messages: Optional[List[str]] = None
+    file_ids: Optional[List[str]] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+    sound_id: Optional[str] = None
+
+@api_router.post("/chat/global/send")
+async def global_chat_send(user_id: str, payload: GlobalChatSend):
+    try:
+        media_urls = payload.media_urls or ([payload.media_url] if payload.media_url else [])
+        msg = ChatMessage(
+            user_id=user_id,
+            device_id="global",
+            message=payload.message,
+            sender="user",
+            media_urls=media_urls if media_urls else None,
+            camera_id=None,
+            mission_id=None,
+            title=payload.title or "User",
+            body=payload.body or payload.message,
+            image_url=payload.image_url or (media_urls[0] if media_urls else None),
+            video_url=payload.video_url,
+            sound_id=payload.sound_id
+        )
+        await db.chat_messages.insert_one(msg.dict())
+        return {"success": True, "message_id": msg.id}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/chat/global/{user_id}")
+async def global_chat_history(user_id: str, limit: int = 100):
+    cursor = db.chat_messages.find({"user_id": user_id}).sort("timestamp", -1).limit(limit)
+    items = [doc async for doc in cursor]
+    for it in items:
+        it.pop("_id", None)
+    return {"success": True, "messages": list(reversed(items))}
+
                     "updated_at": datetime.utcnow()
                 }}
             )
