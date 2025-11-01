@@ -1251,7 +1251,7 @@ const App = () => {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   // WebSocket removed
 
-  // Initialize WebSocket connection
+  // WebSocket removed
   useEffect(() => {
     connectWebSocket();
     loadInitialData();
