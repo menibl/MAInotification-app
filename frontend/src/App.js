@@ -1267,7 +1267,7 @@ const App = () => {
       const ws = new WebSocket(`${WS_URL}/ws/${USER_ID}`);
       
       ws.onopen = () => {
-        console.log('WebSocket connected');
+        console.log('WS removed');
         setIsConnected(true);
         
         // Send ping periodically to keep connection alive
