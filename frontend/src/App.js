@@ -1282,7 +1282,7 @@ const App = () => {
       
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
+        /* ws removed */(data);
       };
       
       ws.onclose = () => {
@@ -1307,7 +1307,7 @@ const App = () => {
     }
   };
 
-  const handleWebSocketMessage = (data) => {
+  const /* ws removed */ = (data) => {
     if (data.type === 'pong') return;
     
     if (data.type === 'ai_response' && selectedDevice?.id === data.device_id) {
