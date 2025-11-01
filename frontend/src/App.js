@@ -1649,7 +1649,7 @@ const App = () => {
             deviceNotifications={deviceNotifications}
             onSendMessage={handleSendMessage}
             onMarkNotificationRead={handleMarkNotificationRead}
-            isConnected={isConnected}
+            /* ws removed */
             reloadChat={() => selectedDevice && loadChatMessages(selectedDevice.id)}
             loadFullHistory={async () => {
               if (!selectedDevice) return;
