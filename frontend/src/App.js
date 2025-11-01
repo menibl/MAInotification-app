@@ -1690,12 +1690,7 @@ const App = () => {
         )}
       </div>
 
-      {/* Connection Status */}
-      {!isConnected && (
-        <div className="bg-red-500 text-white px-4 py-2 text-sm text-center">
-          Disconnected - Attempting to reconnect...
-        </div>
-      )}
+      {/* ws status removed */}
     </div>
   );
 };
