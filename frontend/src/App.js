@@ -1307,64 +1307,7 @@ const App = () => {
     }
   };
 
-  const /* ws removed */ = (data) => {
-    if (data.type === 'pong') return;
-    
-    if (data.type === 'ai_response' && selectedDevice?.id === data.device_id) {
-      // Add AI response to current chat
-      const aiMessage = {
-        id: data.message_id || Date.now().toString(),
-        user_id: USER_ID,
-        device_id: data.device_id,
-        message: data.message,
-        sender: 'ai',
-        ai_response: true,
-        timestamp: data.timestamp || new Date().toISOString()
-      };
-      setMessages(prev => [...prev, aiMessage]);
-    }
-    
-    if (data.type === 'ai_error' && selectedDevice?.id === data.device_id) {
-      // Show AI error message
-      const errorMessage = {
-        id: Date.now().toString(),
-        user_id: USER_ID,
-        device_id: data.device_id,
-        message: `AI Assistant Error: ${data.error}`,
-        sender: 'system',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    }
-    
-    // Handle different notification types
-    if (data.type === 'message' && selectedDevice?.id === data.device_id) {
-      // Add to current chat if viewing the device
-      const newMessage = {
-        id: Date.now().toString(),
-        user_id: USER_ID,
-        device_id: data.device_id,
-        message: data.content,
-        media_url: data.media_url,
-        sender: 'device',
-        timestamp: data.timestamp || new Date().toISOString()
-      };
-      setMessages(prev => [...prev, newMessage]);
-    }
-    
-    // Always add to notifications
-    const notification = {
-      id: Date.now().toString(),
-      user_id: USER_ID,
-      device_id: data.device_id,
-      type: data.type,
-      content: data.content,
-      media_url: data.media_url,
-      read: false,
-      timestamp: data.timestamp || new Date().toISOString()
-    };
-    setNotifications(prev => [notification, ...prev]);
-  };
+  /* ws removed */
 
   const loadInitialData = async () => {
     try {
