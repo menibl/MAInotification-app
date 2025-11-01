@@ -27,7 +27,7 @@ const API = `${BACKEND_URL}/api`;
 // WebSocket removed – using Push + REST polling
 
 // Demo user ID - in real app this would come from authentication
-const USER_ID = 'demo-user-123';
+const USER_ID = (typeof window !== 'undefined' && (localStorage.getItem('auth_email') || (new URLSearchParams(window.location.search)).get('email'))) || 'demo-user-123';
 
 // VAPID public key for push notifications
 const VAPID_PUBLIC_KEY = process.env.REACT_APP_VAPID_PUBLIC_KEY || 'BA819SOie93Pet6HTr4Iycak8THUOzAag7rRqO3iKx1dXKfWuBMoj-cuQTr65zPe8VSaewTFxcTgQx3rZHvHdOI';
