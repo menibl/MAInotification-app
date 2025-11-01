@@ -144,7 +144,7 @@ const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
 };
 
 // Chat Interface Component
-const ChatInterface = ({ device, messages, onSendMessage, isConnected, deviceNotifications, onMarkNotificationRead, reloadChat, loadFullHistory, onDeviceUpdated }) => {
+const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, onMarkNotificationRead, reloadChat, loadFullHistory, onDeviceUpdated }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [mediaUrls, setMediaUrls] = useState(['']);
