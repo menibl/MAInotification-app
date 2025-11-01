@@ -1133,11 +1133,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
               <Send size={18} />
             </button>
           </div>
-          {!isConnected && (
-            <div className="text-xs text-gray-500 mt-2 text-center">
-              💬 Chat via HTTP (WebSocket disconnected)
-            </div>
-          )}
+          {/* WebSocket status removed */}
         </div>
       </div>
     </div>
