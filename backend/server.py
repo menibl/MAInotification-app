@@ -1119,6 +1119,9 @@ async def send_push_notification(notification: PushNotificationRequest):
         if not isinstance(payload["data"], dict):
             payload["data"] = {}
         payload["data"].setdefault("device_id", notification.device_id)
+        # include camera_id if present in data or infer from device_id
+        if 'camera_id' not in payload['data']:
+            payload['data']['camera_id'] = payload['data'].get('camera_id', notification.device_id)
         if notification.video_url:
             payload["data"]["video_url"] = notification.video_url
     except Exception as _:
