@@ -1172,7 +1172,7 @@ async def send_push_notification(notification: PushNotificationRequest):
     try:
         notification_record = Notification(
             user_id=notification.user_id,
-            device_id=notification.device_id,  # Use the required device_id
+            device_id=notification.device_id,
             type='push',
             content=f"{notification.title}: {notification.body}",
             media_url=notification.video_url or notification.image,
