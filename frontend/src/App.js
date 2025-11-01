@@ -1258,9 +1258,7 @@ const App = () => {
     checkPushSupport();
     
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+      // WebSocket removed
     };
   }, []);
 
