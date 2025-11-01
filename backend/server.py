@@ -338,7 +338,7 @@ class PushNotificationRequest(BaseModel):
     video_url: Optional[str] = None
     sound_id: Optional[str] = None  # e.g., 'significant', 'alert'
     sound_url: Optional[str] = None  # absolute URL to an audio file
-    data: Optional[Dict[str, Any]] = None
+    data: Optional[Dict[str, Any]] = None  # should include at least device_id; now may include camera_id
     actions: Optional[List[Dict[str, str]]] = None
     require_interaction: Optional[bool] = False
 
