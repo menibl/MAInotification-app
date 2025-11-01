@@ -1282,7 +1282,7 @@ const App = () => {
       
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        /* ws removed */(data);
+        /* ws removed */
       };
       
       ws.onclose = () => {
