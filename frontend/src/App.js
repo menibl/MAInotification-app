@@ -24,7 +24,7 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-const WS_URL = BACKEND_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+// WebSocket removed – using Push + REST polling
 
 // Demo user ID - in real app this would come from authentication
 const USER_ID = 'demo-user-123';
