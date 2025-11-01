@@ -1253,7 +1253,7 @@ const App = () => {
 
   // WebSocket removed
   useEffect(() => {
-    connectWebSocket();
+    // WebSocket removed
     loadInitialData();
     checkPushSupport();
     
