@@ -100,6 +100,114 @@ const MediaViewer = ({ url, type }) => {
     </a>
   );
 };
+// Simple Auth Screen (Login/Register/2FA Verify)
+const AuthScreen = ({ onAuthenticated }) => {
+  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'verify2fa'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/auth/login`, { email, password });
+      if (res.data.requires_2fa) {
+        setMode('verify2fa');
+      } else if (res.data.success && res.data.token) {
+        localStorage.setItem('auth_token', res.data.token);
+        localStorage.setItem('auth_email', res.data.email);
+        onAuthenticated(res.data.email, res.data.token);
+      } else {
+        setError(res.data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('Login error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/auth/register`, { email, password });
+      if (res.data.success && res.data.token) {
+        localStorage.setItem('auth_token', res.data.token);
+        localStorage.setItem('auth_email', res.data.email);
+        onAuthenticated(res.data.email, res.data.token);
+      } else {
+        setError(res.data.error || 'Register failed');
+      }
+    } catch (err) {
+      setError('Register error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/auth/verify-2fa`, { email, code });
+      if (res.data.success && res.data.token) {
+        localStorage.setItem('auth_token', res.data.token);
+        localStorage.setItem('auth_email', res.data.email);
+        onAuthenticated(res.data.email, res.data.token);
+      } else {
+        setError(res.data.error || '2FA verification failed');
+      }
+    } catch (err) {
+      setError('2FA error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="h-screen flex items-center justify-center app-root premium">
+      <div className="glass rounded-lg p-6 w-full max-w-md" style={{borderWidth:1}}>
+        <h2 className="text-xl font-semibold text-soft mb-4">MAI Focus – {mode === 'login' ? 'Login' : mode === 'register' ? 'Register' : 'Verify 2FA'}</h2>
+        {error && <div className="mb-3 text-sm text-red-500">{error}</div>}
+
+        {mode === 'login' && (
+          <form onSubmit={handleLogin} className="space-y-3">
+            <input type="email" className="w-full px-3 py-2 rounded border border-blue-soft bg-[#0D1320] text-soft" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} required />
+            <input type="password" className="w-full px-3 py-2 rounded border border-blue-soft bg-[#0D1320] text-soft" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} required />
+            <button disabled={loading} className="w-full py-2 rounded btn-primary">{loading ? 'Loading...' : 'Login'}</button>
+            <button type="button" onClick={()=>window.location.href=`${API}/oauth/google/start`} className="w-full py-2 rounded border border-blue-soft text-soft">Sign in with Google</button>
+            <div className="text-xs text-faint">No account? <button type="button" className="underline" onClick={()=>setMode('register')}>Register</button></div>
+          </form>
+        )}
+
+        {mode === 'register' && (
+          <form onSubmit={handleRegister} className="space-y-3">
+            <input type="email" className="w-full px-3 py-2 rounded border border-blue-soft bg-[#0D1320] text-soft" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} required />
+            <input type="password" className="w-full px-3 py-2 rounded border border-blue-soft bg-[#0D1320] text-soft" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} required />
+            <button disabled={loading} className="w-full py-2 rounded btn-primary">{loading ? 'Loading...' : 'Register'}</button>
+            <div className="text-xs text-faint">Have an account? <button type="button" className="underline" onClick={()=>setMode('login')}>Login</button></div>
+          </form>
+        )}
+
+        {mode === 'verify2fa' && (
+          <form onSubmit={handleVerify2FA} className="space-y-3">
+            <input type="text" className="w-full px-3 py-2 rounded border border-blue-soft bg-[#0D1320] text-soft" placeholder="2FA code" value={code} onChange={(e)=>setCode(e.target.value)} required />
+            <button disabled={loading} className="w-full py-2 rounded btn-primary">{loading ? 'Verifying...' : 'Verify'}</button>
+            <div className="text-xs text-faint"><button type="button" className="underline" onClick={()=>setMode('login')}>Back to login</button></div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 // Device List Component
 const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
