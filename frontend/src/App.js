@@ -1343,8 +1343,10 @@ const App = () => {
   }, []);
   // removed duplicate premium state/effect
 
-  const [currentView, setCurrentView] = useState('devices');
+  const [currentView, setCurrentView] = useState('global');
   const [auth, setAuth] = useState({ email: localStorage.getItem('auth_email') || null, token: localStorage.getItem('auth_token') || null });
+  const [scope, setScope] = useState('global'); // 'global' | 'mission' | 'camera'
+  const [selectedMission, setSelectedMission] = useState(null);
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [messages, setMessages] = useState([]);
