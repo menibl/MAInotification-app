@@ -1118,6 +1118,34 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
                         <span>+Media</span>
                       </div>
                     )}
+            {/* Left Sidebar */}
+            <div className="w-64 hidden md:flex flex-col gap-2 glass p-3" style={{borderWidth:1}}>
+              <div className="flex items-center justify-between text-soft mb-2">
+                <span className="font-semibold">Menu</span>
+                <button onClick={handleLogout} className="text-xs underline">Logout</button>
+              </div>
+              <button className={`text-left px-3 py-2 rounded border ${scope==='global'?'btn-primary text-white':'border-blue-soft text-soft'}`} onClick={()=>{setScope('global'); setSelectedMission(null); setCurrentView('chat');}}>🌐 Global Chat</button>
+              <div className="text-faint text-xs mt-2">Missions</div>
+              <div className="flex flex-col gap-1 max-h-[40vh] overflow-y-auto pr-1">
+                {missions.map(m => (
+                  <div key={m.mission_name} className="glass rounded border-blue-soft" style={{borderWidth:1}}>
+                    <button className={`w-full text-left px-3 py-2 ${scope==='mission' && selectedMission===m.mission_name?'btn-primary text-white':'text-soft'}`} onClick={()=>{setScope('mission'); setSelectedMission(m.mission_name); setCurrentView('chat');}}>
+                      🎯 {m.mission_name}
+                    </button>
+                    {(m.camera_ids||[]).length>0 && (
+                      <div className="pl-4 py-1 flex flex-col">
+                        {(m.camera_ids||[]).map(cid => (
+                          <button key={cid} className="text-left text-faint hover:text-soft py-1" onClick={()=>{setScope('camera'); setSelectedDevice({ id: cid, name: cid }); setSelectedMission(m.mission_name); setCurrentView('chat');}}>
+                            📷 {cid}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
                     <button
                       onClick={() => toggleNotificationSelection(notif)}
                       className="text-red-500 hover:text-red-700"
