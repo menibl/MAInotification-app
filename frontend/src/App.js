@@ -538,6 +538,19 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
       setSelectedNotifications([]);
       setMultiSelectMode(false);
 
+  // Missions list loader
+  const [missions, setMissions] = useState([]);
+  const loadMissions = async () => {
+    try {
+      if (!auth?.email) return;
+      const res = await axios.get(`${API}/missions/${encodeURIComponent(auth.email)}`);
+      if (res.data.success) setMissions(res.data.missions || []);
+    } catch (e) {
+      console.error('Failed to load missions', e);
+    }
+  };
+  useEffect(() => { loadMissions(); }, [auth?.email]);
+
       // Send message
       await onSendMessage(device.id, enhancedMessage, selectedFiles, referencedMessages, allMediaUrls);
     }
