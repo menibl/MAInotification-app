@@ -1679,6 +1679,10 @@ const App = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  if (!auth.token || !auth.email) {
+    return <AuthScreen onAuthenticated={(email, token)=>{ setAuth({ email, token }); window.location.href='/?email='+encodeURIComponent(email); }} />
+  }
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center glass" style={{borderWidth:1}}>
