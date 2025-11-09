@@ -1350,8 +1350,32 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
   return (
     <div className="space-y-2 p-4">
-      <div className="mb-4 p-2 glass rounded border-blue-soft text-xs text-faint">
-        Debug: {notifications.length} notifications loaded. Click handler: {onNavigateToDevice ? '✅' : '❌'}
+      <div className="mb-4 p-2 glass rounded border-blue-soft">
+        <div className="text-xs text-faint mb-2">
+          Debug: {notifications.length} notifications | Handler: {onNavigateToDevice ? '✅' : '❌'} | Devices: {devices.length}
+        </div>
+        <button
+          onClick={() => {
+            console.log('TEST BUTTON CLICKED');
+            const firstNotif = notifications[0];
+            if (firstNotif) {
+              const testDevice = deviceMap[firstNotif.device_id];
+              console.log('Test notification:', firstNotif);
+              console.log('Test device:', testDevice);
+              if (testDevice && onNavigateToDevice) {
+                console.log('Calling navigation...');
+                onNavigateToDevice(testDevice, firstNotif);
+              } else {
+                alert('Device or handler missing!');
+              }
+            } else {
+              alert('No notifications to test!');
+            }
+          }}
+          className="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
+        >
+          🧪 Test Navigate First Notification
+        </button>
       </div>
       {notifications.map(notification => {
         const device = deviceMap[notification.device_id];
