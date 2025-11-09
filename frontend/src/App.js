@@ -1882,50 +1882,55 @@ const App = () => {
             </div>
           ) : selectedDevice ? (
             <ChatInterface
-            device={selectedDevice}
-            messages={messages}
-            deviceNotifications={deviceNotifications}
-            onSendMessage={handleSendMessage}
-            onMarkNotificationRead={handleMarkNotificationRead}
-            /* ws removed */
-            reloadChat={() => selectedDevice && loadChatMessages(selectedDevice.id)}
-            loadFullHistory={async () => {
-              if (!selectedDevice) return;
-              try {
-                const resp = await axios.get(`${API}/chat/${USER_ID}/${selectedDevice.id}/history`);
-                if (resp.data && Array.isArray(resp.data.history)) {
-                  setMessages(resp.data.history.map(h => ({
-                    id: h.id,
-                    user_id: USER_ID,
-                    device_id: selectedDevice.id,
-                    message: h.message,
-                    sender: h.sender,
-                    timestamp: h.timestamp || new Date().toISOString()
-                  })));
+              device={selectedDevice}
+              messages={messages}
+              deviceNotifications={deviceNotifications}
+              onSendMessage={handleSendMessage}
+              onMarkNotificationRead={handleMarkNotificationRead}
+              /* ws removed */
+              reloadChat={() => selectedDevice && loadChatMessages(selectedDevice.id)}
+              loadFullHistory={async () => {
+                if (!selectedDevice) return;
+                try {
+                  const resp = await axios.get(`${API}/chat/${USER_ID}/${selectedDevice.id}/history`);
+                  if (resp.data && Array.isArray(resp.data.history)) {
+                    setMessages(resp.data.history.map(h => ({
+                      id: h.id,
+                      user_id: USER_ID,
+                      device_id: selectedDevice.id,
+                      message: h.message,
+                      sender: h.sender,
+                      timestamp: h.timestamp || new Date().toISOString()
+                    })));
+                  }
+                } catch (err) {
+                  console.error('Failed to load full history:', err);
                 }
-              } catch (err) {
-                console.error('Failed to load full history:', err);
-              }
-            }}
-            onDeviceUpdated={(updated) => {
-              // Update selectedDevice state with new settings
-              setSelectedDevice(prev => prev && prev.id === updated.id ? { ...prev, ...updated } : prev);
-              // Also refresh devices list
-              loadDevices();
-            }}
-          />
-        )}
-        
-        {currentView === 'notifications' && (
-          <div className="h-full overflow-y-auto">
-            <NotificationsList
-              notifications={notifications}
-              devices={devices}
-              onMarkRead={handleMarkNotificationRead}
-              onNavigateToDevice={handleNavigateToDeviceFromNotification}
+              }}
+              onDeviceUpdated={(updated) => {
+                // Update selectedDevice state with new settings
+                setSelectedDevice(prev => prev && prev.id === updated.id ? { ...prev, ...updated } : prev);
+                // Also refresh devices list
+                loadDevices();
+              }}
             />
-          </div>
-        )}
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center text-gray-400">
+                <MessageCircle size={64} className="mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium text-soft">Welcome to MAI Focus</p>
+                <p className="text-sm text-faint mt-2">Select a device from the menu to start chatting</p>
+                <button
+                  onClick={() => setCurrentView('devices')}
+                  className="mt-4 px-4 py-2 glass rounded border-blue-soft hover:bg-sky-900/20 transition-colors text-soft"
+                  style={{borderWidth:1}}
+                >
+                  Open Devices Menu
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ws status removed */}
