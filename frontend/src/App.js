@@ -1327,6 +1327,9 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
   }, {});
 
   const handleNotificationClick = (notification) => {
+    console.log('Notification clicked:', notification);
+    console.log('Device map:', deviceMap);
+    
     // Mark as read if unread
     if (!notification.read) {
       onMarkRead(notification.id);
@@ -1334,8 +1337,14 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
     
     // Navigate to device chat with this notification pre-selected
     const device = deviceMap[notification.device_id];
+    console.log('Found device:', device);
+    console.log('onNavigateToDevice function:', onNavigateToDevice);
+    
     if (device && onNavigateToDevice) {
+      console.log('Calling onNavigateToDevice...');
       onNavigateToDevice(device, notification);
+    } else {
+      console.error('Cannot navigate - device or callback missing', { device, hasCallback: !!onNavigateToDevice });
     }
   };
 
