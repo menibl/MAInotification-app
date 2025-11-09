@@ -1114,7 +1114,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
             <div className="w-64 hidden md:flex flex-col gap-2 glass p-3" style={{borderWidth:1}}>
               <div className="flex items-center justify-between text-soft mb-2">
                 <span className="font-semibold">Menu</span>
-                <button onClick={handleLogout} className="text-xs underline">Logout</button>
+                <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="text-xs underline">Logout</button>
               </div>
               <button className={`text-left px-3 py-2 rounded border ${scope==='global'?'btn-primary text-white':'border-blue-soft text-soft'}`} onClick={()=>{setScope('global'); setSelectedMission(null); setCurrentView('chat');}}>🌐 Global Chat</button>
               <div className="text-faint text-xs mt-2">Missions</div>
@@ -1751,7 +1751,7 @@ const App = () => {
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
       {/* Fixed Logout for visibility on all screens */}
       <div className="fixed top-2 right-2 z-50">
-        <button onClick={handleLogout} className="px-3 py-1 rounded bg-red-600 text-white text-xs shadow">Logout</button>
+        <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="px-3 py-1 rounded bg-red-600 text-white text-xs shadow">Logout</button>
       </div>
 
         {currentView !== 'devices' && (
@@ -1778,7 +1778,7 @@ const App = () => {
         
         <div className="flex items-center space-x-2">
           {/* Logout button */}
-          <button onClick={handleLogout} className="px-3 py-1 text-xs rounded border border-blue-soft text-soft">Logout</button>
+          <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="px-3 py-1 text-xs rounded border border-blue-soft text-soft">Logout</button>
 
           {pushSupported && (
             <button
