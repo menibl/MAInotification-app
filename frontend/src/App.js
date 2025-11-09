@@ -1767,21 +1767,49 @@ const App = () => {
     <div className="h-screen app-root flex flex-col premium">
       {/* Mobile Navigation Header */}
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
-      {/* Fixed Logout for visibility on all screens */}
-      {/* User icon + dropdown (top-left) */}
+      {/* User icon + dropdown menu (top-left, fixed position) */}
       {auth?.token && auth?.email && (
-        <div className="fixed top-2 left-2 z-50">
-          <button onClick={()=>setUserMenuOpen(v=>!v)} className="p-2 rounded-full glass border-blue-soft" style={{borderWidth:1}} title="User menu">
-            <User size={16} className="text-soft" />
+        <div ref={userMenuRef} className="fixed top-2 left-2 z-50">
+          <button 
+            onClick={() => setUserMenuOpen(v => !v)} 
+            className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
+            style={{borderWidth:1}} 
+            title="User menu"
+          >
+            <User size={18} className="text-soft" />
           </button>
           {userMenuOpen && (
-            <div className="mt-2 w-56 glass rounded border-blue-soft p-2" style={{borderWidth:1}}>
+            <div className="mt-2 w-56 glass rounded border-blue-soft p-2 shadow-lg" style={{borderWidth:1}}>
               <div className="text-xs text-faint mb-2">Signed in as</div>
-              <div className="text-soft text-sm mb-3 break-words">{auth.email}</div>
-              <button className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft" onClick={()=>alert('User details page – to be implemented')}>User details</button>
-              <button className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft" onClick={()=>alert('Settings page – to be implemented')}>Settings</button>
+              <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
+              <button 
+                className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  alert('User details page – to be implemented');
+                }}
+              >
+                User details
+              </button>
+              <button 
+                className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  alert('Settings page – to be implemented');
+                }}
+              >
+                Settings
+              </button>
               <div className="border-t border-blue-soft my-2" />
-              <button className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20" onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }}>Log out</button>
+              <button 
+                className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  handleLogout();
+                }}
+              >
+                Log out
+              </button>
             </div>
           )}
         </div>
