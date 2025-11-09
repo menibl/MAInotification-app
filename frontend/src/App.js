@@ -293,6 +293,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
           const vid = event.data.video_url;
           if (vid && isVideoUrl(vid)) {
             setOverrideVideoUrl(vid);
+            setMediaCollapsed(false); // Expand video panels
           }
         }
       }
@@ -308,8 +309,27 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
         }
       }
     };
+    
+    // Listen to custom event from notification navigation
+    const onShowVideo = (event) => {
+      if (!device || event.detail.device_id === device.id) {
+        const vid = event.detail.video_url;
+        if (vid && isVideoUrl(vid)) {
+          setOverrideVideoUrl(vid);
+          setMediaCollapsed(false); // Expand video panels
+          setShowLatestModal(false); // Close any open modals
+          setShowLiveModal(false);
+        }
+      }
+    };
+    
     navigator.serviceWorker?.addEventListener('message', onMessage);
-    return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
+    window.addEventListener('show-notification-video', onShowVideo);
+    
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', onMessage);
+      window.removeEventListener('show-notification-video', onShowVideo);
+    };
   }, [device]);
 
   /* merged into the next effect that also loads camera prompt */
