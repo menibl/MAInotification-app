@@ -1783,12 +1783,11 @@ const App = () => {
         
         {/* Right section: Notifications, Push, and User menu */}
         <div className="flex items-center space-x-2">
-
           {pushSupported && (
             <button
               onClick={pushSubscribed ? unsubscribeFromPush : subscribeToPush}
-              className={`p-2 hover:bg-gray-100 rounded-lg ${
-                pushSubscribed ? 'text-green-600' : 'text-gray-400'
+              className={`p-2 hover:bg-sky-900/20 rounded-lg transition-colors ${
+                pushSubscribed ? 'text-green-500' : 'text-gray-400'
               }`}
               title={pushSubscribed ? 'Push notifications enabled' : 'Enable push notifications'}
             >
@@ -1796,31 +1795,93 @@ const App = () => {
             </button>
           )}
           <button
-            onClick={() => setCurrentView('notifications')}
-            className="p-2 hover:bg-gray-100 rounded-lg relative"
+            onClick={() => setCurrentView(currentView === 'notifications' ? 'chat' : 'notifications')}
+            className="p-2 hover:bg-sky-900/20 rounded-lg relative transition-colors"
           >
-            <Bell size={20} />
+            <Bell size={20} className="text-soft" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
+          
+          {/* User icon + dropdown menu */}
+          {auth?.token && auth?.email && (
+            <div ref={userMenuRef} className="relative z-[100]">
+              <button 
+                onClick={() => setUserMenuOpen(v => !v)} 
+                className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
+                style={{borderWidth:1}} 
+                title="User menu"
+              >
+                <User size={18} className="text-soft" />
+              </button>
+              {userMenuOpen && (
+                <div className="absolute top-12 right-0 w-56 glass rounded border-blue-soft p-2 shadow-xl z-[100]" style={{borderWidth:1}}>
+                  <div className="text-xs text-faint mb-2">Signed in as</div>
+                  <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
+                  <button 
+                    className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      alert('User details page – to be implemented');
+                    }}
+                  >
+                    User details
+                  </button>
+                  <button 
+                    className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      alert('Settings page – to be implemented');
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <div className="border-t border-blue-soft my-2" />
+                  <button 
+                    className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      {/* Main Content - 2 column layout */}
+      <div className="flex-1 overflow-hidden flex">
+        {/* Left Sidebar - Devices List (Drawer) */}
         {currentView === 'devices' && (
-          <DeviceList
-            devices={devices}
-            onSelectDevice={handleSelectDevice}
-            selectedDevice={selectedDevice}
-          />
+          <div className="w-full md:w-80 glass border-r border-blue-soft flex-shrink-0" style={{borderWidth:1}}>
+            <DeviceList
+              devices={devices}
+              onSelectDevice={handleSelectDevice}
+              selectedDevice={selectedDevice}
+            />
+          </div>
         )}
         
-        {currentView === 'chat' && (
-          <ChatInterface
+        {/* Main Chat Area */}
+        <div className="flex-1 overflow-hidden">
+          {currentView === 'notifications' ? (
+            <div className="h-full overflow-y-auto">
+              <NotificationsList
+                notifications={notifications}
+                devices={devices}
+                onMarkRead={handleMarkNotificationRead}
+                onNavigateToDevice={handleNavigateToDeviceFromNotification}
+              />
+            </div>
+          ) : selectedDevice ? (
+            <ChatInterface
             device={selectedDevice}
             messages={messages}
             deviceNotifications={deviceNotifications}
