@@ -1380,7 +1380,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 // Main App Component
 const App = () => {
   // State declarations
-  const [currentView, setCurrentView] = useState('global');
+  const [currentView, setCurrentView] = useState('devices');
   const [auth, setAuth] = useState({ email: localStorage.getItem('auth_email') || null, token: localStorage.getItem('auth_token') || null });
   const [scope, setScope] = useState('global'); // 'global' | 'mission' | 'camera'
   const [selectedMission, setSelectedMission] = useState(null);
