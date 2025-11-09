@@ -1209,7 +1209,16 @@ async def send_push_notification(notification: PushNotificationRequest):
             content=f"{notification.title}: {notification.body}",
             media_url=notification.video_url or notification.image,
             read=False,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
+            # Extended metadata
+            camera_id=notification.camera_id or notification.device_id,
+            camera_name=notification.camera_name,
+            mission_id=notification.mission_id,
+            mission_name=notification.mission_name,
+            user_email=notification.user_email,
+            video_url=notification.video_url,
+            image_url=notification.image_url or notification.image,
+            rtmp_code=notification.rtmp_code
         )
         await db.notifications.insert_one(notification_record.dict())
         logging.info(f"Stored notification in database for user {notification.user_id}, device {notification.device_id}")
