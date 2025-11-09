@@ -2272,26 +2272,6 @@ async def global_chat_history(user_id: str, limit: int = 100):
         it.pop("_id", None)
     return {"success": True, "messages": list(reversed(items))}
 
-        else:
-            # Create new
-            new_prompt = CameraPrompt(
-                user_id=user_id,
-                device_id=device_id,
-                prompt_text=ai_generated_prompt,
-                instructions=prompt_create.instructions
-            )
-            await db.camera_prompts.insert_one(new_prompt.dict())
-        
-        return {
-            "success": True,
-            "message": "Camera monitoring prompt updated successfully",
-            "prompt_text": ai_generated_prompt,
-            "instructions": prompt_create.instructions
-        }
-        
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
 async def parse_camera_prompt_text(user_id: str, device_id: str, message: str) -> Dict[str, Any]:
     """Detect natural language instructions to update camera prompt from a chat message.
     Returns a dict with keys: success, settings_updated, instructions, prompt_text, confirmation_message
