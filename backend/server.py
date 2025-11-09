@@ -2052,6 +2052,28 @@ Provide detailed analysis when criteria are met, or respond with 'NO_DISPLAY' fo
                     "prompt_text": ai_generated_prompt,
                     "instructions": prompt_create.instructions,
 # Missions data models and APIs
+                }}
+            )
+        else:
+            # Create new
+            new_prompt = CameraPrompt(
+                user_id=user_id,
+                device_id=device_id,
+                prompt_text=ai_generated_prompt,
+                instructions=prompt_create.instructions
+            )
+            await db.camera_prompts.insert_one(new_prompt.dict())
+        
+        return {
+            "success": True,
+            "message": "Camera monitoring prompt updated successfully",
+            "prompt_text": ai_generated_prompt,
+            "instructions": prompt_create.instructions
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 class MissionCreate(BaseModel):
     user_id: str
     mission_name: str
