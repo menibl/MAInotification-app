@@ -525,8 +525,8 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
     window.location.href = '/';
   };
 
-          ? `${enhancedMessage}\n\nReferencing notifications:\n${notificationContext}`
-          : `Referencing notifications:\n${notificationContext}`;
+          ? `${enhancedMessage}\n\nReferencing notifications (selected):\n${notificationContext}`
+          : `Referencing notifications (selected):\n${notificationContext}`;
       }
       
       // Clear input immediately for better UX
