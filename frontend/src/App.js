@@ -518,15 +518,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
         ).join('\n');
         
         enhancedMessage = enhancedMessage ? `${enhancedMessage}\n\nReferencing notifications (selected):\n${notificationContext}` : `Referencing notifications (selected):\n${notificationContext}`;
-  // Logout handler
-  const handleLogout = () => {
-    try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {}
-    setAuth({ email: null, token: null });
-    window.location.href = '/';
-  };
-
-          ? `${enhancedMessage}\n\nReferencing notifications (selected):\n${notificationContext}`
-          : `Referencing notifications (selected):\n${notificationContext}`;
+        // removed misplaced blocks here
       }
       
       // Clear input immediately for better UX
