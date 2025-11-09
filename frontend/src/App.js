@@ -1813,52 +1813,16 @@ const App = () => {
             )}
           </button>
           
-          {/* User icon + dropdown menu */}
+          {/* User icon (dropdown rendered at root level below) */}
           {auth?.token && auth?.email && (
-            <div ref={userMenuRef} className="relative">
-              <button 
-                onClick={() => setUserMenuOpen(v => !v)} 
-                className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
-                style={{borderWidth:1}} 
-                title="User menu"
-              >
-                <User size={18} className="text-soft" />
-              </button>
-              {userMenuOpen && (
-                <div className="fixed top-14 right-4 w-56 glass rounded border-blue-soft p-2 shadow-xl" style={{borderWidth:1, zIndex: 9999}}>
-                  <div className="text-xs text-faint mb-2">Signed in as</div>
-                  <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
-                  <button 
-                    className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      alert('User details page – to be implemented');
-                    }}
-                  >
-                    User details
-                  </button>
-                  <button 
-                    className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      alert('Settings page – to be implemented');
-                    }}
-                  >
-                    Settings
-                  </button>
-                  <div className="border-t border-blue-soft my-2" />
-                  <button 
-                    className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      handleLogout();
-                    }}
-                  >
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
+            <button 
+              onClick={() => setUserMenuOpen(v => !v)} 
+              className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
+              style={{borderWidth:1}} 
+              title="User menu"
+            >
+              <User size={18} className="text-soft" />
+            </button>
           )}
         </div>
       </div>
