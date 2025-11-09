@@ -1131,16 +1131,28 @@ async def send_push_notification(notification: PushNotificationRequest):
         "timestamp": datetime.utcnow().isoformat()
     }
 
-    # Ensure deep-link info is present in data
+    # Ensure deep-link info and extended metadata is present in data
     try:
         if not isinstance(payload["data"], dict):
             payload["data"] = {}
         payload["data"].setdefault("device_id", notification.device_id)
         # include camera_id if present in data or infer from device_id
-        if 'camera_id' not in payload['data']:
-            payload['data']['camera_id'] = payload['data'].get('camera_id', notification.device_id)
+        payload['data']['camera_id'] = notification.camera_id or notification.device_id
         if notification.video_url:
             payload["data"]["video_url"] = notification.video_url
+        # Add extended metadata to payload data
+        if notification.camera_name:
+            payload["data"]["camera_name"] = notification.camera_name
+        if notification.mission_id:
+            payload["data"]["mission_id"] = notification.mission_id
+        if notification.mission_name:
+            payload["data"]["mission_name"] = notification.mission_name
+        if notification.user_email:
+            payload["data"]["user_email"] = notification.user_email
+        if notification.image_url:
+            payload["data"]["image_url"] = notification.image_url
+        if notification.rtmp_code:
+            payload["data"]["rtmp_code"] = notification.rtmp_code
     except Exception as _:
         pass
     
