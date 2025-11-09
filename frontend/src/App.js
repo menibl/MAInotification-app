@@ -1777,8 +1777,7 @@ const App = () => {
         </h1>
         
         <div className="flex items-center space-x-2">
-          {/* Logout button */}
-          <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="px-3 py-1 text-xs rounded border border-blue-soft text-soft">Logout</button>
+          {/* header logout removed (single fixed button kept) */}
 
           {pushSupported && (
             <button
