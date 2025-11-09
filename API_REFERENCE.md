@@ -21,7 +21,7 @@
 בסיס וכתובות – Base URL, כללי שימוש חשובים
 - כל ה־Endpoints של backend מתחילים ב־/api
 - ה־Frontend חייב להשתמש ב־REACT_APP_BACKEND_URL (אל תקדו כתובות)
-- דוגמת Base URL: https://aiconnect-pwa.preview.emergentagent.com
+- דוגמת Base URL: https://aidevicechat.preview.emergentagent.com
 - כל קריאות ה־API: {REACT_APP_BACKEND_URL}/api/...
 - חיבור למסד הנתונים (Backend) נעשה באמצעות MONGO_URL מתוך קובץ .env (אסור לקשיח)
 - WebSocket: אותו בסיס, עם /api/ws/{user_id}
@@ -35,7 +35,7 @@
 - JWT_SECRET=your-strong-random-secret
 - GOOGLE_CLIENT_ID=...
 - GOOGLE_CLIENT_SECRET=...
-- OAUTH_GOOGLE_REDIRECT_URI=https://aiconnect-pwa.preview.emergentagent.com/api/oauth/google/callback
+- OAUTH_GOOGLE_REDIRECT_URI=https://aidevicechat.preview.emergentagent.com/api/oauth/google/callback
 
 ראוטים:
 1) POST /api/auth/register
