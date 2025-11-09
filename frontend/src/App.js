@@ -1698,6 +1698,9 @@ const App = () => {
       const subscriptionObject = {
         user_id: USER_ID,
         endpoint: subscription.endpoint,
+  // User menu dropdown state
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
         keys: {
           p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
           auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))))
