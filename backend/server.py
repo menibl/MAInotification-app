@@ -524,6 +524,15 @@ class Notification(BaseModel):
     media_url: Optional[str] = None
     read: bool = False
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    # Extended metadata fields
+    camera_id: Optional[str] = None  # Camera ID
+    camera_name: Optional[str] = None  # Camera display name
+    mission_id: Optional[str] = None  # Mission ID
+    mission_name: Optional[str] = None  # Mission display name
+    user_email: Optional[str] = None  # User email
+    video_url: Optional[str] = None  # Video URL
+    image_url: Optional[str] = None  # Image URL
+    rtmp_code: Optional[str] = None  # RTMP stream code/URL
 
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
