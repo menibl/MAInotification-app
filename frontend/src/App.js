@@ -1350,6 +1350,9 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
   return (
     <div className="space-y-2 p-4">
+      <div className="mb-4 p-2 glass rounded border-blue-soft text-xs text-faint">
+        Debug: {notifications.length} notifications loaded. Click handler: {onNavigateToDevice ? '✅' : '❌'}
+      </div>
       {notifications.map(notification => {
         const device = deviceMap[notification.device_id];
         const deviceName = device ? device.name : notification.device_id;
@@ -1360,7 +1363,12 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
             className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
               notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'glass border-blue-soft hover:ring-1 hover:ring-sky-600/40'
             }`}
-            onClick={() => handleNotificationClick(notification)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('DIV CLICKED!', notification);
+              handleNotificationClick(notification);
+            }}
           >
             <div className="flex items-start space-x-3">
               <div className={`w-2 h-2 rounded-full mt-2 ${
