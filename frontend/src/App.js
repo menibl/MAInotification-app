@@ -517,7 +517,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
           `[Notification from ${new Date(notif.timestamp).toLocaleString()}]: ${notif.content}`
         ).join('\n');
         
-        enhancedMessage = enhancedMessage ? `${enhancedMessage}\n\nReferencing notifications:\n${notificationContext}` : `Referencing notifications:\n${notificationContext}`;
+        enhancedMessage = enhancedMessage ? `${enhancedMessage}\n\nReferencing notifications (selected):\n${notificationContext}` : `Referencing notifications (selected):\n${notificationContext}`;
   // Logout handler
   const handleLogout = () => {
     try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {}
