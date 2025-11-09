@@ -1786,7 +1786,7 @@ const App = () => {
           ) : (
             /* User icon + dropdown menu (only show on devices view) */
             auth?.token && auth?.email && (
-              <div ref={userMenuRef} className="relative">
+              <div ref={userMenuRef} className="relative z-[100]">
                 <button 
                   onClick={() => setUserMenuOpen(v => !v)} 
                   className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
@@ -1796,7 +1796,7 @@ const App = () => {
                   <User size={18} className="text-soft" />
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute top-12 left-0 w-56 glass rounded border-blue-soft p-2 shadow-lg z-50" style={{borderWidth:1}}>
+                  <div className="absolute top-12 left-0 w-56 glass rounded border-blue-soft p-2 shadow-xl z-[100]" style={{borderWidth:1}}>
                     <div className="text-xs text-faint mb-2">Signed in as</div>
                     <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
                     <button 
