@@ -1350,42 +1350,6 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
   return (
     <div className="space-y-2 p-4">
-      <div className="mb-4 p-2 glass rounded border-blue-soft">
-        <div className="text-xs text-faint mb-2">
-          Debug: {notifications.length} notifications | Handler: {onNavigateToDevice ? '✅' : '❌'} | Devices: {devices.length}
-        </div>
-        <button
-          onClick={() => {
-            console.log('TEST BUTTON CLICKED');
-            console.log('All notifications:', notifications);
-            console.log('Device map keys:', Object.keys(deviceMap));
-            console.log('Devices array:', devices);
-            
-            const firstNotif = notifications[0];
-            if (firstNotif) {
-              console.log('First notification:', firstNotif);
-              console.log('First notification device_id:', firstNotif.device_id);
-              const testDevice = deviceMap[firstNotif.device_id];
-              console.log('Found device in map:', testDevice);
-              console.log('Handler exists:', !!onNavigateToDevice);
-              
-              if (!testDevice) {
-                alert(`Device not found! Notification has device_id: "${firstNotif.device_id}"\nAvailable device IDs: ${Object.keys(deviceMap).join(', ')}`);
-              } else if (!onNavigateToDevice) {
-                alert('Handler is missing!');
-              } else {
-                console.log('✅ Everything OK, calling navigation...');
-                onNavigateToDevice(testDevice, firstNotif);
-              }
-            } else {
-              alert('No notifications to test!');
-            }
-          }}
-          className="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
-        >
-          🧪 Test Navigate First Notification
-        </button>
-      </div>
       {notifications.map(notification => {
         const device = deviceMap[notification.device_id];
         const deviceName = device ? device.name : notification.device_id;
