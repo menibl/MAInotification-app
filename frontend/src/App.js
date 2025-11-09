@@ -1834,14 +1834,15 @@ const App = () => {
           )}
         </div>
         
-        <h1 className="text-lg font-semibold text-soft">
+        {/* Center title */}
+        <h1 className="text-lg font-semibold text-soft flex-1 text-center">
           {currentView === 'devices' && 'MAI Focus'}
           {currentView === 'chat' && selectedDevice?.name}
           {currentView === 'notifications' && 'Notifications'}
         </h1>
         
+        {/* Right section: Notification and push buttons */}
         <div className="flex items-center space-x-2">
-          {/* header logout removed (single fixed button kept) */}
 
           {pushSupported && (
             <button
