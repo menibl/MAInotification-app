@@ -2271,6 +2271,8 @@ async def global_chat_history(user_id: str, limit: int = 100):
     for it in items:
         it.pop("_id", None)
     return {"success": True, "messages": list(reversed(items))}
+    # --- END of global chat endpoints ---
+
 
                     "updated_at": datetime.utcnow()
                 }}
