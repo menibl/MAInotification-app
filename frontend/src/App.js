@@ -1380,6 +1380,16 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 const App = () => {
   useEffect(() => {
     try { document.documentElement.classList.add('premium'); } catch {}
+  // Logout handler (App scope)
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_email');
+    } catch {}
+    setAuth({ email: null, token: null });
+    window.location.href = '/';
+  };
+
   }, []);
   // removed duplicate premium state/effect
 
