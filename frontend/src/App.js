@@ -1357,16 +1357,25 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
         <button
           onClick={() => {
             console.log('TEST BUTTON CLICKED');
+            console.log('All notifications:', notifications);
+            console.log('Device map keys:', Object.keys(deviceMap));
+            console.log('Devices array:', devices);
+            
             const firstNotif = notifications[0];
             if (firstNotif) {
+              console.log('First notification:', firstNotif);
+              console.log('First notification device_id:', firstNotif.device_id);
               const testDevice = deviceMap[firstNotif.device_id];
-              console.log('Test notification:', firstNotif);
-              console.log('Test device:', testDevice);
-              if (testDevice && onNavigateToDevice) {
-                console.log('Calling navigation...');
-                onNavigateToDevice(testDevice, firstNotif);
+              console.log('Found device in map:', testDevice);
+              console.log('Handler exists:', !!onNavigateToDevice);
+              
+              if (!testDevice) {
+                alert(`Device not found! Notification has device_id: "${firstNotif.device_id}"\nAvailable device IDs: ${Object.keys(deviceMap).join(', ')}`);
+              } else if (!onNavigateToDevice) {
+                alert('Handler is missing!');
               } else {
-                alert('Device or handler missing!');
+                console.log('✅ Everything OK, calling navigation...');
+                onNavigateToDevice(testDevice, firstNotif);
               }
             } else {
               alert('No notifications to test!');
