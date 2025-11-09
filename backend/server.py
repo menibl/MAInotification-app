@@ -329,7 +329,7 @@ class PushSubscriptionCreate(BaseModel):
 
 class PushNotificationRequest(BaseModel):
     user_id: str
-    device_id: str  # Now required
+    device_id: str  # Now required (camera ID)
     title: str
     body: str
     icon: Optional[str] = None
@@ -341,6 +341,14 @@ class PushNotificationRequest(BaseModel):
     data: Optional[Dict[str, Any]] = None  # should include at least device_id; now may include camera_id
     actions: Optional[List[Dict[str, str]]] = None
     require_interaction: Optional[bool] = False
+    # Extended metadata fields
+    camera_id: Optional[str] = None  # Camera ID (same as device_id usually)
+    camera_name: Optional[str] = None  # Camera display name
+    mission_id: Optional[str] = None  # Mission ID
+    mission_name: Optional[str] = None  # Mission display name
+    user_email: Optional[str] = None  # User email
+    image_url: Optional[str] = None  # Image URL (alias for image)
+    rtmp_code: Optional[str] = None  # RTMP stream code/URL
 
 class ChatMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
