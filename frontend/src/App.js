@@ -1379,21 +1379,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
 
 // Main App Component
 const App = () => {
-  useEffect(() => {
-    try { document.documentElement.classList.add('premium'); } catch {}
-  // Logout handler (App scope)
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_email');
-    } catch {}
-    setAuth({ email: null, token: null });
-    window.location.href = '/';
-  };
-
-  }, []);
-  // removed duplicate premium state/effect
-
+  // State declarations
   const [currentView, setCurrentView] = useState('global');
   const [auth, setAuth] = useState({ email: localStorage.getItem('auth_email') || null, token: localStorage.getItem('auth_token') || null });
   const [scope, setScope] = useState('global'); // 'global' | 'mission' | 'camera'
@@ -1408,7 +1394,37 @@ const App = () => {
   const [pushSupported, setPushSupported] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  // WebSocket removed
+  
+  // Refs
+  const userMenuRef = useRef(null);
+  
+  // Logout handler (properly scoped at component level)
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_email');
+    } catch {}
+    setAuth({ email: null, token: null });
+  };
+  
+  // Add premium class to document
+  useEffect(() => {
+    try { document.documentElement.classList.add('premium'); } catch {}
+  }, []);
+  
+  // Click outside handler for user menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [userMenuOpen]);
 
   // WebSocket removed
   useEffect(() => {
