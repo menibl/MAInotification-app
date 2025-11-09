@@ -1559,17 +1559,12 @@ const App = () => {
   };
 
   const handleNavigateToDeviceFromNotification = (device, notification) => {
-    console.log('handleNavigateToDeviceFromNotification called', { device, notification });
-    
     setSelectedDevice(device);
     setCurrentView('chat');
     loadChatMessages(device.id);
     
-    console.log('View set to chat, device selected:', device.id);
-    
     // Post message to trigger video display if notification has video_url
     if (notification.video_url || notification.media_url) {
-      console.log('Notification has video, will trigger display');
       setTimeout(() => {
         // Send message to ChatInterface to show the video
         const videoUrl = notification.video_url || notification.media_url;
@@ -1589,7 +1584,6 @@ const App = () => {
             notification_id: notification.id
           }
         }));
-        console.log('Video display event dispatched');
       }, 100);
     }
   };
