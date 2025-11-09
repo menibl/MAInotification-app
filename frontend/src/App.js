@@ -1358,12 +1358,7 @@ const NotificationsList = ({ notifications, devices, onMarkRead, onNavigateToDev
             className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
               notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'glass border-blue-soft hover:ring-1 hover:ring-sky-600/40'
             }`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('DIV CLICKED!', notification);
-              handleNotificationClick(notification);
-            }}
+            onClick={() => handleNotificationClick(notification)}
           >
             <div className="flex items-start space-x-3">
               <div className={`w-2 h-2 rounded-full mt-2 ${
