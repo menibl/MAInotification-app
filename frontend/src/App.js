@@ -1536,12 +1536,29 @@ const App = () => {
     setCurrentView('chat');
     loadChatMessages(device.id);
     
-    // Store the notification to be pre-selected in chat
-    // We'll use a timeout to ensure the chat interface has loaded first
-    setTimeout(() => {
-      // The ChatInterface component will need to handle this notification
-      // For now, we'll just navigate - we can enhance this later
-    }, 100);
+    // Post message to trigger video display if notification has video_url
+    if (notification.video_url || notification.media_url) {
+      setTimeout(() => {
+        // Send message to ChatInterface to show the video
+        const videoUrl = notification.video_url || notification.media_url;
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'navigate_to_device',
+            device_id: device.id,
+            video_url: videoUrl
+          });
+        }
+        
+        // Also trigger via custom event for immediate effect
+        window.dispatchEvent(new CustomEvent('show-notification-video', {
+          detail: {
+            device_id: device.id,
+            video_url: videoUrl,
+            notification_id: notification.id
+          }
+        }));
+      }, 100);
+    }
   };
 
   const handleSendMessage = async (deviceId, message, files = [], referencedMessages = [], mediaUrls = []) => {
