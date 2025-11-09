@@ -1765,83 +1765,23 @@ const App = () => {
 
   return (
     <div className="h-screen app-root flex flex-col premium">
-      {/* Mobile Navigation Header */}
+      {/* Header */}
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
-        {/* Left section: Back button OR User menu */}
-        <div className="flex items-center">
-          {currentView !== 'devices' ? (
-            <button
-              onClick={() => {
-                if (currentView === 'chat') {
-                  setCurrentView('devices');
-                  setSelectedDevice(null);
-                } else {
-                  setCurrentView('devices');
-                }
-              }}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <ChevronLeft size={20} />
-            </button>
-          ) : (
-            /* User icon + dropdown menu (only show on devices view) */
-            auth?.token && auth?.email && (
-              <div ref={userMenuRef} className="relative z-[100]">
-                <button 
-                  onClick={() => setUserMenuOpen(v => !v)} 
-                  className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
-                  style={{borderWidth:1}} 
-                  title="User menu"
-                >
-                  <User size={18} className="text-soft" />
-                </button>
-                {userMenuOpen && (
-                  <div className="absolute top-12 left-0 w-56 glass rounded border-blue-soft p-2 shadow-xl z-[100]" style={{borderWidth:1}}>
-                    <div className="text-xs text-faint mb-2">Signed in as</div>
-                    <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
-                    <button 
-                      className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        alert('User details page – to be implemented');
-                      }}
-                    >
-                      User details
-                    </button>
-                    <button 
-                      className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        alert('Settings page – to be implemented');
-                      }}
-                    >
-                      Settings
-                    </button>
-                    <div className="border-t border-blue-soft my-2" />
-                    <button 
-                      className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        handleLogout();
-                      }}
-                    >
-                      Log out
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          )}
+        {/* Left section: Menu button to toggle devices drawer */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setCurrentView(currentView === 'devices' ? 'chat' : 'devices')}
+            className="p-2 hover:bg-sky-900/20 rounded-lg transition-colors"
+            title="Toggle devices menu"
+          >
+            {currentView === 'devices' ? <X size={20} className="text-soft" /> : <MessageCircle size={20} className="text-soft" />}
+          </button>
+          <h1 className="text-lg font-semibold text-soft">
+            {selectedDevice ? selectedDevice.name : 'MAI Focus'}
+          </h1>
         </div>
         
-        {/* Center title */}
-        <h1 className="text-lg font-semibold text-soft flex-1 text-center">
-          {currentView === 'devices' && 'MAI Focus'}
-          {currentView === 'chat' && selectedDevice?.name}
-          {currentView === 'notifications' && 'Notifications'}
-        </h1>
-        
-        {/* Right section: Notification and push buttons */}
+        {/* Right section: Notifications, Push, and User menu */}
         <div className="flex items-center space-x-2">
 
           {pushSupported && (
