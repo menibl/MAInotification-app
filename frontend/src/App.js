@@ -1114,7 +1114,7 @@ const ChatInterface = ({ device, messages, onSendMessage, deviceNotifications, o
             <div className="w-64 hidden md:flex flex-col gap-2 glass p-3" style={{borderWidth:1}}>
               <div className="flex items-center justify-between text-soft mb-2">
                 <span className="font-semibold">Menu</span>
-                <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="text-xs underline">Logout</button>
+                {/* sidebar logout removed */}
               </div>
               <button className={`text-left px-3 py-2 rounded border ${scope==='global'?'btn-primary text-white':'border-blue-soft text-soft'}`} onClick={()=>{setScope('global'); setSelectedMission(null); setCurrentView('chat');}}>🌐 Global Chat</button>
               <div className="text-faint text-xs mt-2">Missions</div>
