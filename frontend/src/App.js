@@ -1815,7 +1815,7 @@ const App = () => {
           
           {/* User icon + dropdown menu */}
           {auth?.token && auth?.email && (
-            <div ref={userMenuRef} className="relative z-[100]">
+            <div ref={userMenuRef} className="relative">
               <button 
                 onClick={() => setUserMenuOpen(v => !v)} 
                 className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
@@ -1825,7 +1825,7 @@ const App = () => {
                 <User size={18} className="text-soft" />
               </button>
               {userMenuOpen && (
-                <div className="absolute top-12 right-0 w-56 glass rounded border-blue-soft p-2 shadow-xl z-[100]" style={{borderWidth:1}}>
+                <div className="fixed top-14 right-4 w-56 glass rounded border-blue-soft p-2 shadow-xl" style={{borderWidth:1, zIndex: 9999}}>
                   <div className="text-xs text-faint mb-2">Signed in as</div>
                   <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
                   <button 
