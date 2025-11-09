@@ -1767,69 +1767,72 @@ const App = () => {
     <div className="h-screen app-root flex flex-col premium">
       {/* Mobile Navigation Header */}
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
-      {/* User icon + dropdown menu (top-left, fixed position) */}
-      {auth?.token && auth?.email && (
-        <div ref={userMenuRef} className="fixed top-2 left-2 z-50">
-          <button 
-            onClick={() => setUserMenuOpen(v => !v)} 
-            className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
-            style={{borderWidth:1}} 
-            title="User menu"
-          >
-            <User size={18} className="text-soft" />
-          </button>
-          {userMenuOpen && (
-            <div className="mt-2 w-56 glass rounded border-blue-soft p-2 shadow-lg" style={{borderWidth:1}}>
-              <div className="text-xs text-faint mb-2">Signed in as</div>
-              <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
-              <button 
-                className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                onClick={() => {
-                  setUserMenuOpen(false);
-                  alert('User details page – to be implemented');
-                }}
-              >
-                User details
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
-                onClick={() => {
-                  setUserMenuOpen(false);
-                  alert('Settings page – to be implemented');
-                }}
-              >
-                Settings
-              </button>
-              <div className="border-t border-blue-soft my-2" />
-              <button 
-                className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
-                onClick={() => {
-                  setUserMenuOpen(false);
-                  handleLogout();
-                }}
-              >
-                Log out
-              </button>
-            </div>
+        {/* Left section: Back button OR User menu */}
+        <div className="flex items-center">
+          {currentView !== 'devices' ? (
+            <button
+              onClick={() => {
+                if (currentView === 'chat') {
+                  setCurrentView('devices');
+                  setSelectedDevice(null);
+                } else {
+                  setCurrentView('devices');
+                }
+              }}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          ) : (
+            /* User icon + dropdown menu (only show on devices view) */
+            auth?.token && auth?.email && (
+              <div ref={userMenuRef} className="relative">
+                <button 
+                  onClick={() => setUserMenuOpen(v => !v)} 
+                  className="p-2 rounded-full glass border-blue-soft hover:bg-sky-900/20 transition-colors" 
+                  style={{borderWidth:1}} 
+                  title="User menu"
+                >
+                  <User size={18} className="text-soft" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute top-12 left-0 w-56 glass rounded border-blue-soft p-2 shadow-lg z-50" style={{borderWidth:1}}>
+                    <div className="text-xs text-faint mb-2">Signed in as</div>
+                    <div className="text-soft text-sm mb-3 break-words font-medium">{auth.email}</div>
+                    <button 
+                      className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        alert('User details page – to be implemented');
+                      }}
+                    >
+                      User details
+                    </button>
+                    <button 
+                      className="w-full text-left px-3 py-2 rounded hover:bg-sky-900/10 text-soft transition-colors" 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        alert('Settings page – to be implemented');
+                      }}
+                    >
+                      Settings
+                    </button>
+                    <div className="border-t border-blue-soft my-2" />
+                    <button 
+                      className="w-full text-left px-3 py-2 rounded text-red-400 hover:bg-red-900/20 transition-colors" 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        handleLogout();
+                      }}
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
           )}
         </div>
-      )}
-
-        {currentView !== 'devices' && (
-          <button
-            onClick={() => {
-              if (currentView === 'chat') {
-                setCurrentView('devices');
-                setSelectedDevice(null);
-              } else {
-                setCurrentView('devices');
-              }
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ChevronLeft size={20} />
-          </button>
-        )}
         
         <h1 className="text-lg font-semibold text-soft">
           {currentView === 'devices' && 'MAI Focus'}
