@@ -1750,9 +1750,11 @@ const App = () => {
       {/* Mobile Navigation Header */}
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
       {/* Fixed Logout for visibility on all screens */}
-      <div className="fixed top-2 right-2 z-50">
-        <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="px-3 py-1 rounded bg-red-600 text-white text-xs shadow">Logout</button>
-      </div>
+      {auth?.token && auth?.email && (
+        <div className="fixed top-2 right-2 z-50">
+          <button onClick={() => { try { localStorage.removeItem('auth_token'); localStorage.removeItem('auth_email'); } catch {} setAuth({ email: null, token: null }); window.location.href = '/'; }} className="px-3 py-1 rounded bg-red-600 text-white text-xs shadow">Logout</button>
+        </div>
+      )}
 
         {currentView !== 'devices' && (
           <button
