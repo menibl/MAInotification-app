@@ -1762,6 +1762,9 @@ const App = () => {
         </h1>
         
         <div className="flex items-center space-x-2">
+          {/* Logout button */}
+          <button onClick={handleLogout} className="px-3 py-1 text-xs rounded border border-blue-soft text-soft">Logout</button>
+
           {pushSupported && (
             <button
               onClick={pushSubscribed ? unsubscribeFromPush : subscribeToPush}
