@@ -1483,6 +1483,13 @@ const App = () => {
       });
       console.log('Devices loaded:', response.data.length, 'devices');
       setDevices(response.data);
+      
+      // Auto-select first device if none selected
+      if (response.data.length > 0 && !selectedDevice) {
+        const firstDevice = response.data[0];
+        setSelectedDevice(firstDevice);
+        loadChatMessages(firstDevice.id);
+      }
     } catch (error) {
       console.error('Failed to load devices:', error);
       // Set empty devices array on error to allow app to continue
