@@ -1739,6 +1739,11 @@ const App = () => {
     <div className="h-screen app-root flex flex-col premium">
       {/* Mobile Navigation Header */}
       <div className="glass border-blue-soft px-4 py-3 flex items-center justify-between" style={{borderWidth:1}}>
+      {/* Fixed Logout for visibility on all screens */}
+      <div className="fixed top-2 right-2 z-50">
+        <button onClick={handleLogout} className="px-3 py-1 rounded bg-red-600 text-white text-xs shadow">Logout</button>
+      </div>
+
         {currentView !== 'devices' && (
           <button
             onClick={() => {
