@@ -1964,15 +1964,13 @@ const App = () => {
 
       {/* Main Content - 2 column layout */}
       <div className="flex-1 overflow-hidden flex">
-        {/* Left Sidebar - Devices List (Drawer) */}
+        {/* Left Sidebar - Devices List/Map (Drawer) */}
         {currentView === 'devices' && (
-          <div className="w-full md:w-80 glass border-r border-blue-soft flex-shrink-0" style={{borderWidth:1}}>
-            <DeviceList
-              devices={devices}
-              onSelectDevice={handleSelectDevice}
-              selectedDevice={selectedDevice}
-            />
-          </div>
+          <DeviceSidebarWithTabs
+            devices={devices}
+            onSelectDevice={handleSelectDevice}
+            selectedDevice={selectedDevice}
+          />
         )}
         
         {/* Main Chat Area */}
