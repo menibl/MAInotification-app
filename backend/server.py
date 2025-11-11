@@ -320,6 +320,10 @@ class DeviceUpdate(BaseModel):
     location: Optional[str] = None
     description: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
+    # GPS coordinates
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_altitude: Optional[float] = None
 
 class BulkDeviceUpdate(BaseModel):
     device_updates: List[Dict[str, Any]]  # List of {device_id: str, updates: DeviceUpdate}
