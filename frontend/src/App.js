@@ -2166,6 +2166,7 @@ const App = () => {
         {currentView === 'devices' && (
           <DeviceSidebarWithTabs
             devices={devices}
+            missions={missions}
             onSelectDevice={handleSelectDevice}
             selectedDevice={selectedDevice}
           />
