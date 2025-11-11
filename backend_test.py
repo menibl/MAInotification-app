@@ -1379,6 +1379,9 @@ class DeviceChatAPITester:
         # Image-Direct API Tests (FOCUS OF THIS REVIEW)
         self.run_image_direct_tests()
         
+        # AI Chat Agent Tests (NEW - MAIN FOCUS)
+        self.run_ai_agent_tests()
+        
         # OpenAI integration test
         print("\n🤖 Testing OpenAI Integration...")
         self.test_openai_integration()
