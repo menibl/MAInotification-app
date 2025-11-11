@@ -354,7 +354,7 @@ const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice, missio
 };
 
 
-const DeviceList = ({ devices, onSelectDevice, selectedDevice, missions }) => {
+const DeviceList = ({ devices, onSelectDevice, selectedDevice, missions = [] }) => {
   const [expandedMissions, setExpandedMissions] = React.useState(new Set());
   
   // Group devices by mission
@@ -362,8 +362,11 @@ const DeviceList = ({ devices, onSelectDevice, selectedDevice, missions }) => {
     const groups = {};
     const unassigned = [];
     
+    // Ensure missions is an array
+    const missionsArray = Array.isArray(missions) ? missions : [];
+    
     // Sort missions alphabetically
-    const sortedMissions = [...(missions || [])].sort((a, b) => 
+    const sortedMissions = [...missionsArray].sort((a, b) => 
       a.name.localeCompare(b.name, 'he')
     );
     
