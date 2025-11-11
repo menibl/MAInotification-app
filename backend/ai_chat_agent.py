@@ -218,24 +218,28 @@ class AIChatAgent:
     ) -> Dict:
         """Handle feedback learning from images"""
         
-        messages = [
-            {"role": "system", "content": FEEDBACK_LEARNING_PROMPT},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": message},
-                    {"type": "image_url", "image_url": {"url": image_url}}
-                ]
-            }
-        ]
+        # Create chat instance with vision model
+        session_id = f"feedback_{conv.get('conversation_id', 'default')}"
+        chat = LlmChat(
+            api_key=EMERGENT_API_KEY,
+            session_id=session_id,
+            system_message=FEEDBACK_LEARNING_PROMPT
+        ).with_model("openai", "gpt-4o")
         
-        response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.7
-        )
-        
-        reply = response.choices[0].message.content
+        # Download image and convert to base64
+        import requests
+        import base64
+        try:
+            response = requests.get(image_url, timeout=10)
+            if response.status_code == 200:
+                image_base64 = base64.b64encode(response.content).decode('utf-8')
+                image_content = ImageContent(image_base64=image_base64)
+                user_msg = UserMessage(text=message, file_contents=[image_content])
+                reply = await chat.send_message(user_msg)
+            else:
+                reply = "Could not download image for analysis. Please try again."
+        except Exception as e:
+            reply = f"Error processing image: {str(e)}"
         
         # Extract updated JSON from reply
         # This should contain the corrected AI query
