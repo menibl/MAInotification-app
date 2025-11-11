@@ -304,7 +304,7 @@ const MapView = ({ devices, onSelectDevice }) => {
 };
 
 // Device Sidebar with Tabs (List/Map)
-const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice }) => {
+const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice, missions }) => {
   const [viewMode, setViewMode] = React.useState('list'); // 'list' or 'map'
   
   return (
