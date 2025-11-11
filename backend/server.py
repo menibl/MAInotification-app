@@ -3258,6 +3258,244 @@ async def get_sync_status():
         "instructions": "Set EXTERNAL_API_URL in backend/.env file to enable sync"
     }
 
+# AI Agent Endpoints
+@api_router.post("/ai-agent/chat")
+async def ai_agent_chat(user_id: str, request: AIAgentChatRequest):
+    """
+    Handle AI agent chat for natural language intent understanding
+    Supports Global, Mission, and Camera scopes
+    """
+    try:
+        # Build context based on chat type
+        context = request.context or {}
+        
+        if request.chat_type == "camera" and request.device_id:
+            # Get camera info
+            device = await db.devices.find_one({"id": request.device_id, "user_id": user_id})
+            if device:
+                context["cameras"] = [{
+                    "id": device["id"],
+                    "name": device.get("name", device["id"]),
+                    "type": device.get("type", "camera")
+                }]
+        
+        elif request.chat_type == "mission" and request.mission_id:
+            # Get mission and its cameras
+            mission = await db.missions.find_one({"user_id": user_id, "mission_name": request.mission_id})
+            if mission:
+                camera_ids = mission.get("camera_ids", [])
+                cameras = []
+                for cam_id in camera_ids:
+                    device = await db.devices.find_one({"id": cam_id, "user_id": user_id})
+                    if device:
+                        cameras.append({
+                            "id": device["id"],
+                            "name": device.get("name", device["id"]),
+                            "type": device.get("type", "camera")
+                        })
+                context["cameras"] = cameras
+                context["missions"] = [{
+                    "id": mission.get("mission_name"),
+                    "name": mission.get("mission_name"),
+                    "camera_count": len(cameras)
+                }]
+        
+        elif request.chat_type == "global":
+            # Get all user's cameras and missions
+            devices = await db.devices.find({"user_id": user_id}).to_list(100)
+            cameras = [{
+                "id": d["id"],
+                "name": d.get("name", d["id"]),
+                "type": d.get("type", "camera")
+            } for d in devices]
+            
+            missions = []
+            async for m in db.missions.find({"user_id": user_id}):
+                missions.append({
+                    "id": m.get("mission_name"),
+                    "name": m.get("mission_name"),
+                    "camera_count": len(m.get("camera_ids", []))
+                })
+            
+            context["cameras"] = cameras
+            context["missions"] = missions
+        
+        # Process message through AI agent
+        result = await ai_chat_agent.process_message(
+            user_id=user_id,
+            chat_type=request.chat_type,
+            message=request.message,
+            context=context,
+            image_url=request.image_url,
+            conversation_id=request.conversation_id
+        )
+        
+        # Store conversation in database
+        conversation_id = result["conversation_id"]
+        conv_state = ai_chat_agent.get_conversation_state(conversation_id)
+        
+        if conv_state:
+            # Update or create conversation record
+            existing = await db.ai_conversations.find_one({"conversation_id": conversation_id})
+            
+            conv_record = AIAgentConversation(
+                user_id=user_id,
+                conversation_id=conversation_id,
+                chat_type=request.chat_type,
+                state=result["state"],
+                history=conv_state["history"],
+                data=conv_state["data"]
+            )
+            
+            if existing:
+                await db.ai_conversations.update_one(
+                    {"conversation_id": conversation_id},
+                    {"$set": conv_record.dict()}
+                )
+            else:
+                await db.ai_conversations.insert_one(conv_record.dict())
+        
+        return {
+            "success": True,
+            **result
+        }
+        
+    except Exception as e:
+        logging.error(f"AI agent chat error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.post("/ai-agent/feedback")
+async def ai_agent_feedback(user_id: str, request: AIAgentFeedbackRequest):
+    """Handle corrective feedback on AI analysis"""
+    try:
+        # Process feedback through AI agent
+        result = await ai_chat_agent.process_message(
+            user_id=user_id,
+            chat_type="feedback",
+            message=request.message,
+            context={"feedback_type": request.feedback_type},
+            image_url=request.image_url,
+            conversation_id=request.conversation_id
+        )
+        
+        return {
+            "success": True,
+            **result
+        }
+        
+    except Exception as e:
+        logging.error(f"AI agent feedback error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.get("/ai-agent/conversation/{conversation_id}")
+async def get_ai_conversation(conversation_id: str, user_id: str):
+    """Get conversation history"""
+    try:
+        conversation = await db.ai_conversations.find_one({
+            "conversation_id": conversation_id,
+            "user_id": user_id
+        })
+        
+        if not conversation:
+            return {
+                "success": False,
+                "error": "Conversation not found"
+            }
+        
+        return {
+            "success": True,
+            "conversation": AIAgentConversation(**conversation)
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.get("/ai-agent/conversations/{user_id}")
+async def list_ai_conversations(user_id: str, chat_type: Optional[str] = None):
+    """List all conversations for a user"""
+    try:
+        query = {"user_id": user_id}
+        if chat_type:
+            query["chat_type"] = chat_type
+        
+        conversations = await db.ai_conversations.find(query).sort("updated_at", -1).to_list(50)
+        
+        return {
+            "success": True,
+            "conversations": [AIAgentConversation(**c) for c in conversations]
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.post("/ai-agent/send-query")
+async def send_ai_query_to_external(user_id: str, query_json: Dict[str, Any]):
+    """
+    Send generated AI query JSON to external API
+    Currently mocked for testing - will be integrated later
+    """
+    try:
+        # For now, just return success and log the JSON
+        logging.info(f"AI Query JSON for user {user_id}: {json.dumps(query_json, indent=2)}")
+        
+        # TODO: Integrate with external API
+        # external_api_url = os.environ.get('EXTERNAL_API_URL')
+        # response = requests.post(f"{external_api_url}/ai-query", json=query_json)
+        
+        return {
+            "success": True,
+            "message": "Query JSON generated successfully (External API integration pending)",
+            "query_json": query_json,
+            "note": "This endpoint is mocked for testing. External API will be integrated later."
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.delete("/ai-agent/conversation/{conversation_id}")
+async def delete_ai_conversation(conversation_id: str, user_id: str):
+    """Delete a conversation"""
+    try:
+        result = await db.ai_conversations.delete_one({
+            "conversation_id": conversation_id,
+            "user_id": user_id
+        })
+        
+        if result.deleted_count == 0:
+            return {
+                "success": False,
+                "error": "Conversation not found"
+            }
+        
+        # Also reset conversation in agent's memory
+        ai_chat_agent.reset_conversation(conversation_id)
+        
+        return {
+            "success": True,
+            "message": "Conversation deleted successfully"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 
 # Include the router in the main app
 app.include_router(api_router)
