@@ -2128,8 +2128,20 @@ const App = () => {
           </h1>
         </div>
         
-        {/* Right section: Notifications, Push, and User menu */}
+        {/* Right section: Notifications, Push, AI Chat, and User menu */}
         <div className="flex items-center space-x-2">
+          {/* AI Chat Agent Button */}
+          <button
+            onClick={() => {
+              setAIChatType(selectedDevice ? 'camera' : selectedMission ? 'mission' : 'global');
+              setShowAIChat(true);
+            }}
+            className="p-2 hover:bg-sky-900/20 rounded-lg transition-colors bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+            title="Open AI Chat Agent"
+          >
+            <Bot size={20} />
+          </button>
+          
           {pushSupported && (
             <button
               onClick={pushSubscribed ? unsubscribeFromPush : subscribeToPush}
