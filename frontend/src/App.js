@@ -211,6 +211,97 @@ const AuthScreen = ({ onAuthenticated }) => {
 
 
 // Device List Component
+
+// Map View Component
+const MapView = ({ devices, onSelectDevice }) => {
+  const mapRef = React.useRef(null);
+  const mapInstanceRef = React.useRef(null);
+  const markersRef = React.useRef([]);
+
+  React.useEffect(() => {
+    // Initialize map only once
+    if (!mapInstanceRef.current && mapRef.current) {
+      // Default center: Israel (Tel Aviv area)
+      mapInstanceRef.current = window.L.map(mapRef.current).setView([32.0853, 34.7818], 13);
+      
+      // Add OpenStreetMap tiles
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(mapInstanceRef.current);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+    
+    // Add markers for devices with GPS
+    const devicesWithGPS = devices.filter(d => d.gps_latitude && d.gps_longitude);
+    
+    if (devicesWithGPS.length === 0) {
+      return;
+    }
+    
+    devicesWithGPS.forEach(device => {
+      const icon = window.L.divIcon({
+        html: `<div style="background: ${device.status === 'online' ? '#22c55e' : '#9ca3af'}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        className: 'custom-marker',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      
+      const marker = window.L.marker([device.gps_latitude, device.gps_longitude], { icon })
+        .addTo(mapInstanceRef.current);
+      
+      marker.bindPopup(`
+        <div style="padding: 8px;">
+          <h3 style="font-weight: 600; margin-bottom: 4px;">${device.name}</h3>
+          <p style="font-size: 12px; color: #6b7280; text-transform: capitalize;">${device.type}</p>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 4px;">${device.location || 'No location'}</p>
+          <button 
+            onclick="window.openDeviceChat('${device.id}')" 
+            style="margin-top: 8px; padding: 4px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;"
+          >
+            Open Chat
+          </button>
+        </div>
+      `);
+      
+      marker.on('click', () => {
+        onSelectDevice(device);
+      });
+      
+      markersRef.current.push(marker);
+    });
+    
+    // Fit map to show all markers
+    if (devicesWithGPS.length > 0) {
+      const bounds = window.L.latLngBounds(devicesWithGPS.map(d => [d.gps_latitude, d.gps_longitude]));
+      mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [devices, onSelectDevice]);
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b border-blue-soft">
+        <h2 className="text-lg font-semibold text-soft">Map View</h2>
+        <p className="text-xs text-faint mt-1">
+          {devices.filter(d => d.gps_latitude && d.gps_longitude).length} / {devices.length} devices with GPS
+        </p>
+      </div>
+      <div 
+        ref={mapRef} 
+        className="flex-1"
+        style={{ minHeight: '400px' }}
+      />
+    </div>
+  );
+};
+
 const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
   return (
     <div className="h-full glass rounded-lg" style={{borderWidth:1}}>
