@@ -292,6 +292,11 @@ class Device(BaseModel):
     location: Optional[str] = None
     description: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
+    # GPS coordinates
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_altitude: Optional[float] = None  # meters
+    gps_updated_at: Optional[datetime] = None
     last_seen: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
