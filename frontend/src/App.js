@@ -338,6 +338,7 @@ const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice, missio
         {viewMode === 'list' ? (
           <DeviceList
             devices={devices}
+            missions={missions}
             onSelectDevice={onSelectDevice}
             selectedDevice={selectedDevice}
           />
