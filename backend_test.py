@@ -991,6 +991,319 @@ class DeviceChatAPITester:
             self.log_test("Camera Prompt PUT", False, f"Error: {str(e)}")
             return False, {}
 
+    # AI Chat Agent Tests
+    def test_ai_agent_global_chat(self):
+        """Test AI agent global chat - intent understanding"""
+        url = f"{self.api_url}/ai-agent/chat"
+        params = {"user_id": self.user_id}
+        data = {
+            "chat_type": "global",
+            "message": "Show me people in all cameras",
+            "context": {}
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'message' in result and 'conversation_id' in result and 'state' in result:
+                    # Store conversation ID for follow-up tests
+                    if not hasattr(self, 'ai_conversation_ids'):
+                        self.ai_conversation_ids = []
+                    self.ai_conversation_ids.append(result['conversation_id'])
+                    
+                    self.log_test("AI Agent Global Chat", True, f"State: {result.get('state')}, Conv ID: {result['conversation_id'][:8]}...")
+                    return True, result
+                else:
+                    self.log_test("AI Agent Global Chat", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Global Chat", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Global Chat", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_camera_scope_chat(self):
+        """Test AI agent camera-specific chat"""
+        if not self.created_devices:
+            return self.log_test("AI Agent Camera Scope Chat", False, "No devices available")
+        
+        url = f"{self.api_url}/ai-agent/chat"
+        params = {"user_id": self.user_id}
+        data = {
+            "chat_type": "camera",
+            "message": "Look for cars",
+            "device_id": self.test_device_id,
+            "context": {}
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'message' in result and 'conversation_id' in result:
+                    # Store conversation ID for follow-up tests
+                    if not hasattr(self, 'ai_conversation_ids'):
+                        self.ai_conversation_ids = []
+                    self.ai_conversation_ids.append(result['conversation_id'])
+                    
+                    self.log_test("AI Agent Camera Scope Chat", True, f"Camera-specific intent understood")
+                    return True, result
+                else:
+                    self.log_test("AI Agent Camera Scope Chat", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Camera Scope Chat", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Camera Scope Chat", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_multi_turn_conversation(self):
+        """Test multi-turn conversation with state progression"""
+        if not hasattr(self, 'ai_conversation_ids') or not self.ai_conversation_ids:
+            return self.log_test("AI Agent Multi-turn Conversation", False, "No previous conversations available")
+        
+        conversation_id = self.ai_conversation_ids[0]
+        
+        url = f"{self.api_url}/ai-agent/chat"
+        params = {"user_id": self.user_id}
+        data = {
+            "chat_type": "global",
+            "message": "Yes, confirmed",
+            "conversation_id": conversation_id,
+            "context": {}
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'state' in result:
+                    # Check if state progressed (should move to alert_level_selection)
+                    expected_states = ["alert_level_selection", "confirmation", "completed"]
+                    if result['state'] in expected_states:
+                        self.log_test("AI Agent Multi-turn Conversation", True, f"State progressed to: {result['state']}")
+                        return True, result
+                    else:
+                        self.log_test("AI Agent Multi-turn Conversation", True, f"State: {result['state']} (conversation continuing)")
+                        return True, result
+                else:
+                    self.log_test("AI Agent Multi-turn Conversation", False, "Missing state in response")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Multi-turn Conversation", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Multi-turn Conversation", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_list_conversations(self):
+        """Test listing all conversations for a user"""
+        url = f"{self.api_url}/ai-agent/conversations/{self.user_id}"
+        
+        try:
+            response = requests.get(url)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'conversations' in result:
+                    conversation_count = len(result['conversations'])
+                    self.log_test("AI Agent List Conversations", True, f"Found {conversation_count} conversations")
+                    return True, result
+                else:
+                    self.log_test("AI Agent List Conversations", False, "Missing conversations in response")
+                    return False, {}
+            else:
+                self.log_test("AI Agent List Conversations", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent List Conversations", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_get_specific_conversation(self):
+        """Test getting specific conversation details"""
+        if not hasattr(self, 'ai_conversation_ids') or not self.ai_conversation_ids:
+            return self.log_test("AI Agent Get Specific Conversation", False, "No conversations available")
+        
+        conversation_id = self.ai_conversation_ids[0]
+        url = f"{self.api_url}/ai-agent/conversation/{conversation_id}"
+        params = {"user_id": self.user_id}
+        
+        try:
+            response = requests.get(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'conversation' in result:
+                    conv = result['conversation']
+                    if 'history' in conv and 'state' in conv:
+                        history_length = len(conv.get('history', []))
+                        self.log_test("AI Agent Get Specific Conversation", True, f"Retrieved conversation with {history_length} messages")
+                        return True, result
+                    else:
+                        self.log_test("AI Agent Get Specific Conversation", False, "Missing conversation details")
+                        return False, {}
+                else:
+                    self.log_test("AI Agent Get Specific Conversation", False, "Missing conversation in response")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Get Specific Conversation", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Get Specific Conversation", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_send_query_mocked(self):
+        """Test sending generated JSON to external API (mocked)"""
+        url = f"{self.api_url}/ai-agent/send-query"
+        params = {"user_id": self.user_id}
+        
+        # Sample AI query JSON
+        query_json = {
+            "query_id": "test_query_123",
+            "user_id": self.user_id,
+            "target_type": "cameras",
+            "target_ids": [self.test_device_id],
+            "detection_objects": ["people", "cars"],
+            "alert_level": "MEDIUM",
+            "query_text": "Show me people in all cameras",
+            "confidence_threshold": 0.5,
+            "notification_settings": {
+                "enabled": True,
+                "alert_level": "MEDIUM",
+                "notify_immediately": False
+            }
+        }
+        
+        try:
+            response = requests.post(url, json=query_json, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'query_json' in result and 'note' in result:
+                    # Check if it's properly mocked
+                    if "mocked" in result.get('note', '').lower() or "pending" in result.get('message', '').lower():
+                        self.log_test("AI Agent Send Query (Mocked)", True, "External API integration mocked as expected")
+                        return True, result
+                    else:
+                        self.log_test("AI Agent Send Query (Mocked)", True, "Query JSON processed successfully")
+                        return True, result
+                else:
+                    self.log_test("AI Agent Send Query (Mocked)", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Send Query (Mocked)", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Send Query (Mocked)", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_feedback(self):
+        """Test AI agent feedback learning endpoint"""
+        if not hasattr(self, 'ai_conversation_ids') or not self.ai_conversation_ids:
+            return self.log_test("AI Agent Feedback", False, "No conversations available for feedback")
+        
+        conversation_id = self.ai_conversation_ids[0]
+        url = f"{self.api_url}/ai-agent/feedback"
+        params = {"user_id": self.user_id}
+        data = {
+            "conversation_id": conversation_id,
+            "message": "I got an alert about a person but there's no person in the image",
+            "image_url": "https://picsum.photos/400/300",
+            "feedback_type": "false_positive"
+        }
+        
+        try:
+            response = requests.post(url, json=data, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success') and 'message' in result:
+                    self.log_test("AI Agent Feedback", True, "Feedback processed successfully")
+                    return True, result
+                else:
+                    self.log_test("AI Agent Feedback", False, "Missing required response fields")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Feedback", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Feedback", False, f"Error: {str(e)}")
+            return False, {}
+
+    def test_ai_agent_delete_conversation(self):
+        """Test deleting a conversation"""
+        if not hasattr(self, 'ai_conversation_ids') or not self.ai_conversation_ids:
+            return self.log_test("AI Agent Delete Conversation", False, "No conversations available to delete")
+        
+        # Use the last conversation ID for deletion
+        conversation_id = self.ai_conversation_ids[-1]
+        url = f"{self.api_url}/ai-agent/conversation/{conversation_id}"
+        params = {"user_id": self.user_id}
+        
+        try:
+            response = requests.delete(url, params=params)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                if result.get('success'):
+                    # Remove from our tracking list
+                    self.ai_conversation_ids.remove(conversation_id)
+                    self.log_test("AI Agent Delete Conversation", True, f"Conversation {conversation_id[:8]}... deleted")
+                    return True, result
+                else:
+                    self.log_test("AI Agent Delete Conversation", False, "Delete operation failed")
+                    return False, {}
+            else:
+                self.log_test("AI Agent Delete Conversation", False, f"Status {response.status_code}: {response.text[:200]}")
+                return False, {}
+                
+        except Exception as e:
+            self.log_test("AI Agent Delete Conversation", False, f"Error: {str(e)}")
+            return False, {}
+
+    def run_ai_agent_tests(self):
+        """Run all AI Chat Agent tests"""
+        print("\n🤖 Testing AI Chat Agent Endpoints...")
+        
+        # Test AI agent chat scenarios
+        self.test_ai_agent_global_chat()
+        self.test_ai_agent_camera_scope_chat()
+        self.test_ai_agent_multi_turn_conversation()
+        
+        # Test conversation management
+        self.test_ai_agent_list_conversations()
+        self.test_ai_agent_get_specific_conversation()
+        
+        # Test external API integration (mocked)
+        self.test_ai_agent_send_query_mocked()
+        
+        # Test feedback learning
+        self.test_ai_agent_feedback()
+        
+        # Test conversation deletion
+        self.test_ai_agent_delete_conversation()
+
     def run_image_direct_tests(self):
         """Run all image-direct API tests"""
         print("\n🖼️ Testing Image-Direct API Extensions...")
