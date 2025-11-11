@@ -24,6 +24,7 @@ from io import BytesIO
 import jwt
 import bcrypt
 import pyotp
+from ai_chat_agent import ai_chat_agent, ChatState
 
 
 ROOT_DIR = Path(__file__).parent
