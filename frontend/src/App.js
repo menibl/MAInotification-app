@@ -353,43 +353,173 @@ const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice }) => {
 };
 
 
-const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
+const DeviceList = ({ devices, onSelectDevice, selectedDevice, missions }) => {
+  const [expandedMissions, setExpandedMissions] = React.useState(new Set());
+  
+  // Group devices by mission
+  const devicesByMission = React.useMemo(() => {
+    const groups = {};
+    const unassigned = [];
+    
+    // Sort missions alphabetically
+    const sortedMissions = [...(missions || [])].sort((a, b) => 
+      a.name.localeCompare(b.name, 'he')
+    );
+    
+    // Create groups for each mission
+    sortedMissions.forEach(mission => {
+      groups[mission.id] = {
+        mission,
+        devices: []
+      };
+    });
+    
+    // Assign devices to missions
+    devices.forEach(device => {
+      let assigned = false;
+      sortedMissions.forEach(mission => {
+        if (mission.camera_ids && mission.camera_ids.includes(device.id)) {
+          groups[mission.id].devices.push(device);
+          assigned = true;
+        }
+      });
+      
+      if (!assigned) {
+        unassigned.push(device);
+      }
+    });
+    
+    return { groups, unassigned, sortedMissions };
+  }, [devices, missions]);
+  
+  const toggleMission = (missionId) => {
+    const newExpanded = new Set(expandedMissions);
+    if (newExpanded.has(missionId)) {
+      newExpanded.delete(missionId);
+    } else {
+      newExpanded.add(missionId);
+    }
+    setExpandedMissions(newExpanded);
+  };
+  
   return (
-    <div className="h-full glass rounded-lg" style={{borderWidth:1}}>
-      <div className="p-4 border-b border-blue-soft text-soft">
-        <h2 className="text-lg font-semibold text-soft">My Devices</h2>
-      </div>
-      <div className="overflow-y-auto">
-        {devices.map(device => (
-          <div
-            key={device.id}
-            onClick={() => onSelectDevice(device)}
-            className={`p-4 border-b border-blue-soft cursor-pointer transition-colors rounded-lg mx-2 my-2 glass ${
-              selectedDevice?.id === device.id 
-                ? 'ring-1 ring-sky-400' 
-                : 'hover:ring-1 hover:ring-sky-700/40'
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${
-                device.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-              }`}></div>
-              <div className="flex-1">
-                <h3 className="font-medium text-soft">{device.name}</h3>
-                <p className="text-sm text-gray-500 capitalize">{device.type}</p>
+    <div className="h-full overflow-y-auto">
+      {/* Missions */}
+      {devicesByMission.sortedMissions.map(mission => {
+        const group = devicesByMission.groups[mission.id];
+        const isExpanded = expandedMissions.has(mission.id);
+        const deviceCount = group.devices.length;
+        
+        return (
+          <div key={mission.id} className="border-b border-blue-soft">
+            {/* Mission Header */}
+            <div
+              onClick={() => toggleMission(mission.id)}
+              className="p-3 cursor-pointer hover:bg-sky-900/10 transition-colors flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2 flex-1">
+                <span className="text-lg">{isExpanded ? '📂' : '📁'}</span>
+                <div className="flex-1">
+                  <h3 className="font-medium text-soft">{mission.name}</h3>
+                  <p className="text-xs text-faint">{deviceCount} {deviceCount === 1 ? 'camera' : 'cameras'}</p>
+                </div>
               </div>
-              <MessageCircle size={18} className="text-gray-400" />
+              <span className="text-gray-400 text-xs">
+                {isExpanded ? '▼' : '▶'}
+              </span>
             </div>
+            
+            {/* Mission Devices */}
+            {isExpanded && (
+              <div className="bg-black/20">
+                {group.devices.map(device => (
+                  <div
+                    key={device.id}
+                    onClick={() => onSelectDevice(device)}
+                    className={`p-3 pl-10 border-t border-blue-soft/30 cursor-pointer transition-colors ${
+                      selectedDevice?.id === device.id 
+                        ? 'bg-sky-900/30 ring-1 ring-inset ring-sky-400' 
+                        : 'hover:bg-sky-900/10'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        device.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                      }`}></div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-soft">{device.name}</h4>
+                        <p className="text-xs text-faint capitalize">{device.location || device.type}</p>
+                      </div>
+                      <MessageCircle size={14} className="text-gray-400" />
+                    </div>
+                  </div>
+                ))}
+                {group.devices.length === 0 && (
+                  <div className="p-3 pl-10 text-xs text-faint italic">
+                    No cameras in this mission
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        ))}
-        {devices.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
-            <MessageCircle size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>No devices found</p>
-            <p className="text-sm mt-2">Add devices to start chatting</p>
+        );
+      })}
+      
+      {/* Unassigned Devices */}
+      {devicesByMission.unassigned.length > 0 && (
+        <div className="border-b border-blue-soft">
+          <div
+            onClick={() => toggleMission('unassigned')}
+            className="p-3 cursor-pointer hover:bg-sky-900/10 transition-colors flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-2 flex-1">
+              <span className="text-lg">{expandedMissions.has('unassigned') ? '📂' : '📁'}</span>
+              <div className="flex-1">
+                <h3 className="font-medium text-soft">Unassigned Cameras</h3>
+                <p className="text-xs text-faint">{devicesByMission.unassigned.length} cameras</p>
+              </div>
+            </div>
+            <span className="text-gray-400 text-xs">
+              {expandedMissions.has('unassigned') ? '▼' : '▶'}
+            </span>
           </div>
-        )}
-      </div>
+          
+          {expandedMissions.has('unassigned') && (
+            <div className="bg-black/20">
+              {devicesByMission.unassigned.map(device => (
+                <div
+                  key={device.id}
+                  onClick={() => onSelectDevice(device)}
+                  className={`p-3 pl-10 border-t border-blue-soft/30 cursor-pointer transition-colors ${
+                    selectedDevice?.id === device.id 
+                      ? 'bg-sky-900/30 ring-1 ring-inset ring-sky-400' 
+                      : 'hover:bg-sky-900/10'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${
+                      device.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                    }`}></div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-soft">{device.name}</h4>
+                      <p className="text-xs text-faint capitalize">{device.location || device.type}</p>
+                    </div>
+                    <MessageCircle size={14} className="text-gray-400" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {devices.length === 0 && (
+        <div className="p-8 text-center text-gray-500">
+          <MessageCircle size={48} className="mx-auto mb-4 text-gray-300" />
+          <p>No devices found</p>
+          <p className="text-sm mt-2">Add devices to start chatting</p>
+        </div>
+      )}
     </div>
   );
 };
