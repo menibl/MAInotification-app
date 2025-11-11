@@ -153,18 +153,17 @@ class AIChatAgent:
                 missions = context["missions"]
                 context_str += f"\nAvailable missions: {', '.join([m['name'] + ' (ID: ' + m['id'] + ')' for m in missions])}"
         
-        messages = [
-            {"role": "system", "content": INTENT_ANALYSIS_PROMPT + context_str},
-            *conv["history"]
-        ]
+        # Create chat instance with emergentintegrations
+        session_id = f"intent_{conv.get('conversation_id', 'default')}"
+        chat = LlmChat(
+            api_key=EMERGENT_API_KEY,
+            session_id=session_id,
+            system_message=INTENT_ANALYSIS_PROMPT + context_str
+        ).with_model("openai", "gpt-4o")
         
-        response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.7
-        )
-        
-        reply = response.choices[0].message.content
+        # Send user message
+        user_msg = UserMessage(text=message)
+        reply = await chat.send_message(user_msg)
         
         # Check if user confirmed
         if any(word in message.lower() for word in ["כן", "yes", "נכון", "correct", "אישור", "confirm"]):
