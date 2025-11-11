@@ -1797,6 +1797,21 @@ const App = () => {
     }
   };
 
+  const loadMissions = async () => {
+    try {
+      console.log('Loading missions...');
+      const response = await axios.get(`${API}/missions/${USER_ID}`, { 
+        timeout: 10000
+      });
+      console.log('Missions loaded:', response.data.length, 'missions');
+      setMissions(response.data);
+    } catch (error) {
+      console.error('Failed to load missions:', error);
+      setMissions([]);
+    }
+  };
+
+
   const loadNotifications = async () => {
     try {
       console.log('Loading notifications...');
