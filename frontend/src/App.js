@@ -303,6 +303,56 @@ const MapView = ({ devices, onSelectDevice }) => {
   );
 };
 
+// Device Sidebar with Tabs (List/Map)
+const DeviceSidebarWithTabs = ({ devices, onSelectDevice, selectedDevice }) => {
+  const [viewMode, setViewMode] = React.useState('list'); // 'list' or 'map'
+  
+  return (
+    <div className="w-full md:w-80 glass border-r border-blue-soft flex-shrink-0 flex flex-col" style={{borderWidth:1}}>
+      {/* Tabs */}
+      <div className="flex border-b border-blue-soft">
+        <button
+          onClick={() => setViewMode('list')}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            viewMode === 'list' 
+              ? 'text-sky-400 border-b-2 border-sky-400' 
+              : 'text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          📋 List
+        </button>
+        <button
+          onClick={() => setViewMode('map')}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            viewMode === 'map' 
+              ? 'text-sky-400 border-b-2 border-sky-400' 
+              : 'text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          🗺️ Map
+        </button>
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 overflow-hidden">
+        {viewMode === 'list' ? (
+          <DeviceList
+            devices={devices}
+            onSelectDevice={onSelectDevice}
+            selectedDevice={selectedDevice}
+          />
+        ) : (
+          <MapView
+            devices={devices}
+            onSelectDevice={onSelectDevice}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+
 const DeviceList = ({ devices, onSelectDevice, selectedDevice }) => {
   return (
     <div className="h-full glass rounded-lg" style={{borderWidth:1}}>
