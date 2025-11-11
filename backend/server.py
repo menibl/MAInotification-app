@@ -556,6 +556,33 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+# AI Agent Models
+class AIAgentChatRequest(BaseModel):
+    chat_type: str  # "global", "mission", "camera"
+    message: str
+    context: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = None
+    conversation_id: Optional[str] = None
+    device_id: Optional[str] = None  # For camera scope
+    mission_id: Optional[str] = None  # For mission scope
+
+class AIAgentFeedbackRequest(BaseModel):
+    conversation_id: str
+    message: str
+    image_url: str
+    feedback_type: str  # "false_positive", "false_negative", "correct"
+
+class AIAgentConversation(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    conversation_id: str
+    chat_type: str  # "global", "mission", "camera"
+    state: str
+    history: List[Dict[str, Any]] = []
+    data: Dict[str, Any] = {}
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 # WebSocket endpoint
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
