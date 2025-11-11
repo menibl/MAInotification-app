@@ -300,15 +300,24 @@ backend:
     working: false
     file: "server.py"
     stuck_count: 1
-    - agent: "main"
-      message: "Implemented image link support for direct analysis API (single and multiple URLs). Updated chat UI to include buttons for single URL and multi-URL input. Ensured chat input and selections clear after send. Requesting backend testing only per user preference."
-
     priority: "medium"
     needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
           comment: "❌ WebSocket connection fails in production environment. Endpoint returns HTML instead of upgrading to WebSocket protocol. Likely a routing/proxy configuration issue in Kubernetes ingress."
+
+  - task: "AI Chat Agent - Intent Understanding & JSON Generation"
+    implemented: true
+    working: "NA"
+    file: "server.py, ai_chat_agent.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented AI Chat Agent with emergentintegrations. Added endpoints: POST /api/ai-agent/chat, POST /api/ai-agent/feedback, GET /api/ai-agent/conversation/{id}, GET /api/ai-agent/conversations/{user_id}, POST /api/ai-agent/send-query (mocked), DELETE /api/ai-agent/conversation/{id}. Supports multi-turn conversations, intent understanding, alert level selection, JSON generation. Uses Emergent LLM key. Backend ready for testing."
 
 metadata:
   created_by: "main_agent"
