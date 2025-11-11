@@ -2297,6 +2297,17 @@ const App = () => {
           </button>
         </div>
       )}
+
+      {/* AI Chat Agent Modal */}
+      {showAIChat && (
+        <AIChatAgent
+          userId={USER_ID}
+          chatType={aiChatType}
+          deviceId={selectedDevice?.id || null}
+          missionId={selectedMission || null}
+          onClose={() => setShowAIChat(false)}
+        />
+      )}
     </div>
   );
 };
