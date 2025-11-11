@@ -97,6 +97,7 @@ class AIChatAgent:
         # Get or create conversation state
         if conversation_id not in self.conversations:
             self.conversations[conversation_id] = {
+                "conversation_id": conversation_id,
                 "state": ChatState.INTENT_UNDERSTANDING,
                 "history": [],
                 "data": {}
