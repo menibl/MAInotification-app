@@ -5,9 +5,14 @@ import json
 import os
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from openai import AsyncOpenAI
+from dotenv import load_dotenv
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
-client = AsyncOpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
+# Use Emergent LLM Key for AI chat
+EMERGENT_API_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 # System prompts for different stages
 INTENT_ANALYSIS_PROMPT = """You are an AI-powered video and image analysis system for understanding events.
