@@ -1749,6 +1749,7 @@ const App = () => {
       // Add timeout to prevent infinite loading
       const loadPromises = [
         loadDevices(),
+        loadMissions(),
         loadNotifications()
       ];
       
