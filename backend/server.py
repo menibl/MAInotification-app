@@ -806,6 +806,33 @@ async def update_device(device_id: str, updates: DeviceUpdate):
     
     return Device(**device)
 
+@api_router.put("/devices/{device_id}/gps")
+async def update_device_gps(
+    device_id: str, 
+    latitude: float, 
+    longitude: float, 
+    altitude: Optional[float] = None
+):
+    """Update GPS coordinates for a device"""
+    update_data = {
+        "gps_latitude": latitude,
+        "gps_longitude": longitude,
+        "gps_altitude": altitude,
+        "gps_updated_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    
+    result = await db.devices.update_one(
+        {"id": device_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Device not found")
+    
+    return {"success": True, "message": "GPS coordinates updated"}
+
+
 @api_router.put("/devices/bulk-update")
 async def bulk_update_devices(bulk_update: BulkDeviceUpdate):
     """Update multiple devices at once"""
