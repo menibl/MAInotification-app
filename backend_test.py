@@ -640,8 +640,8 @@ class DeviceChatAPITester:
             return self.log_test("Chat with Files and References", False, "No devices available")
         
         url = f"{self.api_url}/chat/send"
-        params = {
-            'user_id': self.user_id,
+        params = {"user_id": self.user_id}
+        data = {
             'device_id': self.created_devices[0],
             'message': 'Based on our previous conversation and these new files, what insights can you provide?',
             'sender': 'user',
@@ -650,7 +650,7 @@ class DeviceChatAPITester:
         }
         
         try:
-            response = requests.post(url, params=params)
+            response = requests.post(url, json=data, params=params)
             success = response.status_code == 200
             
             if success:
