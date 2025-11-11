@@ -6,6 +6,7 @@ motor
 python-dotenv
 pywebpush
 requests
+httpx
 openai
 langchain-openai
 pydantic-settings
