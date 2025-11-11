@@ -17,7 +17,7 @@
 ### שלב 1: יצירת 6 מצלמות עם GPS
 
 ```bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 
 # מצלמה 1 - כניסה ראשית
@@ -362,7 +362,7 @@ curl -s "$API_URL/devices/$USER_EMAIL" | jq '.[] | .id'
 ```bash
 #!/bin/bash
 
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 
 echo "🚀 Starting missions setup..."

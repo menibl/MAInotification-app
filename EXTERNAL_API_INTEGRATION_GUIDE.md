@@ -118,7 +118,7 @@ GET /polygons?camera_id={camera_id}
 
 ### בדיקת סטטוס
 ```bash
-curl -X GET "https://aidevicechat.preview.emergentagent.com/api/sync/status"
+curl -X GET "https://mission-control-pwa.preview.emergentagent.com/api/sync/status"
 ```
 
 **Response:**
@@ -133,7 +133,7 @@ curl -X GET "https://aidevicechat.preview.emergentagent.com/api/sync/status"
 
 ### ביצוע סנכרון ידני
 ```bash
-curl -X POST "https://aidevicechat.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com"
+curl -X POST "https://mission-control-pwa.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com"
 ```
 
 **Response הצלחה:**
@@ -223,7 +223,7 @@ crontab -e
 הוסף שורה:
 ```bash
 # Sync data every minute
-* * * * * curl -X POST "https://aidevicechat.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com" >> /var/log/sync.log 2>&1
+* * * * * curl -X POST "https://mission-control-pwa.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com" >> /var/log/sync.log 2>&1
 ```
 
 ### אופציה 2: Python Script
@@ -236,7 +236,7 @@ import httpx
 import os
 from datetime import datetime
 
-API_URL = "https://aidevicechat.preview.emergentagent.com/api"
+API_URL = "https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL = "menibl1111@gmail.com"
 
 async def sync_data():
@@ -309,7 +309,7 @@ sudo systemctl status sync-scheduler
 
 ### 1. בדוק שה-API מוגדר
 ```bash
-curl -s "https://aidevicechat.preview.emergentagent.com/api/sync/status" | jq '.'
+curl -s "https://mission-control-pwa.preview.emergentagent.com/api/sync/status" | jq '.'
 ```
 
 צפוי:
@@ -323,24 +323,24 @@ curl -s "https://aidevicechat.preview.emergentagent.com/api/sync/status" | jq '.
 
 ### 2. בצע סנכרון ידני
 ```bash
-curl -X POST "https://aidevicechat.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com" | jq '.'
+curl -X POST "https://mission-control-pwa.preview.emergentagent.com/api/sync/from-external?user_email=menibl1111@gmail.com" | jq '.'
 ```
 
 ### 3. בדוק שהנתונים הגיעו
 
 **בדוק משימות:**
 ```bash
-curl -s "https://aidevicechat.preview.emergentagent.com/api/missions/menibl1111@gmail.com" | jq 'length'
+curl -s "https://mission-control-pwa.preview.emergentagent.com/api/missions/menibl1111@gmail.com" | jq 'length'
 ```
 
 **בדוק מצלמות:**
 ```bash
-curl -s "https://aidevicechat.preview.emergentagent.com/api/devices/menibl1111@gmail.com" | jq 'length'
+curl -s "https://mission-control-pwa.preview.emergentagent.com/api/devices/menibl1111@gmail.com" | jq 'length'
 ```
 
 **בדוק GPS:**
 ```bash
-curl -s "https://aidevicechat.preview.emergentagent.com/api/devices/menibl1111@gmail.com" | jq '.[] | select(.gps_latitude != null) | {name, gps_latitude, gps_longitude}'
+curl -s "https://mission-control-pwa.preview.emergentagent.com/api/devices/menibl1111@gmail.com" | jq '.[] | select(.gps_latitude != null) | {name, gps_latitude, gps_longitude}'
 ```
 
 ---
@@ -457,7 +457,7 @@ sudo supervisorctl tail -f backend
 
 4. **בצע sync ידני ובדוק את ה-response:**
    ```bash
-   curl -X POST "https://aidevicechat.preview.emergentagent.com/api/sync/from-external?user_email=YOUR_EMAIL" | jq '.'
+   curl -X POST "https://mission-control-pwa.preview.emergentagent.com/api/sync/from-external?user_email=YOUR_EMAIL" | jq '.'
    ```
 
 ---

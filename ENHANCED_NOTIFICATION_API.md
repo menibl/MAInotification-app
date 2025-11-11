@@ -41,7 +41,7 @@ Every notification now includes comprehensive metadata about the camera, mission
 ## Complete Example with All Metadata
 
 ```bash
-curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl --location 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 --header 'Content-Type: application/json' \
 --data '{
     "user_id": "menibl1111@gmail.com",
@@ -72,7 +72,7 @@ curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
 ## Minimal Example (Only Required Fields)
 
 ```bash
-curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl --location 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 --header 'Content-Type: application/json' \
 --data '{
     "user_id": "menibl1111@gmail.com",
@@ -87,7 +87,7 @@ curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
 ## Example with Camera & Mission Context
 
 ```bash
-curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl --location 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 --header 'Content-Type: application/json' \
 --data '{
     "user_id": "menibl1111@gmail.com",
@@ -113,7 +113,7 @@ curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
 ## Example with RTMP Stream
 
 ```bash
-curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl --location 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 --header 'Content-Type: application/json' \
 --data '{
     "user_id": "menibl1111@gmail.com",
@@ -212,7 +212,7 @@ Save as `send_notification.sh`:
 
 USER_EMAIL="menibl1111@gmail.com"
 CAMERA_ID="d9325867-371a-4d08-98bd-aeeee866a348"
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 
 # Notification details
 TITLE="Motion Alert"
@@ -310,13 +310,13 @@ chmod +x send_notification.sh
 
 ### 1. Get Your Camera IDs
 ```bash
-curl -s 'https://aidevicechat.preview.emergentagent.com/api/devices/menibl1111@gmail.com' | jq '.[] | {id, name}'
+curl -s 'https://mission-control-pwa.preview.emergentagent.com/api/devices/menibl1111@gmail.com' | jq '.[] | {id, name}'
 ```
 
 ### 2. Send Test Notification with Full Metadata
 ```bash
 # Replace CAMERA_ID with your actual camera ID
-curl -X POST 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl -X POST 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 -H 'Content-Type: application/json' \
 -d '{
     "user_id": "menibl1111@gmail.com",

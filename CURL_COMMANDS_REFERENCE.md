@@ -4,7 +4,7 @@
 
 ```bash
 # Set these variables for all commands
-export API_URL="https://aidevicechat.preview.emergentagent.com/api"
+export API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 export USER_EMAIL="menibl1111@gmail.com"
 export USER_ID="menibl1111@gmail.com"
 export CAMERA_ID="d9325867-371a-4d08-98bd-aeeee866a348"
@@ -603,7 +603,7 @@ curl -X POST "$API_URL/status/check" \
 
 ```bash
 #!/bin/bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 
 # Step 1: Create camera
@@ -639,7 +639,7 @@ echo "Done!"
 
 ```bash
 #!/bin/bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 CAMERA_ID="d9325867-371a-4d08-98bd-aeeee866a348"
 
@@ -657,7 +657,7 @@ curl -X POST "$API_URL/chat/send?user_id=$USER_EMAIL" \
 
 ```bash
 #!/bin/bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 CAMERA_ID="d9325867-371a-4d08-98bd-aeeee866a348"
 
@@ -673,7 +673,7 @@ curl -X PUT "$API_URL/camera/prompt/$USER_EMAIL/$CAMERA_ID" \
 
 ```bash
 #!/bin/bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 
 # Get all cameras

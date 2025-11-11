@@ -73,7 +73,7 @@ EXTERNAL_API_URL="http://your-api-url-here.com/api"
 ### דוגמה 1: יצירת מצלמה עם GPS (תל אביב)
 
 ```bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 
 curl -X POST "$API_URL/devices" \
 -H 'Content-Type: application/json' \
@@ -100,7 +100,7 @@ curl -X PUT "$API_URL/devices/$CAMERA_ID/gps?latitude=32.0853&longitude=34.7818&
 
 ```bash
 #!/bin/bash
-API_URL="https://aidevicechat.preview.emergentagent.com/api"
+API_URL="https://mission-control-pwa.preview.emergentagent.com/api"
 USER_EMAIL="menibl1111@gmail.com"
 
 # מצלמה 1 - כניסה צפונית
@@ -184,7 +184,7 @@ echo "✅ 3 מצלמות עם GPS נוצרו בהצלחה!"
 
 ### צעד 1: פתח את האפליקציה
 ```
-https://aidevicechat.preview.emergentagent.com
+https://mission-control-pwa.preview.emergentagent.com
 ```
 
 ### צעד 2: התחבר

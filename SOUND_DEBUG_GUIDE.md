@@ -15,7 +15,7 @@ Open browser console (F12) and run:
 
 ```javascript
 // Test if sound API is accessible
-const audio = new Audio('https://aidevicechat.preview.emergentagent.com/api/sounds/alert');
+const audio = new Audio('https://mission-control-pwa.preview.emergentagent.com/api/sounds/alert');
 audio.play().then(() => {
   console.log('✅ Sound played successfully!');
 }).catch((error) => {
@@ -60,7 +60,7 @@ navigator.serviceWorker.ready.then(registration => {
   navigator.serviceWorker.controller.postMessage({
     type: 'play_sound',
     sound_id: 'alert',
-    sound_url: 'https://aidevicechat.preview.emergentagent.com/api/sounds/alert'
+    sound_url: 'https://mission-control-pwa.preview.emergentagent.com/api/sounds/alert'
   });
   console.log('✅ Sent play_sound message to page');
 });
@@ -81,7 +81,7 @@ navigator.serviceWorker.ready.then(registration => {
 ```javascript
 // This should work after clicking on page
 document.body.addEventListener('click', () => {
-  const audio = new Audio('https://aidevicechat.preview.emergentagent.com/api/sounds/alert');
+  const audio = new Audio('https://mission-control-pwa.preview.emergentagent.com/api/sounds/alert');
   audio.play();
 }, { once: true });
 console.log('Click anywhere on the page to test sound...');
@@ -118,7 +118,7 @@ navigator.serviceWorker.getRegistrations().then(registrations => {
 
 **Test sound URL directly:**
 ```bash
-curl -I https://aidevicechat.preview.emergentagent.com/api/sounds/alert
+curl -I https://mission-control-pwa.preview.emergentagent.com/api/sounds/alert
 ```
 
 Should return: `HTTP/2 200` and `Content-Type: audio/wav`
@@ -129,7 +129,7 @@ Should return: `HTTP/2 200` and `Content-Type: audio/wav`
 
 ### Test 1: Play Sound Directly in App (Browser Console)
 ```javascript
-const audio = new Audio('https://aidevicechat.preview.emergentagent.com/api/sounds/alert');
+const audio = new Audio('https://mission-control-pwa.preview.emergentagent.com/api/sounds/alert');
 audio.volume = 1.0;
 audio.play().then(() => {
   console.log('✅ Alert sound played');
@@ -147,7 +147,7 @@ function playNext() {
   if (index < sounds.length) {
     const soundId = sounds[index];
     console.log(`🔊 Playing: ${soundId}`);
-    const audio = new Audio(`https://aidevicechat.preview.emergentagent.com/api/sounds/${soundId}`);
+    const audio = new Audio(`https://mission-control-pwa.preview.emergentagent.com/api/sounds/${soundId}`);
     audio.play().then(() => {
       console.log(`✅ ${soundId} played successfully`);
       index++;
@@ -175,7 +175,7 @@ console.log('👆 Click anywhere on page to test all sounds...');
 
 ### Working Command:
 ```bash
-curl --location 'https://aidevicechat.preview.emergentagent.com/api/push/send' \
+curl --location 'https://mission-control-pwa.preview.emergentagent.com/api/push/send' \
 --header 'Content-Type: application/json' \
 --data '{
     "user_id": "menibl1111@gmail.com",
@@ -252,7 +252,7 @@ navigator.serviceWorker.ready.then(registration => {
   registration.addEventListener('message', (event) => {
     if (event.data.type === 'play_sound') {
       const url = event.data.sound_url || 
-                  `https://aidevicechat.preview.emergentagent.com/api/sounds/${event.data.sound_id}`;
+                  `https://mission-control-pwa.preview.emergentagent.com/api/sounds/${event.data.sound_id}`;
       
       console.log('🔊 Attempting to play:', url);
       
