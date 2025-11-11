@@ -2898,6 +2898,169 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+
+# ====================================
+# External API Integration & Sync
+# ====================================
+
+@api_router.post("/sync/from-external")
+async def sync_from_external_api(user_email: str):
+    """
+    Sync data from external API for a specific user.
+    Fetches missions, cameras, and GPS data from external system.
+    """
+    external_api_url = os.environ.get('EXTERNAL_API_URL', '')
+    
+    if not external_api_url or external_api_url == 'http://your-api-url-here.com/api':
+        return {
+            "success": False,
+            "error": "External API URL not configured. Please set EXTERNAL_API_URL in .env file"
+        }
+    
+    try:
+        import httpx
+        
+        # Results tracking
+        sync_results = {
+            "user_email": user_email,
+            "missions_synced": 0,
+            "cameras_synced": 0,
+            "errors": []
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # Step 1: Get user ID from email
+            try:
+                user_response = await client.get(f"{external_api_url}/user/by-email", params={"email": user_email})
+                user_response.raise_for_status()
+                user_data = user_response.json()
+                external_user_id = user_data.get('_id')
+                
+                if not external_user_id:
+                    return {
+                        "success": False,
+                        "error": f"User not found in external system: {user_email}"
+                    }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"Failed to get user from external API: {str(e)}"
+                }
+            
+            # Step 2: Get missions for user
+            try:
+                missions_response = await client.get(f"{external_api_url}/missions", params={"user_id": external_user_id})
+                missions_response.raise_for_status()
+                external_missions = missions_response.json()
+                
+                for ext_mission in external_missions:
+                    # Convert external mission to our format
+                    mission_data = {
+                        "id": ext_mission.get('_id', str(uuid.uuid4())),
+                        "user_id": user_email,
+                        "name": ext_mission.get('name', 'Unnamed Mission'),
+                        "description": ext_mission.get('description', ''),
+                        "camera_ids": ext_mission.get('cameraIds', []),
+                        "created_at": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                    
+                    # Upsert mission
+                    await db.missions.update_one(
+                        {"id": mission_data["id"]},
+                        {"$set": mission_data},
+                        upsert=True
+                    )
+                    sync_results["missions_synced"] += 1
+                    
+            except Exception as e:
+                sync_results["errors"].append(f"Missions sync error: {str(e)}")
+            
+            # Step 3: Get cameras
+            try:
+                cameras_response = await client.get(f"{external_api_url}/cameras", params={"user_id": external_user_id})
+                cameras_response.raise_for_status()
+                external_cameras = cameras_response.json()
+                
+                for ext_camera in external_cameras:
+                    # Convert external camera to our format
+                    camera_data = {
+                        "id": ext_camera.get('_id', str(uuid.uuid4())),
+                        "name": ext_camera.get('name', 'Unnamed Camera'),
+                        "type": ext_camera.get('type', 'camera'),
+                        "user_id": user_email,
+                        "status": "online" if ext_camera.get('streamStatus') == 'active' else "offline",
+                        "location": ext_camera.get('location', ''),
+                        "settings": {
+                            "live_stream_url": ext_camera.get('streamUrl', ''),
+                            "rtmp_code": ext_camera.get('rtmpCode', '')
+                        },
+                        "last_seen": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                    
+                    # Try to get GPS from polygons if available
+                    try:
+                        polygons_response = await client.get(f"{external_api_url}/polygons", params={"camera_id": ext_camera.get('_id')})
+                        if polygons_response.status_code == 200:
+                            polygon_data = polygons_response.json()
+                            if polygon_data and 'polygon_coords' in polygon_data:
+                                coords = polygon_data['polygon_coords']
+                                if coords and len(coords) > 0:
+                                    # Take first coordinate as camera position
+                                    camera_data['gps_latitude'] = coords[0].get('lat')
+                                    camera_data['gps_longitude'] = coords[0].get('lng')
+                                    camera_data['gps_updated_at'] = datetime.utcnow()
+                    except:
+                        pass  # GPS is optional
+                    
+                    # Check if camera exists
+                    existing = await db.devices.find_one({"id": camera_data["id"]})
+                    if existing:
+                        # Update only, preserve created_at
+                        camera_data.pop('created_at', None)
+                        await db.devices.update_one(
+                            {"id": camera_data["id"]},
+                            {"$set": camera_data}
+                        )
+                    else:
+                        # Create new
+                        camera_data["created_at"] = datetime.utcnow()
+                        await db.devices.insert_one(camera_data)
+                    
+                    sync_results["cameras_synced"] += 1
+                    
+            except Exception as e:
+                sync_results["errors"].append(f"Cameras sync error: {str(e)}")
+        
+        # Return results
+        sync_results["success"] = True
+        sync_results["timestamp"] = datetime.utcnow().isoformat()
+        
+        return sync_results
+        
+    except Exception as e:
+        logging.error(f"Sync error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.get("/sync/status")
+async def get_sync_status():
+    """Get last sync status and information"""
+    # Check if external API is configured
+    external_api_url = os.environ.get('EXTERNAL_API_URL', '')
+    configured = external_api_url and external_api_url != 'http://your-api-url-here.com/api'
+    
+    return {
+        "external_api_configured": configured,
+        "external_api_url": external_api_url if configured else "Not configured",
+        "sync_available": configured,
+        "instructions": "Set EXTERNAL_API_URL in backend/.env file to enable sync"
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
