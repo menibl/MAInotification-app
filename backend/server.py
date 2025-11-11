@@ -308,6 +308,10 @@ class DeviceCreate(BaseModel):
     location: Optional[str] = None
     description: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
+    # GPS coordinates
+    gps_latitude: Optional[float] = None
+    gps_longitude: Optional[float] = None
+    gps_altitude: Optional[float] = None
 
 class DeviceUpdate(BaseModel):
     name: Optional[str] = None
