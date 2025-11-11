@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "User wants to select notification messages (including body text and image URLs) and send them to chat for AI analysis"
+user_problem_statement: "Implement advanced AI Chat Agent for natural language intent understanding, JSON generation, and external API integration. The agent should support multi-turn conversations, understand user commands about cameras/missions, generate AI query JSON, and display JSON for testing before external API integration."
 
 frontend:
   - task: "User menu implementation with logout functionality"
