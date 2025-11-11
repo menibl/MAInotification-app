@@ -330,7 +330,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Clear chat input and selections after send on frontend"
+    - "AI Chat Agent - Intent Understanding & JSON Generation"
   stuck_tasks:
     - "WebSocket connectivity - /ws/{user_id} endpoint"
   test_all: false
