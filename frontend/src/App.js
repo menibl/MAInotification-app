@@ -1699,6 +1699,8 @@ const App = () => {
   const [pushSupported, setPushSupported] = useState(false);
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [aiChatType, setAIChatType] = useState('global'); // 'global', 'mission', 'camera'
   
   // Refs
   const userMenuRef = useRef(null);
