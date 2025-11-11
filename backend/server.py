@@ -2900,6 +2900,176 @@ async def get_status_checks():
 
 
 # ====================================
+# AI Chat Agent Endpoints
+# ====================================
+
+from ai_chat_agent import ai_chat_agent
+
+@api_router.post("/ai-chat/message")
+async def send_ai_chat_message(
+    user_id: str,
+    chat_type: str,  # "global", "mission", "camera"
+    message: str,
+    conversation_id: Optional[str] = None,
+    camera_id: Optional[str] = None,
+    mission_id: Optional[str] = None,
+    image_url: Optional[str] = None
+):
+    """
+    Send message to AI Chat Agent
+    
+    This intelligent agent:
+    1. Understands user intent
+    2. Asks clarifying questions
+    3. Generates AI query JSON
+    4. Learns from feedback
+    """
+    try:
+        # Build context
+        context = {}
+        
+        # Get user's cameras
+        cameras_cursor = db.devices.find({"user_id": user_id})
+        cameras = await cameras_cursor.to_list(1000)
+        context["cameras"] = [
+            {"id": c["id"], "name": c["name"], "location": c.get("location", "")}
+            for c in cameras
+        ]
+        
+        # Get user's missions
+        missions_cursor = db.missions.find({"user_id": user_id})
+        missions = await missions_cursor.to_list(1000)
+        context["missions"] = [
+            {"id": m["id"], "name": m["name"], "camera_ids": m.get("camera_ids", [])}
+            for m in missions
+        ]
+        
+        # Add specific context if camera/mission chat
+        if chat_type == "camera" and camera_id:
+            context["current_camera"] = next((c for c in cameras if c["id"] == camera_id), None)
+        elif chat_type == "mission" and mission_id:
+            context["current_mission"] = next((m for m in missions if m["id"] == mission_id), None)
+        
+        # Process with AI agent
+        result = await ai_chat_agent.process_message(
+            user_id=user_id,
+            chat_type=chat_type,
+            message=message,
+            context=context,
+            image_url=image_url,
+            conversation_id=conversation_id
+        )
+        
+        # Save conversation to database
+        conversation_record = {
+            "conversation_id": result["conversation_id"],
+            "user_id": user_id,
+            "chat_type": chat_type,
+            "state": result["state"],
+            "last_message": message,
+            "last_response": result["message"],
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.ai_conversations.update_one(
+            {"conversation_id": result["conversation_id"]},
+            {"$set": conversation_record},
+            upsert=True
+        )
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"AI Chat error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.post("/ai-chat/send-to-external")
+async def send_ai_query_to_external(
+    user_id: str,
+    conversation_id: str,
+    target_api_url: Optional[str] = None
+):
+    """
+    Send generated AI query JSON to external system
+    """
+    try:
+        # Get conversation data
+        conv_state = ai_chat_agent.get_conversation_state(conversation_id)
+        
+        if not conv_state or "ai_query_json" not in conv_state.get("data", {}):
+            return {
+                "success": False,
+                "error": "No AI query generated yet"
+            }
+        
+        ai_query_json = conv_state["data"]["ai_query_json"]
+        
+        # Use external API URL from env or provided
+        external_api = target_api_url or os.environ.get('EXTERNAL_API_URL', '')
+        
+        if not external_api:
+            return {
+                "success": False,
+                "error": "External API URL not configured"
+            }
+        
+        # Send to external system
+        import httpx
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # This endpoint should exist in your original system
+            response = await client.post(
+                f"{external_api}/ai-query/update",
+                json=ai_query_json
+            )
+            response.raise_for_status()
+            
+            # Mark conversation as sent
+            await db.ai_conversations.update_one(
+                {"conversation_id": conversation_id},
+                {"$set": {
+                    "sent_to_external": True,
+                    "sent_at": datetime.utcnow(),
+                    "external_response": response.json()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "AI query sent to external system successfully",
+                "ai_query": ai_query_json,
+                "external_response": response.json()
+            }
+            
+    except Exception as e:
+        logging.error(f"Send to external error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@api_router.get("/ai-chat/conversations/{user_id}")
+async def get_user_ai_conversations(user_id: str):
+    """Get all AI conversations for a user"""
+    conversations = await db.ai_conversations.find(
+        {"user_id": user_id}
+    ).sort("updated_at", -1).to_list(100)
+    
+    return conversations
+
+@api_router.delete("/ai-chat/conversation/{conversation_id}")
+async def reset_ai_conversation(conversation_id: str):
+    """Reset/delete an AI conversation"""
+    ai_chat_agent.reset_conversation(conversation_id)
+    await db.ai_conversations.delete_one({"conversation_id": conversation_id})
+    
+    return {"success": True, "message": "Conversation reset"}
+
+
+
+# ====================================
 # External API Integration & Sync
 # ====================================
 
