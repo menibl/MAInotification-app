@@ -1758,7 +1758,7 @@ const App = () => {
       
       // Log results for debugging
       results.forEach((result, index) => {
-        const taskName = index === 0 ? 'loadDevices' : 'loadNotifications';
+        const taskName = index === 0 ? 'loadDevices' : index === 1 ? 'loadMissions' : 'loadNotifications';
         if (result.status === 'rejected') {
           console.error(`${taskName} failed:`, result.reason);
         } else {
