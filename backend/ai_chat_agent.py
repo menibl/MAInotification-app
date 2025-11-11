@@ -261,19 +261,19 @@ class AIChatAgent:
     ) -> Dict:
         """Handle general conversation"""
         
-        messages = [
-            {"role": "system", "content": "You are a helpful AI assistant for a video surveillance system."},
-            *conv["history"]
-        ]
+        # Create chat instance
+        session_id = f"general_{conv.get('conversation_id', 'default')}"
+        chat = LlmChat(
+            api_key=EMERGENT_API_KEY,
+            session_id=session_id,
+            system_message="You are a helpful AI assistant for a video surveillance system."
+        ).with_model("openai", "gpt-4o")
         
-        response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.7
-        )
+        user_msg = UserMessage(text=message)
+        reply = await chat.send_message(user_msg)
         
         return {
-            "message": response.choices[0].message.content
+            "message": reply
         }
     
     def _generate_ai_query_json(self, conv: Dict) -> Dict:
