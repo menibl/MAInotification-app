@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
+import AIChatAgent from "./AIChatAgent";
 import { 
   MessageCircle, 
   Send, 
