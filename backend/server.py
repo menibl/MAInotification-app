@@ -967,34 +967,69 @@ async def get_user_devices(user_id: str):
 
 @api_router.put("/devices/{device_id}/status")
 async def update_device_status(device_id: str, status: str):
-    result = await db.devices.update_one(
-        {"id": device_id},
-        {"$set": {"status": status, "last_seen": datetime.utcnow(), "updated_at": datetime.utcnow()}}
-    )
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return {"success": True}
+    """Update camera status - adapted to MAI.cameras"""
+    try:
+        # Convert status to isActive boolean
+        is_active = status == "online"
+        
+        result = await cameras_collection.update_one(
+            {"_id": str_to_object_id(device_id)},
+            {"$set": {
+                "streamStatus": status,
+                "isActive": is_active,
+                "updatedAt": datetime.now(timezone.utc)
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Camera not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error updating camera status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.put("/devices/{device_id}", response_model=Device)
+@api_router.put("/devices/{device_id}")
 async def update_device(device_id: str, updates: DeviceUpdate):
-    """Update a single device with new information"""
-    update_data = {k: v for k, v in updates.dict().items() if v is not None}
-    update_data["updated_at"] = datetime.utcnow()
-    
-    result = await db.devices.update_one(
-        {"id": device_id},
-        {"$set": update_data}
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Device not found")
-    
-    # Return updated device
-    device = await db.devices.find_one({"id": device_id})
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    
-    return Device(**device)
+    """Update a camera - adapted to MAI.cameras structure"""
+    try:
+        # Build update data for MAI structure
+        update_data = {}
+        if updates.name is not None:
+            update_data["name"] = updates.name
+        if updates.type is not None:
+            update_data["type"] = updates.type
+        if hasattr(updates, 'rtmpCode') and updates.rtmpCode is not None:
+            update_data["rtmpCode"] = updates.rtmpCode
+        if hasattr(updates, 'streamUrl') and updates.streamUrl is not None:
+            update_data["streamUrl"] = updates.streamUrl
+        if hasattr(updates, 'streamStatus') and updates.streamStatus is not None:
+            update_data["streamStatus"] = updates.streamStatus
+        if hasattr(updates, 'isActive') and updates.isActive is not None:
+            update_data["isActive"] = updates.isActive
+        
+        update_data["updatedAt"] = datetime.now(timezone.utc)
+        
+        result = await cameras_collection.update_one(
+            {"_id": str_to_object_id(device_id)},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Camera not found")
+        
+        # Return updated camera
+        camera = await cameras_collection.find_one({"_id": str_to_object_id(device_id)})
+        if not camera:
+            raise HTTPException(status_code=404, detail="Camera not found")
+        
+        return object_id_to_str(camera)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error updating camera: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/devices/{device_id}/gps")
 async def update_device_gps(
