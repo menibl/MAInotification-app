@@ -797,12 +797,32 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     except WebSocketDisconnect:
         manager.disconnect(user_id)
 
-# Device Management Endpoints
-@api_router.post("/devices", response_model=Device)
+# Camera/Device Management Endpoints (MAI.cameras)
+@api_router.post("/devices")
 async def create_device(device: DeviceCreate):
-    device_obj = Device(**device.dict())
-    await db.devices.insert_one(device_obj.dict())
-    return device_obj
+    """Create a new camera - adapted to MAI.cameras structure"""
+    try:
+        # Create camera document for MAI structure
+        camera_doc = {
+            "name": device.name,
+            "type": device.type or "rtmp",
+            "rtmpCode": device.rtmpCode if hasattr(device, 'rtmpCode') else None,
+            "streamUrl": device.streamUrl if hasattr(device, 'streamUrl') else None,
+            "streamStatus": "",
+            "isActive": True,
+            "isDeleted": False,
+            "createdBy": str_to_object_id(device.createdBy),
+            "createdAt": datetime.now(timezone.utc),
+            "updatedAt": datetime.now(timezone.utc)
+        }
+        
+        result = await cameras_collection.insert_one(camera_doc)
+        camera_doc['id'] = str(result.inserted_id)
+        
+        return object_id_to_str(camera_doc)
+    except Exception as e:
+        logging.error(f"Error creating camera: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/devices/create-with-id")
 async def create_device_with_custom_id(
@@ -810,39 +830,46 @@ async def create_device_with_custom_id(
     name: str,
     type: str,
     user_id: str,
-    location: Optional[str] = None,
-    description: Optional[str] = None,
-    settings: Optional[Dict[str, Any]] = None,
-    status: str = "online"
+    rtmpCode: Optional[str] = None,
+    streamUrl: Optional[str] = None
 ):
-    """Create a device with a custom ID"""
-    
-    # Check if device ID already exists
-    existing = await db.devices.find_one({"id": device_id})
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Device with ID '{device_id}' already exists")
-    
-    # Create device with custom ID
-    device_obj = Device(
-        id=device_id,
-        name=name,
-        type=type,
-        user_id=user_id,
-        location=location,
-        description=description,
-        settings=settings or {},
-        status=status,
-        last_seen=datetime.utcnow(),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
-    
-    await db.devices.insert_one(device_obj.dict())
-    return {
-        "success": True,
-        "message": f"Device created with ID: {device_id}",
-        "device": device_obj
-    }
+    """Create a camera with a custom ID"""
+    try:
+        # Check if camera already exists with this MongoDB _id
+        try:
+            existing = await cameras_collection.find_one({"_id": str_to_object_id(device_id)})
+            if existing:
+                raise HTTPException(status_code=400, detail=f"Camera with ID '{device_id}' already exists")
+        except:
+            pass
+        
+        # Create camera with custom _id
+        camera_doc = {
+            "_id": str_to_object_id(device_id),
+            "name": name,
+            "type": type or "rtmp",
+            "rtmpCode": rtmpCode,
+            "streamUrl": streamUrl,
+            "streamStatus": "",
+            "isActive": True,
+            "isDeleted": False,
+            "createdBy": str_to_object_id(user_id),
+            "createdAt": datetime.now(timezone.utc),
+            "updatedAt": datetime.now(timezone.utc)
+        }
+        
+        await cameras_collection.insert_one(camera_doc)
+        
+        return {
+            "success": True,
+            "message": f"Camera created with ID: {device_id}",
+            "device": object_id_to_str(camera_doc)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error creating camera with custom ID: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/devices/{old_device_id}/update-id")
 async def update_device_id(
