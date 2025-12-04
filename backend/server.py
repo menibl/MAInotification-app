@@ -68,6 +68,37 @@ class DBProxy:
 
 db = DBProxy()
 
+# Helper functions for MongoDB ObjectId handling
+from bson import ObjectId as BsonObjectId
+
+def object_id_to_str(doc: Dict) -> Dict:
+    """Convert MongoDB ObjectId fields to strings"""
+    if doc is None:
+        return None
+    
+    doc = dict(doc)  # Make a copy
+    
+    # Convert _id to id string
+    if '_id' in doc:
+        doc['id'] = str(doc['_id'])
+        del doc['_id']
+    
+    # Convert other ObjectId fields
+    for key, value in doc.items():
+        if isinstance(value, BsonObjectId):
+            doc[key] = str(value)
+        elif isinstance(value, list):
+            doc[key] = [str(v) if isinstance(v, BsonObjectId) else v for v in value]
+    
+    return doc
+
+def str_to_object_id(id_str: str) -> BsonObjectId:
+    """Convert string ID to MongoDB ObjectId"""
+    try:
+        return BsonObjectId(id_str)
+    except:
+        return id_str  # Return as-is if not a valid ObjectId
+
 # Create the main app without a prefix
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-change')
 JWT_ALG = 'HS256'
