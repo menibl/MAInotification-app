@@ -510,13 +510,49 @@ class ChatHistory(BaseModel):
     ai_personality: Optional[AIPersonality] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+class LastLogin(BaseModel):
+    os: Dict[str, str] = {"version": "", "name": ""}
+    browser: Dict[str, str] = {"version": "", "name": ""}
+    ipAddress: str = "0.0.0.0"
+    isMobile: bool = False
+    ua: str = ""
+
+class Security(BaseModel):
+    failedAttempts: int = 0
+
+class Timezone(BaseModel):
+    value: str = "Asia/Jerusalem"
+    label: str = "(GMT+3:00) Israel"
+    offset: int = 3
+    abbrev: str = "IDT"
+    altName: str = "Israel Daylight Time"
+
 class User(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str  # Will be populated from MongoDB _id
     email: str
-    password_hash: Optional[str] = None
-    totp_enabled: bool = False
-    totp_secret: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    password: str  # Argon2 hashed password
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = None
+    timezone: Optional[Timezone] = None
+    signinType: str = "manual"
+    isActive: bool = True
+    isDeleted: bool = False
+    isSignUpUser: bool = True
+    isEmailVerified: bool = False
+    isNewUser: bool = True
+    security: Security = Security()
+    lastLogin: Optional[LastLogin] = None
+    systemMessagePhone: List[str] = []
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedBy: Optional[str] = None
+    
+    # Backward compatibility
+    @property
+    def password_hash(self) -> Optional[str]:
+        return self.password
 
 class RegisterRequest(BaseModel):
     email: str
