@@ -1099,11 +1099,27 @@ async def bulk_update_devices(bulk_update: BulkDeviceUpdate):
 
 @api_router.delete("/devices/{device_id}")
 async def delete_device(device_id: str):
-    """Delete a device"""
-    result = await db.devices.delete_one({"id": device_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return {"success": True, "message": "Device deleted successfully"}
+    """Soft delete a camera - adapted to MAI.cameras (sets isDeleted=true)"""
+    try:
+        # Soft delete by setting isDeleted flag
+        result = await cameras_collection.update_one(
+            {"_id": str_to_object_id(device_id)},
+            {"$set": {
+                "isDeleted": True,
+                "isActive": False,
+                "updatedAt": datetime.now(timezone.utc)
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Camera not found")
+        
+        return {"success": True, "message": "Camera deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error deleting camera: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/devices/user/{user_id}/delete-all")
 async def delete_all_user_devices(
