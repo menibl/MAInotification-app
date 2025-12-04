@@ -123,6 +123,10 @@ const AuthScreen = ({ onAuthenticated }) => {
       } else if (res.data.success && res.data.token) {
         localStorage.setItem('auth_token', res.data.token);
         localStorage.setItem('auth_email', res.data.email);
+        // Store user_id from MongoDB
+        if (res.data.user_id) {
+          localStorage.setItem('auth_user_id', res.data.user_id);
+        }
         onAuthenticated(res.data.email, res.data.token);
       } else {
         setError(res.data.error || 'Login failed');
