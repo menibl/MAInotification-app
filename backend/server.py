@@ -915,10 +915,26 @@ async def update_device_id(
         await db.devices.delete_one({"id": new_device_id})
         raise HTTPException(status_code=500, detail=f"Failed to update device ID: {str(e)}")
 
-@api_router.get("/devices/{user_id}", response_model=List[Device])
+@api_router.get("/devices/{user_id}")
 async def get_user_devices(user_id: str):
-    devices = await db.devices.find({"user_id": user_id}).to_list(100)
-    return [Device(**device) for device in devices]
+    """Get all cameras for a user - adapted to MAI.cameras structure"""
+    try:
+        # Query by createdBy field (matches user_id)
+        cameras = await cameras_collection.find({"createdBy": str_to_object_id(user_id), "isDeleted": False}).to_list(100)
+        
+        # Convert ObjectIds to strings and adapt to Camera model
+        result = []
+        for cam in cameras:
+            cam_dict = object_id_to_str(cam)
+            # Map fields for backward compatibility
+            cam_dict['user_id'] = cam_dict.get('createdBy', user_id)
+            cam_dict['status'] = 'online' if cam_dict.get('isActive', True) else 'offline'
+            result.append(cam_dict)
+        
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching cameras: {e}")
+        return []
 
 @api_router.put("/devices/{device_id}/status")
 async def update_device_status(device_id: str, status: str):
