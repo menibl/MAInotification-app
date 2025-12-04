@@ -1288,11 +1288,14 @@ async def auth_login(req: LoginRequest):
     if not bcrypt.checkpw(req.password.encode('utf-8'), password_field.encode('utf-8')):
         return { 'success': False, 'error': 'Invalid credentials' }
     
+    # Get user_id from MongoDB _id
+    user_id = str(user.get('_id'))
+    
     if user.get('totp_enabled'):
         # 2FA required, return partial
-        return { 'success': True, 'requires_2fa': True, 'email': email }
+        return { 'success': True, 'requires_2fa': True, 'email': email, 'user_id': user_id }
     token = create_jwt(email)
-    return { 'success': True, 'token': token, 'email': email }
+    return { 'success': True, 'token': token, 'email': email, 'user_id': user_id }
 
 @api_router.post('/auth/enable-2fa')
 async def enable_2fa(email: str):
