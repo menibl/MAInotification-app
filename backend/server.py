@@ -1179,10 +1179,18 @@ async def auth_register(req: RegisterRequest):
 async def auth_login(req: LoginRequest):
     email = req.email.strip().lower()
     user = await get_user_by_email(email)
-    if not user or not user.get('password_hash'):
+    if not user:
         return { 'success': False, 'error': 'Invalid credentials' }
-    if not bcrypt.checkpw(req.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+    
+    # Check for password in both old (password_hash) and new (password) fields
+    password_field = user.get('password') or user.get('password_hash')
+    if not password_field:
         return { 'success': False, 'error': 'Invalid credentials' }
+    
+    # Verify password
+    if not bcrypt.checkpw(req.password.encode('utf-8'), password_field.encode('utf-8')):
+        return { 'success': False, 'error': 'Invalid credentials' }
+    
     if user.get('totp_enabled'):
         # 2FA required, return partial
         return { 'success': True, 'requires_2fa': True, 'email': email }
