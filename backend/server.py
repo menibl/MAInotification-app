@@ -2524,24 +2524,46 @@ class AssignCamerasRequest(BaseModel):
 
 @api_router.put("/missions/assign-cameras")
 async def assign_cameras_to_mission(user_id: str, mission_name: str, req: AssignCamerasRequest):
+    """Assign cameras to a mission - adapted to MAI.missions"""
     try:
-        res = await db.missions.update_one(
-            {"user_id": user_id, "mission_name": mission_name},
-            {"$set": {"camera_ids": req.camera_ids, "updated_at": datetime.utcnow()}},
+        # Convert camera IDs to ObjectIds
+        camera_object_ids = [str_to_object_id(cid) for cid in req.camera_ids]
+        
+        res = await missions_collection.update_one(
+            {"createdBy": str_to_object_id(user_id), "name": mission_name},
+            {"$set": {
+                "cameraIds": camera_object_ids,
+                "updatedAt": datetime.now(timezone.utc)
+            }},
             upsert=False
         )
+        
         if res.matched_count == 0:
             return {"success": False, "error": "Mission not found"}
         return {"success": True}
     except Exception as e:
+        logging.error(f"Error assigning cameras to mission: {e}")
         return {"success": False, "error": str(e)}
 
 @api_router.delete("/missions")
 async def delete_mission(user_id: str, mission_name: str):
+    """Soft delete a mission - adapted to MAI.missions"""
     try:
-        await db.missions.delete_one({"user_id": user_id, "mission_name": mission_name})
+        # Soft delete by setting isDeleted flag
+        result = await missions_collection.update_one(
+            {"createdBy": str_to_object_id(user_id), "name": mission_name},
+            {"$set": {
+                "isDeleted": True,
+                "isActive": False,
+                "updatedAt": datetime.now(timezone.utc)
+            }}
+        )
+        
+        if result.matched_count == 0:
+            return {"success": False, "error": "Mission not found"}
         return {"success": True}
     except Exception as e:
+        logging.error(f"Error deleting mission: {e}")
         return {"success": False, "error": str(e)}
 
 # Mission chat fan-out and aggregated history
