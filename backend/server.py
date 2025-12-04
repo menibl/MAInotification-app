@@ -1268,9 +1268,10 @@ async def auth_register(req: RegisterRequest):
         "updatedAt": datetime.now(timezone.utc)
     }
     
-    await db.users.insert_one(user_doc)
+    result = await db.users.insert_one(user_doc)
+    user_id = str(result.inserted_id)
     token = create_jwt(email)
-    return { 'success': True, 'token': token, 'email': email }
+    return { 'success': True, 'token': token, 'email': email, 'user_id': user_id }
 
 @api_router.post('/auth/login')
 async def auth_login(req: LoginRequest):
