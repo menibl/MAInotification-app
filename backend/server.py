@@ -40,7 +40,12 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db_name = os.environ.get('DB_NAME', 'MAI')  # Default to MAI database
+db = client[db_name]
+
+# Collection references - using MAI database structure
+cameras_collection = db['cameras']
+missions_collection = db['missions']
 
 # Create the main app without a prefix
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-change')
