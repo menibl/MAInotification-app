@@ -44,8 +44,29 @@ db_name = os.environ.get('DB_NAME', 'MAI')  # Default to MAI database
 db = client[db_name]
 
 # Collection references - using MAI database structure
+# Main collections from MAI database
 cameras_collection = db['cameras']
 missions_collection = db['missions']
+users_collection = db['users']
+message_logs_collection = db['missionmessagelogs']
+
+# Backward compatibility - map old collection names to new ones
+# This allows existing code to work without changes
+class DBProxy:
+    def __getattr__(self, name):
+        collection_mapping = {
+            'devices': cameras_collection,
+            'missions': missions_collection,
+            'users': users_collection,
+            'notifications': message_logs_collection,
+            'cameras': cameras_collection
+        }
+        if name in collection_mapping:
+            return collection_mapping[name]
+        # For other collections, use the original db
+        return getattr(client[db_name], name)
+
+db = DBProxy()
 
 # Create the main app without a prefix
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-change')
