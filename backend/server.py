@@ -1170,8 +1170,27 @@ async def auth_register(req: RegisterRequest):
     if existing:
         return { 'success': False, 'error': 'Email already registered' }
     pw_hash = bcrypt.hashpw(req.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    user = User(email=email, password_hash=pw_hash)
-    await db.users.insert_one(user.dict())
+    
+    # Create user with MAI structure
+    user_doc = {
+        "email": email,
+        "password": pw_hash,  # Use 'password' field for MAI structure
+        "firstName": "",
+        "lastName": "",
+        "phone": "",
+        "signinType": "manual",
+        "isActive": True,
+        "isDeleted": False,
+        "isSignUpUser": True,
+        "isEmailVerified": False,
+        "isNewUser": True,
+        "security": {"failedAttempts": 0},
+        "systemMessagePhone": [],
+        "createdAt": datetime.now(timezone.utc),
+        "updatedAt": datetime.now(timezone.utc)
+    }
+    
+    await db.users.insert_one(user_doc)
     token = create_jwt(email)
     return { 'success': True, 'token': token, 'email': email }
 
