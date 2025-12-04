@@ -309,29 +309,24 @@ class Camera(BaseModel):
 # Alias for backward compatibility
 Device = Camera
 
-class DeviceCreate(BaseModel):
+class CameraCreate(BaseModel):
     name: str
-    type: str
-    user_id: str
-    location: Optional[str] = None
-    description: Optional[str] = None
-    settings: Optional[Dict[str, Any]] = None
-    # GPS coordinates
-    gps_latitude: Optional[float] = None
-    gps_longitude: Optional[float] = None
-    gps_altitude: Optional[float] = None
+    type: str = "rtmp"
+    rtmpCode: Optional[str] = None
+    streamUrl: Optional[str] = None
+    createdBy: str  # User ID
 
-class DeviceUpdate(BaseModel):
+class CameraUpdate(BaseModel):
     name: Optional[str] = None
     type: Optional[str] = None
-    status: Optional[str] = None
-    location: Optional[str] = None
-    description: Optional[str] = None
-    settings: Optional[Dict[str, Any]] = None
-    # GPS coordinates
-    gps_latitude: Optional[float] = None
-    gps_longitude: Optional[float] = None
-    gps_altitude: Optional[float] = None
+    rtmpCode: Optional[str] = None
+    streamUrl: Optional[str] = None
+    streamStatus: Optional[str] = None
+    isActive: Optional[bool] = None
+
+# Aliases for backward compatibility
+DeviceCreate = CameraCreate
+DeviceUpdate = CameraUpdate
 
 class BulkDeviceUpdate(BaseModel):
     device_updates: List[Dict[str, Any]]  # List of {device_id: str, updates: DeviceUpdate}
