@@ -572,24 +572,46 @@ class Verify2FARequest(BaseModel):
 
 
 
-class Notification(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    device_id: str
-    type: str  # 'message', 'alert', 'media'
-    content: str
-    media_url: Optional[str] = None
-    read: bool = False
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-    # Extended metadata fields
-    camera_id: Optional[str] = None  # Camera ID
-    camera_name: Optional[str] = None  # Camera display name
-    mission_id: Optional[str] = None  # Mission ID
-    mission_name: Optional[str] = None  # Mission display name
-    user_email: Optional[str] = None  # User email
-    video_url: Optional[str] = None  # Video URL
-    image_url: Optional[str] = None  # Image URL
-    rtmp_code: Optional[str] = None  # RTMP stream code/URL
+class MissionMessageLog(BaseModel):
+    id: str  # Will be populated from MongoDB _id
+    missionId: str
+    cameraId: str
+    message: str
+    createdBy: str  # User ID
+    notificationSound: Optional[str] = None
+    photoUrl: Optional[str] = None
+    videoUrl: Optional[str] = None
+    isActive: bool = True
+    isDeleted: bool = False
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Backward compatibility for Notification
+    @property
+    def user_id(self) -> str:
+        return self.createdBy
+    
+    @property
+    def device_id(self) -> str:
+        return self.cameraId
+    
+    @property
+    def mission_id(self) -> str:
+        return self.missionId
+    
+    @property
+    def content(self) -> str:
+        return self.message
+    
+    @property
+    def media_url(self) -> Optional[str]:
+        return self.photoUrl or self.videoUrl
+    
+    @property
+    def timestamp(self) -> datetime:
+        return self.createdAt
+
+# Alias for backward compatibility
+Notification = MissionMessageLog
 
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
