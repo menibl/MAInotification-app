@@ -2479,27 +2479,53 @@ class MissionCreate(BaseModel):
 
 @api_router.post("/missions")
 async def create_or_update_mission(m: MissionCreate):
+    """Create or update a mission - adapted to MAI.missions structure"""
     try:
-        existing = await db.missions.find_one({"user_id": m.user_id, "mission_name": m.mission_name})
-        payload = {
-            "user_id": m.user_id,
-            "mission_name": m.mission_name,
-            "description": m.description,
-            "settings": m.settings or {},
-            "camera_ids": m.camera_ids or [],
-            "updated_at": datetime.utcnow()
+        # Check if mission exists
+        existing = await missions_collection.find_one({
+            "createdBy": str_to_object_id(m.createdBy),
+            "name": m.name
+        })
+        
+        # Build mission document for MAI structure
+        mission_doc = {
+            "name": m.name,
+            "objectIds": [str_to_object_id(oid) for oid in (m.objectIds or [])],
+            "cameraIds": [str_to_object_id(cid) for cid in (m.cameraIds or [])],
+            "question": [],
+            "scheduleIds": [str_to_object_id(sid) for sid in (m.scheduleIds or [])],
+            "outputOption": [opt.dict() for opt in (m.outputOption or [])],
+            "status": "running",
+            "isCompleted": False,
+            "isDeleted": False,
+            "isActive": True,
+            "model": m.model.dict() if m.model else None,
+            "createdBy": str_to_object_id(m.createdBy),
+            "updatedAt": datetime.now(timezone.utc)
         }
+        
         if existing:
-            await db.missions.update_one({"_id": existing["_id"]}, {"$set": payload})
-            doc = await db.missions.find_one({"_id": existing["_id"]})
+            # Update existing mission
+            await missions_collection.update_one(
+                {"_id": existing["_id"]},
+                {"$set": mission_doc}
+            )
+            doc = await missions_collection.find_one({"_id": existing["_id"]})
         else:
-            payload["created_at"] = datetime.utcnow()
-            await db.missions.insert_one(payload)
-            doc = await db.missions.find_one({"user_id": m.user_id, "mission_name": m.mission_name})
-        doc["id"] = str(doc.get("_id")) if doc else None
-        doc.pop("_id", None)
-        return {"success": True, "mission": doc}
+            # Create new mission
+            mission_doc["createdAt"] = datetime.now(timezone.utc)
+            result = await missions_collection.insert_one(mission_doc)
+            doc = await missions_collection.find_one({"_id": result.inserted_id})
+        
+        # Convert to response format
+        doc_dict = object_id_to_str(doc)
+        doc_dict['user_id'] = doc_dict.get('createdBy')
+        doc_dict['mission_name'] = doc_dict.get('name')
+        doc_dict['camera_ids'] = doc_dict.get('cameraIds', [])
+        
+        return {"success": True, "mission": doc_dict}
     except Exception as e:
+        logging.error(f"Error creating/updating mission: {e}")
         return {"success": False, "error": str(e)}
 
 @api_router.get("/missions/{user_id}")
