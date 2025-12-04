@@ -72,7 +72,7 @@ db = DBProxy()
 from bson import ObjectId as BsonObjectId
 
 def object_id_to_str(doc: Dict) -> Dict:
-    """Convert MongoDB ObjectId fields to strings"""
+    """Convert MongoDB ObjectId fields to strings recursively"""
     if doc is None:
         return None
     
@@ -83,12 +83,14 @@ def object_id_to_str(doc: Dict) -> Dict:
         doc['id'] = str(doc['_id'])
         del doc['_id']
     
-    # Convert other ObjectId fields
-    for key, value in doc.items():
+    # Convert other ObjectId fields recursively
+    for key, value in list(doc.items()):
         if isinstance(value, BsonObjectId):
             doc[key] = str(value)
         elif isinstance(value, list):
-            doc[key] = [str(v) if isinstance(v, BsonObjectId) else v for v in value]
+            doc[key] = [object_id_to_str(item) if isinstance(item, dict) else (str(item) if isinstance(item, BsonObjectId) else item) for item in value]
+        elif isinstance(value, dict):
+            doc[key] = object_id_to_str(value)
     
     return doc
 
