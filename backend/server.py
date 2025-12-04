@@ -283,24 +283,31 @@ async def get_chat_history(user_id: str, device_id: str) -> List[Dict[str, Any]]
         logging.error(f"Failed to get chat history: {e}")
         return []
 
-# Define Models
-class Device(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+# Define Models - Updated to match MAI.cameras structure
+class Camera(BaseModel):
+    id: str  # Will be populated from MongoDB _id
     name: str
-    type: str  # camera, sensor, etc.
-    user_id: str
-    status: str = "online"
-    location: Optional[str] = None
-    description: Optional[str] = None
-    settings: Optional[Dict[str, Any]] = None
-    # GPS coordinates
-    gps_latitude: Optional[float] = None
-    gps_longitude: Optional[float] = None
-    gps_altitude: Optional[float] = None  # meters
-    gps_updated_at: Optional[datetime] = None
-    last_seen: datetime = Field(default_factory=datetime.utcnow)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    rtmpCode: Optional[str] = None
+    streamUrl: Optional[str] = None
+    type: str = "rtmp"
+    streamStatus: str = ""
+    isActive: bool = True
+    isDeleted: bool = False
+    createdBy: str  # User ID who created this camera
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Backward compatibility - map to old Device fields
+    @property
+    def user_id(self) -> str:
+        return self.createdBy
+    
+    @property
+    def status(self) -> str:
+        return "online" if self.isActive else "offline"
+
+# Alias for backward compatibility
+Device = Camera
 
 class DeviceCreate(BaseModel):
     name: str
