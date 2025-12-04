@@ -2182,12 +2182,62 @@ Provide detailed analysis when criteria are met, or respond with 'NO_DISPLAY' fo
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+class OutputOption(BaseModel):
+    type: str  # "email", etc.
+    value: List[str]
+    useExistingEmail: bool = True
+
+class ModelInfo(BaseModel):
+    modelId: str
+    modelName: str
+
+class Mission(BaseModel):
+    id: str  # Will be populated from MongoDB _id
+    name: str
+    objectIds: List[str] = []
+    cameraIds: List[str] = []
+    question: List[Any] = []
+    scheduleIds: List[str] = []
+    outputOption: List[OutputOption] = []
+    status: str = "running"
+    isCompleted: bool = False
+    isDeleted: bool = False
+    isActive: bool = True
+    model: Optional[ModelInfo] = None
+    createdBy: str  # User ID
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Backward compatibility
+    @property
+    def user_id(self) -> str:
+        return self.createdBy
+    
+    @property
+    def mission_name(self) -> str:
+        return self.name
+    
+    @property
+    def camera_ids(self) -> List[str]:
+        return self.cameraIds
+
 class MissionCreate(BaseModel):
-    user_id: str
-    mission_name: str
-    description: Optional[str] = None
-    settings: Optional[Dict[str, Any]] = None
-    camera_ids: Optional[List[str]] = None
+    name: str
+    createdBy: str  # User ID
+    cameraIds: Optional[List[str]] = None
+    objectIds: Optional[List[str]] = None
+    scheduleIds: Optional[List[str]] = None
+    outputOption: Optional[List[OutputOption]] = None
+    model: Optional[ModelInfo] = None
+    
+    # Backward compatibility fields
+    @property
+    def user_id(self) -> str:
+        return self.createdBy
+    
+    @property
+    def mission_name(self) -> str:
+        return self.name
 
 @api_router.post("/missions")
 async def create_or_update_mission(m: MissionCreate):
