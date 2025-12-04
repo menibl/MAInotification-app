@@ -2397,12 +2397,20 @@ async def create_or_update_mission(m: MissionCreate):
 
 @api_router.get("/missions/{user_id}")
 async def list_missions(user_id: str):
-    items = []
-    async for doc in db.missions.find({"user_id": user_id}).sort("mission_name", 1):
-        doc["id"] = str(doc.get("_id"))
-        doc.pop("_id", None)
-        items.append(doc)
-    return {"success": True, "missions": items}
+    """Get all missions for a user - adapted to MAI.missions structure"""
+    try:
+        items = []
+        async for doc in missions_collection.find({"createdBy": str_to_object_id(user_id), "isDeleted": False}).sort("name", 1):
+            mission_dict = object_id_to_str(doc)
+            # Map fields for backward compatibility
+            mission_dict['user_id'] = mission_dict.get('createdBy', user_id)
+            mission_dict['mission_name'] = mission_dict.get('name', '')
+            mission_dict['camera_ids'] = mission_dict.get('cameraIds', [])
+            items.append(mission_dict)
+        return {"success": True, "missions": items}
+    except Exception as e:
+        logging.error(f"Error fetching missions: {e}")
+        return {"success": False, "error": str(e), "missions": []}
 
 class AssignCamerasRequest(BaseModel):
     camera_ids: List[str]
