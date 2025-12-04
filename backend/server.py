@@ -2035,35 +2035,87 @@ async def clear_chat_history(user_id: str, device_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Notification Endpoints
-@api_router.get("/notifications/{user_id}", response_model=List[Notification])
+# Notification Endpoints (using MAI.missionmessagelogs)
+@api_router.get("/notifications/{user_id}")
 async def get_notifications(user_id: str, limit: int = 50, unread_only: bool = False):
-    query = {"user_id": user_id}
-    if unread_only:
-        query["read"] = False
+    """Get message logs (notifications) - adapted to MAI.missionmessagelogs"""
+    try:
+        query = {
+            "createdBy": str_to_object_id(user_id),
+            "isDeleted": False
+        }
         
-    notifications = await db.notifications.find(query).sort("timestamp", -1).limit(limit).to_list(limit)
-    return [Notification(**notif) for notif in notifications]
+        logs = await message_logs_collection.find(query).sort("createdAt", -1).limit(limit).to_list(limit)
+        
+        # Convert to notification format for backward compatibility
+        notifications = []
+        for log in logs:
+            log_dict = object_id_to_str(log)
+            # Map to Notification fields
+            notif = {
+                "id": log_dict.get('id'),
+                "user_id": log_dict.get('createdBy'),
+                "device_id": log_dict.get('cameraId'),
+                "mission_id": log_dict.get('missionId'),
+                "type": "message",
+                "content": log_dict.get('message', ''),
+                "media_url": log_dict.get('photoUrl') or log_dict.get('videoUrl'),
+                "video_url": log_dict.get('videoUrl'),
+                "image_url": log_dict.get('photoUrl'),
+                "read": False,  # MAI doesn't have read status
+                "timestamp": log_dict.get('createdAt'),
+                "notificationSound": log_dict.get('notificationSound')
+            }
+            notifications.append(notif)
+        
+        return notifications
+    except Exception as e:
+        logging.error(f"Error fetching notifications: {e}")
+        return []
 
-@api_router.get("/notifications/{user_id}/device/{device_id}", response_model=List[Notification])
+@api_router.get("/notifications/{user_id}/device/{device_id}")
 async def get_device_notifications(user_id: str, device_id: str, limit: int = 50, unread_only: bool = False):
-    """Get notifications for a specific device"""
-    query = {"user_id": user_id, "device_id": device_id}
-    if unread_only:
-        query["read"] = False
+    """Get notifications for a specific camera - adapted to MAI.missionmessagelogs"""
+    try:
+        query = {
+            "createdBy": str_to_object_id(user_id),
+            "cameraId": str_to_object_id(device_id),
+            "isDeleted": False
+        }
         
-    notifications = await db.notifications.find(query).sort("timestamp", -1).limit(limit).to_list(limit)
-    return [Notification(**notif) for notif in notifications]
+        logs = await message_logs_collection.find(query).sort("createdAt", -1).limit(limit).to_list(limit)
+        
+        # Convert to notification format
+        notifications = []
+        for log in logs:
+            log_dict = object_id_to_str(log)
+            notif = {
+                "id": log_dict.get('id'),
+                "user_id": log_dict.get('createdBy'),
+                "device_id": log_dict.get('cameraId'),
+                "mission_id": log_dict.get('missionId'),
+                "type": "message",
+                "content": log_dict.get('message', ''),
+                "media_url": log_dict.get('photoUrl') or log_dict.get('videoUrl'),
+                "video_url": log_dict.get('videoUrl'),
+                "image_url": log_dict.get('photoUrl'),
+                "read": False,
+                "timestamp": log_dict.get('createdAt'),
+                "notificationSound": log_dict.get('notificationSound')
+            }
+            notifications.append(notif)
+        
+        return notifications
+    except Exception as e:
+        logging.error(f"Error fetching device notifications: {e}")
+        return []
 
 @api_router.put("/notifications/{notification_id}/read")
 async def mark_notification_read(notification_id: str):
-    result = await db.notifications.update_one(
-        {"id": notification_id},
-        {"$set": {"read": True}}
-    )
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Notification not found")
-    return {"success": True}
+    """Mark notification as read (MAI doesn't have read status, so this is a no-op)"""
+    # MAI.missionmessagelogs doesn't have a 'read' field
+    # We could add a custom field or just return success
+    return {"success": True, "message": "MAI logs don't support read status"}
 
 # Simulate device sending notification (for testing)
 @api_router.post("/simulate/device-notification")
