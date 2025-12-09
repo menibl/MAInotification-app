@@ -4,13 +4,14 @@ uvicorn
 pymongo
 motor
 python-dotenv
+python-multipart
 pywebpush
 requests
 httpx
 openai
 langchain-openai
 pydantic-settings
-emergentintegrations
 bcrypt
 PyJWT
 pyotp
+argon2-cffi

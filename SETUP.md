@@ -108,7 +108,7 @@ yarn start
 #### 1. Create Dockerfile for Backend
 ```dockerfile
 # backend/Dockerfile
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

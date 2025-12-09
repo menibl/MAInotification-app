@@ -1,31 +1,28 @@
-from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form, Depends
-from fastapi.responses import RedirectResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-import json
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any, Tuple
-import uuid
-from datetime import datetime
-import asyncio
-import aiofiles
-import shutil
-from pywebpush import webpush, WebPushException
-from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType, ImageContent
-import requests
 import base64
+import json
+import logging
+import os
+import uuid
+from datetime import datetime, timezone
 from io import BytesIO
-import jwt
-import bcrypt
-import pyotp
-from ai_chat_agent import ai_chat_agent, ChatState
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
+import aiofiles
+import argon2
+import bcrypt
+import jwt
+import pyotp
+import requests
+from dotenv import load_dotenv
+from emergentintegrations.llm.chat import FileContentWithMimeType, ImageContent, LlmChat, UserMessage
+from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field
+from pywebpush import webpush, WebPushException
+from starlette.middleware.cors import CORSMiddleware
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1247,8 +1244,9 @@ async def auth_register(req: RegisterRequest):
     existing = await get_user_by_email(email)
     if existing:
         return { 'success': False, 'error': 'Email already registered' }
-    pw_hash = bcrypt.hashpw(req.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
+    ph = argon2.PasswordHasher()
+    pw_hash = ph.hash(req.password)
+
     # Create user with MAI structure
     user_doc = {
         "email": email,
@@ -1286,8 +1284,11 @@ async def auth_login(req: LoginRequest):
         return { 'success': False, 'error': 'Invalid credentials' }
     
     # Verify password
-    if not bcrypt.checkpw(req.password.encode('utf-8'), password_field.encode('utf-8')):
-        return { 'success': False, 'error': 'Invalid credentials' }
+    ph = argon2.PasswordHasher()
+    try:
+        ph.verify(password_field, req.password)
+    except argon2.exceptions.VerifyMismatchError:
+        return {'success': False, 'error': 'Invalid credentials'}
     
     # Get user_id from MongoDB _id
     user_id = str(user.get('_id'))
