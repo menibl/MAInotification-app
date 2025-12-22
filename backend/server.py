@@ -109,7 +109,7 @@ OAUTH_GOOGLE_REDIRECT_URI = os.environ.get('OAUTH_GOOGLE_REDIRECT_URI')
 app = FastAPI()
 
 # Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter(prefix="/mobile/api")
 
 # WebSocket connection manager
 class ConnectionManager:
