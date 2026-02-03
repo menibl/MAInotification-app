@@ -2005,7 +2005,12 @@ const App = () => {
 
   const checkPushSubscription = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.getRegistration('/mobile/app/');
+
+      if (!registration) {
+        throw new Error('Service worker not registered');
+      }
+
       const subscription = await registration.pushManager.getSubscription();
       setPushSubscribed(!!subscription);
     } catch (error) {
@@ -2045,9 +2050,12 @@ const App = () => {
         return;
       }
 
-      // Get service worker registration
-      const registration = await navigator.serviceWorker.ready;
-      
+      // Get the existing registration
+      const registration = await navigator.serviceWorker.getRegistration('/mobile/app/');
+
+      if (!registration) {
+        throw new Error('Service worker not registered');
+      }
       // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -2076,7 +2084,12 @@ const App = () => {
 
   const unsubscribeFromPush = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.getRegistration('/mobile/app/');
+
+      if (!registration) {
+        throw new Error('Service worker not registered');
+      }
+
       const subscription = await registration.pushManager.getSubscription();
       
       if (subscription) {
@@ -2093,7 +2106,7 @@ const App = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   if (!auth.token || !auth.email) {
-    return <AuthScreen onAuthenticated={(email, token)=>{ setAuth({ email, token }); window.location.href='/?email='+encodeURIComponent(email); }} />
+    return <AuthScreen onAuthenticated={(email, token)=>{ setAuth({ email, token }); window.location.href='/mobile/app?email='+encodeURIComponent(email); }} />
   }
 
   if (loading) {
@@ -2140,7 +2153,18 @@ const App = () => {
           
           {pushSupported && (
             <button
-              onClick={pushSubscribed ? unsubscribeFromPush : subscribeToPush}
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  if (pushSubscribed) {
+                    await unsubscribeFromPush();
+                  } else {
+                    await subscribeToPush();
+                  }
+                } catch (error) {
+                  alert(`Failed to ${pushSubscribed ? 'unsubscribe from' : 'subscribe to'} push notifications: ${error.message}`);
+                }
+              }}
               className={`p-2 hover:bg-sky-900/20 rounded-lg transition-colors ${
                 pushSubscribed ? 'text-green-500' : 'text-gray-400'
               }`}

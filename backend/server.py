@@ -341,7 +341,7 @@ async def get_chat_history(user_id: str, device_id: str) -> List[Dict[str, Any]]
 
 # Define Models - Updated to match MAI.cameras structure
 class Camera(BaseModel):
-    id: str  # Will be populated from MongoDB _id
+    id: Optional[str] = Field(default=None, alias="_id")
     name: str
     rtmpCode: Optional[str] = None
     streamUrl: Optional[str] = None
@@ -361,6 +361,13 @@ class Camera(BaseModel):
     @property
     def status(self) -> str:
         return "online" if self.isActive else "offline"
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
 
 # Alias for backward compatibility
 Device = Camera
@@ -388,11 +395,18 @@ class BulkDeviceUpdate(BaseModel):
     device_updates: List[Dict[str, Any]]  # List of {device_id: str, updates: DeviceUpdate}
 
 class PushSubscription(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     endpoint: str
     keys: Dict[str, str]  # p256dh and auth keys
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
 
 class PushSubscriptionCreate(BaseModel):
     user_id: str
@@ -401,7 +415,7 @@ class PushSubscriptionCreate(BaseModel):
 
 class PushNotificationRequest(BaseModel):
     user_id: str
-    device_id: str  # Now required (camera ID)
+    camera_id: str = Field(alias="device_id")  # backward compatibility
     title: str
     body: str
     icon: Optional[str] = None
@@ -414,7 +428,6 @@ class PushNotificationRequest(BaseModel):
     actions: Optional[List[Dict[str, str]]] = None
     require_interaction: Optional[bool] = False
     # Extended metadata fields
-    camera_id: Optional[str] = None  # Camera ID (same as device_id usually)
     camera_name: Optional[str] = None  # Camera display name
     mission_id: Optional[str] = None  # Mission ID
     mission_name: Optional[str] = None  # Mission display name
@@ -422,8 +435,11 @@ class PushNotificationRequest(BaseModel):
     image_url: Optional[str] = None  # Image URL (alias for image)
     rtmp_code: Optional[str] = None  # RTMP stream code/URL
 
+    class Config:
+        populate_by_name = True
+
 class ChatMessage(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     device_id: str
     message: str
@@ -443,6 +459,13 @@ class ChatMessage(BaseModel):
     sound_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
+
 class ChatMessageCreate(BaseModel):
     device_id: str
     message: str
@@ -461,7 +484,7 @@ class ChatMessageCreate(BaseModel):
     sound_id: Optional[str] = None
 
 class ChatSettings(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     device_id: str
     role_name: str = "AI Assistant"
@@ -470,6 +493,13 @@ class ChatSettings(BaseModel):
     model: str = "gpt-5-nano"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
 
 class ChatSettingsCreate(BaseModel):
     role_name: str
@@ -484,7 +514,7 @@ class ChatSettingsUpdate(BaseModel):
     model: Optional[str] = None
 
 class DirectImageChat(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     device_id: str
     image_data: str  # base64 encoded image
@@ -492,6 +522,13 @@ class DirectImageChat(BaseModel):
     ai_response: str
     display_in_chat: bool  # Whether to display in chat or just log
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
 
 class DirectImageChatCreate(BaseModel):
     device_id: str
@@ -509,13 +546,20 @@ class DirectImageChatCreate(BaseModel):
     sound_id: Optional[str] = None
 
 class CameraPrompt(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     device_id: str
     prompt_text: str
     instructions: str  # What the user wants to look for
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
 
 class CameraPromptCreate(BaseModel):
     instructions: str  # User's description of what to look for
@@ -537,7 +581,7 @@ class RoleChangeCommand(BaseModel):
     message: str
 
 class FileUpload(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     filename: str
     original_filename: str
     file_path: str
@@ -548,19 +592,33 @@ class FileUpload(BaseModel):
     message_id: Optional[str] = None
     uploaded_at: datetime = Field(default_factory=datetime.utcnow)
 
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
+
 class AIPersonality(BaseModel):
     device_type: str
     system_message: str
     model: str = "gpt-5-nano"
     
 class ChatHistory(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     device_id: str
     history: List[Dict[str, Any]] = []  # JSON array of chat messages
     ai_personality: Optional[AIPersonality] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            BsonObjectId: str
+        }
+
 class LastLogin(BaseModel):
     os: Dict[str, str] = {"version": "", "name": ""}
     browser: Dict[str, str] = {"version": "", "name": ""}
@@ -665,7 +723,7 @@ class MissionMessageLog(BaseModel):
 Notification = MissionMessageLog
 
 class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     client_name: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
@@ -689,7 +747,7 @@ class AIAgentFeedbackRequest(BaseModel):
     feedback_type: str  # "false_positive", "false_negative", "correct"
 
 class AIAgentConversation(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default=None, alias="_id")
     user_id: str
     conversation_id: str
     chat_type: str  # "global", "mission", "camera"
@@ -1392,7 +1450,8 @@ async def subscribe_to_push(subscription: PushSubscriptionCreate):
     })
     
     if existing:
-        return {"success": True, "message": "Subscription already exists", "subscription_id": existing["id"]}
+        existing_converted = object_id_to_str(existing)
+        return {"success": True, "message": "Subscription already exists", "subscription_id": existing_converted["id"]}
     
     # Create new subscription
     push_sub = PushSubscription(**subscription.dict())
